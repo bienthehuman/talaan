@@ -29,6 +29,13 @@ updates:
   - package-ecosystem: docker
     directories: [/server, /client]
     schedule: { interval: weekly }
+    ignore:
+      # The base images follow .python-version and .nvmrc, which CI uses too. Moving to another
+      # Python minor or Node major is a deliberate change made in one PR for all of them.
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
