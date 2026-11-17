@@ -45,6 +45,8 @@ jobs:
       - name: Migrate as the owner role
         run: bash scripts/migrate.sh
       - run: python -m pytest
+      - name: Database guards are protected by tests that fail without them
+        run: bash scripts/mutation_check.sh
       - name: OpenAPI schema is up to date
         run: |
           python manage.py spectacular --file /tmp/openapi.yml --validate

@@ -48,6 +48,10 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "core",
     "accounts",
+    "forms",
+    "assignments",
+    "submissions",
+    "sync",
 ]
 
 MIDDLEWARE = [
