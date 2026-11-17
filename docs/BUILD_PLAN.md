@@ -36,10 +36,10 @@ its database-level invariants first, then the rules without HTTP, then the API, 
 
 | Slice | Content | Status |
 |---|---|---|
-| 1.1 | **Data model and database invariants.** Apps `forms`, `assignments`, `submissions`, `sync`; tables and migrations from DATA_MODEL.md section 1; sequence `submission_server_seq`; Django admin for form JSON; demo form and assignments in `seed_demo`. | in review |
-| 1.2 | **Sync service, no HTTP.** `apply_mutation` / `_apply` for create, update, submit, delete; ledger, events, validation, field-level conflicts; admin actions (approve, return, restore, delete, edit) through the same path; guard against direct writes. | in review |
-| 1.3 | **Push / pull API and fault injection.** `POST /api/sync/push`, `GET /api/sync/pull`, assignments and form versions, device registration, 426, batch cap, throttle; the four fault modes; OpenAPI and generated client types. | in review |
-| 1.4 | **Concurrency proofs.** Scenarios 3, 7, 8 with real threads; the scenario 8 write-up; `v0.2.0`. | not started |
+| 1.1 | **Data model and database invariants.** Apps `forms`, `assignments`, `submissions`, `sync`; tables and migrations from DATA_MODEL.md section 1; sequence `submission_server_seq`; Django admin for form JSON; demo form and assignments in `seed_demo`. | done |
+| 1.2 | **Sync service, no HTTP.** `apply_mutation` / `_apply` for create, update, submit, delete; ledger, events, validation, field-level conflicts; admin actions (approve, return, restore, delete, edit) through the same path; guard against direct writes. | done |
+| 1.3 | **Push / pull API and fault injection.** `POST /api/sync/push`, `GET /api/sync/pull`, assignments and form versions, device registration, 426, batch cap, throttle; the four fault modes; OpenAPI and generated client types. | done |
+| 1.4 | **Concurrency proofs.** Scenarios 3, 7, 8 with real threads; the scenario 8 write-up; `v0.2.0`. | done (`v0.2.0`) |
 
 ### Definition of done per slice (written before the code)
 
@@ -64,10 +64,51 @@ its database-level invariants first, then the rules without HTTP, then the API, 
 - `server/openapi.yml` and `client/src/lib/api-types.ts` regenerated; CI drift checks pass.
 - Mutation check extended to the API layer (batch cap, 426, visibility, cursor logic, every fault mode): `server/scripts/mutation_check_service.py` now plants 40 bugs.
 
-**1.4** (in review)
+**1.4**
 - Scenarios 3, 7, 8 use real threads against real Postgres as the app role.
 - Scenario 8 is shown failing with the advisory lock removed (recorded run in the write-up) and passing with it.
 - `v0.2.0` tagged; the phase demo is `pytest -m phase1`.
+
+## Phase 2 slices: client local layer and engine
+
+Exit: scenarios 1, 9, 12 pass in CI, plus the client half of scenario 2; tagged `v0.3.0`. The UI reads
+IndexedDB only. Ordered by risk: the atomic local write first, then the engine on top of it, then auth
+resume, then the thinnest UI that lets Playwright drive it all.
+
+| Slice | Content | Status |
+|---|---|---|
+| 2.1 | **Local layer** (`src/db/`). Dexie schema and migrations; stores per DATA_MODEL section 2; `meta` (`deviceId`, `userId`, cursor); repositories; `editSubmission` = record + outbox entry in one transaction; coalescing of unsent edits only; all data keyed by `userId`. | not started |
+| 2.2 | **Sync engine** (`src/sync/`). Push then pull, per-result handling (applied / conflict / rejected), reference-data download, backoff with jitter, error classes, Web Locks, triggers (start, `online`, 60 s, "Sync now"); real `SyncBadge` status. | not started |
+| 2.3 | **Auth resume.** Token refresh, 401 pause and resume with the outbox untouched, logout confirmation with unsent changes, token storage decision (ADR 0010). | not started |
+| 2.4 | **Worker UI, thin.** Assignments and submissions read from IndexedDB; form filler (Zod built from the form JSON) that creates, edits, submits, deletes offline. Conflict and rejected states are shown as status only (resolution screen is phase 3). | not started |
+| 2.5 | **Playwright scenarios and release.** Scenarios 1, 2 (client half), 9 against the compose stack with `X-Fault`; `v0.3.0`. | not started |
+
+### Definition of done per slice (phase 2)
+
+**2.1**
+- Scenario 12: a write that is interrupted (transaction aborted mid-way) leaves record and outbox both present or both absent; Vitest with fake-indexeddb.
+- A second user on the same device never sees the first user's data.
+- Editing a record twice before a push coalesces to one outbox entry; an entry already sent (`sentAt`) is never changed.
+- Planted-bug check on the repository (drop the transaction, coalesce a sent entry) fails a test.
+
+**2.2**
+- Every protocol result status and transient failure class has a test (stubbed fetch): applied, conflict, rejected, 5xx, 429 with `Retry-After`, timeout, network error, 426.
+- A retry resends the same unmodified mutation ids (lost-response case, engine half).
+- Two engines on one database (two tabs) never sync at once.
+- Pull applies to `shadow` without touching unsent `data`; cursor advances only after the page is stored.
+
+**2.3**
+- A 401 mid-sync pauses; the outbox is unchanged; a refresh resumes from the start of a cycle; a failed refresh asks for login and keeps local data.
+- Logging out with unsent changes needs explicit confirmation.
+- ADR 0010 records the token storage choice and why.
+
+**2.4**
+- A worker can complete a whole inspection with the network off; axe gate passes on the new pages.
+- "Saved on this device" and "Synced" never look alike.
+
+**2.5**
+- Scenarios 1, 2 (client half) and 9 are green in `e2e`, and each is shown to fail when its guarantee is broken.
+- `v0.3.0` tagged.
 
 ## Baseline checklist (phase 0)
 
