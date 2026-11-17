@@ -5,6 +5,7 @@ import psycopg
 import pytest
 from django.db import DatabaseError, connection, transaction
 
+from submissions.guard import write_access
 from submissions.models import EventKind, SubmissionEvent
 
 pytestmark = pytest.mark.django_db
@@ -23,15 +24,17 @@ def privilege(table: str, kind: str) -> bool:
 
 def test_events_can_be_added(make_submission, worker):
     submission = make_submission()
-    event = SubmissionEvent.objects.create(
-        submission=submission, version=1, kind=EventKind.CREATED, actor=worker, detail={"x": 1}
-    )
+    with write_access():
+        event = SubmissionEvent.objects.create(
+            submission=submission, version=1, kind=EventKind.CREATED, actor=worker, detail={"x": 1}
+        )
     assert SubmissionEvent.objects.get(pk=event.pk).detail == {"x": 1}
 
 
 def test_an_unknown_event_kind_is_refused(make_submission):
     with pytest.raises(DatabaseError, match="kind_valid"), transaction.atomic():
-        SubmissionEvent.objects.create(submission=make_submission(), version=1, kind="exploded")
+        with write_access():
+            SubmissionEvent.objects.create(submission=make_submission(), version=1, kind="exploded")
 
 
 def test_the_application_role_has_no_update_or_delete_privilege():
@@ -42,15 +45,23 @@ def test_the_application_role_has_no_update_or_delete_privilege():
 
 
 def test_an_update_through_the_application_role_is_refused(make_submission):
-    event = SubmissionEvent.objects.create(submission=make_submission(), version=1, kind="created")
+    with write_access():
+        event = SubmissionEvent.objects.create(
+            submission=make_submission(), version=1, kind="created"
+        )
     with pytest.raises(DatabaseError, match="permission denied"), transaction.atomic():
-        SubmissionEvent.objects.filter(pk=event.pk).update(kind="deleted")
+        with write_access():
+            SubmissionEvent.objects.filter(pk=event.pk).update(kind="deleted")
 
 
 def test_a_delete_through_the_application_role_is_refused(make_submission):
-    event = SubmissionEvent.objects.create(submission=make_submission(), version=1, kind="created")
+    with write_access():
+        event = SubmissionEvent.objects.create(
+            submission=make_submission(), version=1, kind="created"
+        )
     with pytest.raises(DatabaseError, match="permission denied"), transaction.atomic():
-        SubmissionEvent.objects.filter(pk=event.pk).delete()
+        with write_access():
+            SubmissionEvent.objects.filter(pk=event.pk).delete()
 
 
 def test_the_trigger_refuses_an_update_even_for_the_owner(owner_conn):

@@ -15,6 +15,7 @@ from accounts.permissions import ADMIN, WORKER
 from assignments.models import Assignment
 from forms.models import Form, FormVersion
 from forms.samples import GENERATOR_INSPECTION
+from submissions.guard import write_access
 from submissions.models import Submission
 
 
@@ -114,7 +115,8 @@ def make_submission(assignment):
             "server_seq": next_server_seq(),
         }
         values.update(overrides)
-        return Submission.objects.create(**values)
+        with write_access():
+            return Submission.objects.create(**values)
 
     return factory
 

@@ -55,4 +55,8 @@ vite-plugin-pwa (client), pytest / Vitest / Playwright, Docker Compose, GitHub A
 - **Ad-hoc SQL on the test DB:** `docker compose exec -T db psql -U postgres -d talaan_test -c "..."` (superuser inside the container).
 - **Django 6.1 admin:** overriding `get_actions` needs the `action_location` parameter (see `forms/admin.py`), otherwise a deprecation warning.
 - **ruff `DJ012`** wants model members in Django style order (fields, Meta, `__str__`, `save`, then other methods).
+- **Sync service (`sync/services.py`) is the only writer of `Submission` and `SubmissionEvent`.** Entry points: `apply_mutation(user, device_id, Mutation)` and `apply_admin_action(user, record_id, action, ...)`; both go through `_run_once` (ledger row first, advisory lock, handler, result stored, one transaction). A runtime guard (`submissions/guard.py`, `write_access()`) raises `DirectWriteError` for any other ORM write; a test scans the source (AST) so the gate is opened only in `guard.py` and `services.py`. Test fixtures that must build rows by hand wrap them in `write_access()`.
+- **Service tests** build scenarios with `sync/tests/helpers.py` (`create`, `push`, `submitted`, `admin`, `row`). Results are plain dicts (`status`, `code`, `record`, ...); see `sync/results.py` and `docs/protocol.md`.
+- **`python server/scripts/mutation_check_service.py`** (about 2 min) plants deliberate bugs in the service, validator and guard and requires a test to fail for each. Exits 1 if one survives, 2 if a pattern went stale after a refactor (update the entry). Run it after changing those files.
+- **Ruff `S311`** is ignored in tests so seeded `random` can be used for repeatable randomized checks.
 
