@@ -74,9 +74,9 @@ by `userId`. Roles are Django groups; permissions are a code catalog checked aga
 
 | Env | How |
 |---|---|
-| Local | `docker compose up` (Postgres + server + client); seeded demo data |
-| CI | GitHub Actions: services container for Postgres; Playwright against compose stack |
-| Production | Production compose file + `DEPLOY.md`. **Host not chosen yet.** |
+| Local | `docker compose up --build --wait` (db, migrate, server, web); seeded demo data |
+| CI | GitHub Actions: the compose database (same roles as local) for pytest; Playwright against the compose stack; `prod-smoke` deploys the production stack |
+| Production | `docker-compose.prod.yml`: Caddy (HTTPS) > nginx > gunicorn > Postgres on one Docker host; see `DEPLOY.md`. **Deployable, not hosted: no host chosen yet.** |
 
 ## 7. Production constraints from the skeleton
 

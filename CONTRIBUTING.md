@@ -23,5 +23,5 @@ cd client && npm run typecheck && npm run lint && npm run format:check && npm te
 bash scripts/e2e.sh        # full stack + Playwright (drops the compose database)
 ```
 
-CI runs the same three jobs (`server`, `client`, `e2e`). If you change the API, regenerate
+CI runs the same jobs (`server`, `client`, `e2e`) plus `prod-smoke`, which deploys the production stack with throwaway secrets. `main` only accepts squash-merged pull requests whose checks are green. If you change the API, regenerate
 `server/openapi.yml` and `client/src/lib/api-types.ts`; CI fails when they drift.

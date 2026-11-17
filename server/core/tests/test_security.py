@@ -17,7 +17,9 @@ def test_security_headers_present(client):
     assert "frame-ancestors 'none'" in csp
 
 
-def _import_settings(**env) -> subprocess.CompletedProcess:
+def _run_settings(code: str = "import config.settings", **env) -> subprocess.CompletedProcess:
+    """Load settings in a fresh interpreter. The repo .env is read by settings too, so anything a
+    test depends on must be passed explicitly (an explicit value, even empty, beats the file)."""
     full_env = {
         k: v
         for k, v in os.environ.items()
@@ -26,13 +28,17 @@ def _import_settings(**env) -> subprocess.CompletedProcess:
     full_env.update(env)
     full_env["DJANGO_SETTINGS_MODULE"] = "config.settings"
     return subprocess.run(  # noqa: S603
-        [sys.executable, "-c", "import config.settings"],
+        [sys.executable, "-c", code],
         cwd=SERVER_DIR,
         env=full_env,
         capture_output=True,
         text=True,
         check=False,
     )
+
+
+def _import_settings(**env) -> subprocess.CompletedProcess:
+    return _run_settings("import config.settings", **env)
 
 
 def test_fault_injection_refused_outside_debug():
@@ -60,5 +66,23 @@ def test_short_secret_key_refused_outside_debug():
 
 
 def test_long_secret_key_accepted_outside_debug():
-    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="x" * 40)
+    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="x" * 40, POSTGRES_PASSWORD="pw")
     assert result.returncode == 0, result.stderr
+
+
+def test_database_password_required_outside_debug():
+    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="x" * 40, POSTGRES_PASSWORD="")
+    assert result.returncode != 0
+    assert "POSTGRES_PASSWORD" in result.stderr
+
+
+def test_csrf_trusted_origins_and_proxy_count_come_from_the_environment():
+    result = _run_settings(
+        "from django.conf import settings as s; "
+        "print(s.CSRF_TRUSTED_ORIGINS, s.REST_FRAMEWORK['NUM_PROXIES'])",
+        DJANGO_DEBUG="1",
+        DJANGO_CSRF_TRUSTED_ORIGINS="https://a.example,https://b.example",
+        NUM_PROXIES="2",
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "['https://a.example', 'https://b.example'] 2"
