@@ -4,6 +4,55 @@ info:
   version: 0.1.0
   description: 'Offline-first field data sync. Protocol: docs/protocol.md'
 paths:
+  /api/assignments/:
+    get:
+      operationId: assignments_retrieve
+      description: Endpoints that take the client's protocol version in the X-Client-Schema
+        header.
+      summary: Assignments (the whole list, not paged)
+      parameters:
+      - in: header
+        name: X-Client-Schema
+        schema:
+          type: integer
+        description: The client's protocol version. Below the server's minimum the
+          answer is 426.
+        required: true
+      tags:
+      - assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '426':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
   /api/auth/token/:
     post:
       operationId: auth_token_create
@@ -57,6 +106,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+  /api/form-versions/:
+    get:
+      operationId: form_versions_retrieve
+      description: Endpoints that take the client's protocol version in the X-Client-Schema
+        header.
+      summary: Published form versions the user needs (the whole list, not paged)
+      parameters:
+      - in: header
+        name: X-Client-Schema
+        schema:
+          type: integer
+        description: The client's protocol version. Below the server's minimum the
+          answer is 426.
+        required: true
+      tags:
+      - form-versions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormVersionList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '426':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
   /api/health/:
     get:
       operationId: health_retrieve
@@ -88,8 +186,258 @@ paths:
               schema:
                 $ref: '#/components/schemas/Me'
           description: ''
+  /api/sync/pull/:
+    get:
+      operationId: sync_pull_retrieve
+      description: Endpoints that take the client's protocol version in the X-Client-Schema
+        header.
+      summary: Pull changes since a cursor
+      parameters:
+      - in: header
+        name: X-Client-Schema
+        schema:
+          type: integer
+        description: The client's protocol version. Below the server's minimum the
+          answer is 426.
+        required: true
+      - in: query
+        name: cursor
+        schema:
+          type: integer
+        description: Last server_seq already received (0 to start).
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, default 200, at most 500.
+      tags:
+      - sync
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '426':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+  /api/sync/push/:
+    post:
+      operationId: sync_push_create
+      description: Applies up to 50 mutations in order, each in its own transaction,
+        and returns one result per mutation. A repeated mutation_id returns its stored
+        result.
+      summary: Push local changes
+      tags:
+      - sync
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PushRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PushRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '426':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
 components:
   schemas:
+    Assignment:
+      type: object
+      properties:
+        id:
+          type: integer
+        form_version_id:
+          type: integer
+        form_name:
+          type: string
+        site_name:
+          type: string
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        cancelled:
+          type: boolean
+      required:
+      - cancelled
+      - due_date
+      - form_name
+      - form_version_id
+      - id
+      - site_name
+    AssignmentList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Assignment'
+      required:
+      - results
+    CodeEnum:
+      enum:
+      - locked
+      - not_found
+      - id_taken
+      - invalid
+      - invalid_state
+      - unknown_form_version
+      - mutation_id_reuse
+      - forbidden
+      type: string
+      description: |-
+        * `locked` - locked
+        * `not_found` - not_found
+        * `id_taken` - id_taken
+        * `invalid` - invalid
+        * `invalid_state` - invalid_state
+        * `unknown_form_version` - unknown_form_version
+        * `mutation_id_reuse` - mutation_id_reuse
+        * `forbidden` - forbidden
+    Conflict:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConflictField'
+      required:
+      - fields
+      - kind
+    ConflictField:
+      type: object
+      properties:
+        field:
+          type: string
+        server_value:
+          nullable: true
+        client_value:
+          nullable: true
+        server_version:
+          type: integer
+      required:
+      - field
+    FieldError:
+      type: object
+      properties:
+        field:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - field
+      - message
+    FormVersion:
+      type: object
+      properties:
+        id:
+          type: integer
+        form_id:
+          type: integer
+        form_name:
+          type: string
+        number:
+          type: integer
+        schema:
+          type: object
+          additionalProperties:
+            nullable: true
+        published_at:
+          type: string
+          format: date-time
+      required:
+      - form_id
+      - form_name
+      - id
+      - number
+      - published_at
+      - schema
+    FormVersionList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormVersion'
+      required:
+      - results
     Health:
       type: object
       properties:
@@ -100,6 +448,16 @@ components:
       required:
       - database
       - status
+    KindEnum:
+      enum:
+      - field_conflict
+      - deleted_remotely
+      - edited_since_base
+      type: string
+      description: |-
+        * `field_conflict` - field_conflict
+        * `deleted_remotely` - deleted_remotely
+        * `edited_since_base` - edited_since_base
     Me:
       type: object
       properties:
@@ -119,6 +477,184 @@ components:
       - permissions
       - role
       - username
+    MutationResult:
+      type: object
+      properties:
+        mutation_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/MutationResultStatusEnum'
+        record:
+          $ref: '#/components/schemas/Record'
+        conflict:
+          $ref: '#/components/schemas/Conflict'
+        code:
+          $ref: '#/components/schemas/CodeEnum'
+        detail:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+      required:
+      - mutation_id
+      - status
+    MutationResultStatusEnum:
+      enum:
+      - applied
+      - conflict
+      - rejected
+      type: string
+      description: |-
+        * `applied` - applied
+        * `conflict` - conflict
+        * `rejected` - rejected
+    Problem:
+      type: object
+      description: RFC 7807 problem+json, returned for every non-2xx response.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        code:
+          type: string
+        detail:
+          type: string
+        errors: {}
+        retry_after:
+          type: integer
+      required:
+      - code
+      - detail
+      - status
+      - title
+      - type
+    PullResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        next_cursor:
+          type: integer
+        has_more:
+          type: boolean
+      required:
+      - has_more
+      - next_cursor
+      - records
+    PushMutationRequest:
+      type: object
+      properties:
+        mutation_id:
+          type: string
+          format: uuid
+        record_id:
+          type: string
+          format: uuid
+        op:
+          type: string
+          minLength: 1
+          maxLength: 32
+        base_version:
+          type: integer
+          minimum: 0
+        fields:
+          type: object
+          additionalProperties:
+            nullable: true
+          description: Field values to set. null clears a field.
+        assignment_id:
+          type: integer
+          nullable: true
+      required:
+      - base_version
+      - mutation_id
+      - op
+      - record_id
+    PushRequestRequest:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        client_schema:
+          type: integer
+          minimum: 0
+        app_version:
+          type: string
+          default: ''
+          maxLength: 64
+        mutations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PushMutationRequest'
+      required:
+      - client_schema
+      - device_id
+      - mutations
+    PushResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MutationResult'
+      required:
+      - results
+    Record:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        assignment_id:
+          type: integer
+        form_version_id:
+          type: integer
+        version:
+          type: integer
+        field_versions:
+          type: object
+          additionalProperties:
+            type: integer
+        data:
+          type: object
+          additionalProperties:
+            nullable: true
+        status:
+          $ref: '#/components/schemas/RecordStatusEnum'
+        deleted:
+          type: boolean
+        server_seq:
+          type: integer
+      required:
+      - assignment_id
+      - data
+      - deleted
+      - field_versions
+      - form_version_id
+      - id
+      - server_seq
+      - status
+      - version
+    RecordStatusEnum:
+      enum:
+      - draft
+      - submitted
+      - approved
+      - returned
+      type: string
+      description: |-
+        * `draft` - draft
+        * `submitted` - submitted
+        * `approved` - approved
+        * `returned` - returned
     TokenObtainPair:
       type: object
       properties:

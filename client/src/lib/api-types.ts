@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/assignments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Assignments (the whole list, not paged)
+         * @description Endpoints that take the client's protocol version in the X-Client-Schema header.
+         */
+        get: operations["assignments_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/token/": {
         parameters: {
             query?: never;
@@ -35,6 +55,26 @@ export interface paths {
          *     token if the refresh token is valid.
          */
         post: operations["auth_token_refresh_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/form-versions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Published form versions the user needs (the whole list, not paged)
+         * @description Endpoints that take the client's protocol version in the X-Client-Schema header.
+         */
+        get: operations["form_versions_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -74,20 +114,200 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sync/pull/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pull changes since a cursor
+         * @description Endpoints that take the client's protocol version in the X-Client-Schema header.
+         */
+        get: operations["sync_pull_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sync/push/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Push local changes
+         * @description Applies up to 50 mutations in order, each in its own transaction, and returns one result per mutation. A repeated mutation_id returns its stored result.
+         */
+        post: operations["sync_push_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Assignment: {
+            id: number;
+            form_version_id: number;
+            form_name: string;
+            site_name: string;
+            /** Format: date */
+            due_date: string | null;
+            cancelled: boolean;
+        };
+        AssignmentList: {
+            results: components["schemas"]["Assignment"][];
+        };
+        /**
+         * @description * `locked` - locked
+         *     * `not_found` - not_found
+         *     * `id_taken` - id_taken
+         *     * `invalid` - invalid
+         *     * `invalid_state` - invalid_state
+         *     * `unknown_form_version` - unknown_form_version
+         *     * `mutation_id_reuse` - mutation_id_reuse
+         *     * `forbidden` - forbidden
+         * @enum {string}
+         */
+        CodeEnum: "locked" | "not_found" | "id_taken" | "invalid" | "invalid_state" | "unknown_form_version" | "mutation_id_reuse" | "forbidden";
+        Conflict: {
+            kind: components["schemas"]["KindEnum"];
+            fields: components["schemas"]["ConflictField"][];
+        };
+        ConflictField: {
+            field: string;
+            server_value?: unknown;
+            client_value?: unknown;
+            server_version?: number;
+        };
+        FieldError: {
+            field: string;
+            code: string;
+            message: string;
+        };
+        FormVersion: {
+            id: number;
+            form_id: number;
+            form_name: string;
+            number: number;
+            schema: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            published_at: string;
+        };
+        FormVersionList: {
+            results: components["schemas"]["FormVersion"][];
+        };
         Health: {
             status: string;
             database: string;
         };
+        /**
+         * @description * `field_conflict` - field_conflict
+         *     * `deleted_remotely` - deleted_remotely
+         *     * `edited_since_base` - edited_since_base
+         * @enum {string}
+         */
+        KindEnum: "field_conflict" | "deleted_remotely" | "edited_since_base";
         Me: {
             id: number;
             username: string;
             role: string | null;
             permissions: string[];
         };
+        MutationResult: {
+            /** Format: uuid */
+            mutation_id: string;
+            status: components["schemas"]["MutationResultStatusEnum"];
+            record?: components["schemas"]["Record"];
+            conflict?: components["schemas"]["Conflict"];
+            code?: components["schemas"]["CodeEnum"];
+            detail?: string;
+            errors?: components["schemas"]["FieldError"][];
+        };
+        /**
+         * @description * `applied` - applied
+         *     * `conflict` - conflict
+         *     * `rejected` - rejected
+         * @enum {string}
+         */
+        MutationResultStatusEnum: "applied" | "conflict" | "rejected";
+        /** @description RFC 7807 problem+json, returned for every non-2xx response. */
+        Problem: {
+            type: string;
+            title: string;
+            status: number;
+            code: string;
+            detail: string;
+            errors?: unknown;
+            retry_after?: number;
+        };
+        PullResponse: {
+            records: components["schemas"]["Record"][];
+            next_cursor: number;
+            has_more: boolean;
+        };
+        PushMutationRequest: {
+            /** Format: uuid */
+            mutation_id: string;
+            /** Format: uuid */
+            record_id: string;
+            op: string;
+            base_version: number;
+            /** @description Field values to set. null clears a field. */
+            fields?: {
+                [key: string]: unknown;
+            };
+            assignment_id?: number | null;
+        };
+        PushRequestRequest: {
+            /** Format: uuid */
+            device_id: string;
+            client_schema: number;
+            /** @default  */
+            app_version: string;
+            mutations: components["schemas"]["PushMutationRequest"][];
+        };
+        PushResponse: {
+            results: components["schemas"]["MutationResult"][];
+        };
+        Record: {
+            /** Format: uuid */
+            id: string;
+            assignment_id: number;
+            form_version_id: number;
+            version: number;
+            field_versions: {
+                [key: string]: number;
+            };
+            data: {
+                [key: string]: unknown;
+            };
+            status: components["schemas"]["RecordStatusEnum"];
+            deleted: boolean;
+            server_seq: number;
+        };
+        /**
+         * @description * `draft` - draft
+         *     * `submitted` - submitted
+         *     * `approved` - approved
+         *     * `returned` - returned
+         * @enum {string}
+         */
+        RecordStatusEnum: "draft" | "submitted" | "approved" | "returned";
         TokenObtainPair: {
             readonly access: string;
             readonly refresh: string;
@@ -111,6 +331,60 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    assignments_retrieve: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The client's protocol version. Below the server's minimum the answer is 426. */
+                "X-Client-Schema": number;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentList"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     auth_token_create: {
         parameters: {
             query?: never;
@@ -161,6 +435,60 @@ export interface operations {
             };
         };
     };
+    form_versions_retrieve: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The client's protocol version. Below the server's minimum the answer is 426. */
+                "X-Client-Schema": number;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormVersionList"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     health_retrieve: {
         parameters: {
             query?: never;
@@ -202,6 +530,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    sync_pull_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Last server_seq already received (0 to start). */
+                cursor?: number;
+                /** @description Page size, default 200, at most 500. */
+                limit?: number;
+            };
+            header: {
+                /** @description The client's protocol version. Below the server's minimum the answer is 426. */
+                "X-Client-Schema": number;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PullResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    sync_push_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PushRequestRequest"];
+                "multipart/form-data": components["schemas"]["PushRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };

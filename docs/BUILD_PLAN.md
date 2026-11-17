@@ -38,7 +38,7 @@ its database-level invariants first, then the rules without HTTP, then the API, 
 |---|---|---|
 | 1.1 | **Data model and database invariants.** Apps `forms`, `assignments`, `submissions`, `sync`; tables and migrations from DATA_MODEL.md section 1; sequence `submission_server_seq`; Django admin for form JSON; demo form and assignments in `seed_demo`. | in review |
 | 1.2 | **Sync service, no HTTP.** `apply_mutation` / `_apply` for create, update, submit, delete; ledger, events, validation, field-level conflicts; admin actions (approve, return, restore, delete, edit) through the same path; guard against direct writes. | in review |
-| 1.3 | **Push / pull API and fault injection.** `POST /api/sync/push`, `GET /api/sync/pull`, assignments and form versions, device registration, 426, batch cap, throttle; the four fault modes; OpenAPI and generated client types. | not started |
+| 1.3 | **Push / pull API and fault injection.** `POST /api/sync/push`, `GET /api/sync/pull`, assignments and form versions, device registration, 426, batch cap, throttle; the four fault modes; OpenAPI and generated client types. | in review |
 | 1.4 | **Concurrency proofs.** Scenarios 3, 7, 8 with real threads; the scenario 8 write-up; `v0.2.0`. | not started |
 
 ### Definition of done per slice (written before the code)
@@ -62,6 +62,7 @@ its database-level invariants first, then the rules without HTTP, then the API, 
 - Contract tests pin the response shapes in protocol.md; unauthenticated, wrong role and other-worker's records behave as ROLES.md says.
 - Scenarios 11 and 2 (pytest half) and 10 (API half) pass; fault injection modes each have a test and the middleware refuses to load outside debug.
 - `server/openapi.yml` and `client/src/lib/api-types.ts` regenerated; CI drift checks pass.
+- Mutation check extended to the API layer (batch cap, 426, visibility, cursor logic, every fault mode): `server/scripts/mutation_check_service.py` now plants 40 bugs.
 
 **1.4**
 - Scenarios 3, 7, 8 use real threads against real Postgres as the app role.

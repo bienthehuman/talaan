@@ -66,6 +66,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Test-only failures (sync/faults.py): installed only when enabled, and refused outside debug.
+if FAULT_INJECTION:
+    MIDDLEWARE.append("sync.middleware.FaultInjectionMiddleware")
+
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 AUTH_USER_MODEL = "accounts.User"
@@ -129,7 +133,10 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardPagination",
     "EXCEPTION_HANDLER": "core.errors.problem_exception_handler",
-    "DEFAULT_THROTTLE_RATES": {"login": env("THROTTLE_LOGIN", default="10/min")},
+    "DEFAULT_THROTTLE_RATES": {
+        "login": env("THROTTLE_LOGIN", default="10/min"),
+        "push": env("THROTTLE_PUSH", default="120/min"),
+    },
     # Number of proxies in front of Django (production: Caddy and nginx = 2). Without this every
     # client shares the proxy's address and the login rate limit becomes one global bucket.
     "NUM_PROXIES": env.int("NUM_PROXIES", default=None),
