@@ -77,3 +77,4 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 | .NET MAUI client speaking the same protocol | Source plan stretch | later | best proof the protocol is a contract |
 | Grafana dashboard on `/metrics` | Source plan stretch | later | |
 | Safe-watermark pull cursor replacing the advisory lock | ADR 0005 | later | |
+| Document 401/429/problem+json responses in the OpenAPI schema (removes the client `unwrap()` workaround) | Slice 0.3 | later | |
