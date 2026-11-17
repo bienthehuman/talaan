@@ -1,0 +1,25 @@
+# Local development services. The app and client containers arrive in slice 0.4.
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      # Container superuser: only used by the init script to create the two app roles.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:-postgres_dev}
+      OWNER_PASSWORD: ${POSTGRES_OWNER_PASSWORD:-talaan_owner_dev}
+      APP_PASSWORD: ${POSTGRES_PASSWORD:-talaan_app_dev}
+    ports:
+      # 5434 on the host so it does not clash with a local Postgres on 5432 or the Hilom dev DB on 5433.
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/db/init.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d talaan"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

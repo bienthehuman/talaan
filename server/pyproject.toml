@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [".venv", "staticfiles"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "S"]
+ignore = ["DJ001"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+"conftest.py" = ["S105", "S106", "S107"]
+"**/migrations/**" = ["E501"]
+"config/settings*.py" = ["S105"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"
+filterwarnings = ["ignore:No directory at.*staticfiles:UserWarning"]

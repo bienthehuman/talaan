@@ -23,7 +23,7 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 |---|---|---|
 | 0.0 | Repo basics, CLAUDE.md, this plan | in progress |
 | 0.1 | Design docs: architecture, data model (with correction paths), roles × steps, protocol, conventions, design system, ADR 0001–0009 | done (docs accepted 2026-11-17) |
-| 0.2 | Server skeleton: Django, DRF, simplejwt, Postgres, health, OpenAPI page, RFC 7807 errors | not started |
+| 0.2 | Server skeleton: Django, DRF, simplejwt, Postgres, health, OpenAPI page, RFC 7807 errors | in review |
 | 0.3 | Client skeleton: Vite React TS, PWA shell, routing, login, theme tokens, 404/error pages | not started |
 | 0.4 | Compose, CI (build, lint, typecheck, format, unit, integration, e2e, OpenAPI drift), branch protection | not started |
 | 0.5 | Deploy skeleton (blocked on hosting decision) | blocked |
@@ -46,10 +46,11 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 - [ ] Responsive: decide per audience (worker = mobile first, admin = desktop)
 
 **Backend and data**
-- [ ] Health endpoint, API reference page, RFC 7807 errors with codes, list/paging/sort contract
-- [ ] Auth, roles and permissions, audit trail, **restricted DB role** (all in the skeleton)
-- [ ] Security headers, rate limits on auth, secure cookies, no secrets in repo, dev-only seeded logins
-- [ ] Local dev: compose (DB + mail catcher if needed), seed/demo data, one command for e2e on a fresh DB
+- [x] Health endpoint, API reference page, RFC 7807 errors with codes, list/paging contract (sort allow-list lands with the first list endpoint)
+- [x] Auth (JWT), roles and permission catalog (tested against ROLES.md), **restricted DB role** (app and tests run as it)
+- [ ] Audit trail (`submission_event`, append-only): lands with the sync core in phase 1
+- [x] Security headers (incl. CSP), login rate limit, secure cookies in production, no secrets in repo, dev-only seeded logins (push rate limit in phase 1)
+- [ ] Local dev: compose DB and seed command done (0.2); one command for e2e on a fresh DB comes with 0.4
 
 **Delivery**
 - [ ] Deploy target chosen (**open: user said "not yet"**); HTTPS, deploy on tag, tag per milestone
