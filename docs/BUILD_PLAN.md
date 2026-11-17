@@ -25,7 +25,7 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 | 0.1 | Design docs: architecture, data model (with correction paths), roles × steps, protocol, conventions, design system, ADR 0001–0009 | done (docs accepted 2026-11-17) |
 | 0.2 | Server skeleton: Django, DRF, simplejwt, Postgres, health, OpenAPI page, RFC 7807 errors | in review |
 | 0.3 | Client skeleton: Vite React TS, PWA shell, routing, login, theme tokens, 404/error pages | in review |
-| 0.4 | Compose, CI (build, lint, typecheck, format, unit, integration, e2e, OpenAPI drift), branch protection | not started |
+| 0.4 | Compose, CI (build, lint, typecheck, format, unit, integration, e2e, OpenAPI drift), branch protection | in review |
 | 0.5 | Deploy skeleton (blocked on hosting decision) | blocked |
 
 ## Baseline checklist (phase 0)
@@ -33,16 +33,17 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 **Repo and GitHub**
 - [x] README, `.gitignore`, `.gitattributes`, `.editorconfig`, `.env.example`
 - [x] Version pins (`.nvmrc`, `packageManager`, `.python-version`, exact versions in lockfiles), current versions checked at scaffold
-- [ ] GitHub repo created; `main` protected (PRs required, squash only, no force-push, strict required checks)
-- [ ] `.github/pull_request_template.md` (summary, test plan, decisions to check)
-- [ ] CI on every PR: build, lint, typecheck, format, unit, integration, e2e, OpenAPI/client drift; badge in README
-- [ ] LICENSE, SECURITY.md, CONTRIBUTING.md, CLAUDE.md (env quirks), Dependabot/Renovate
+- [ ] GitHub repo created (private); `main` protected (PRs required, squash only, no force-push, strict required checks). **Blocked:** GitHub does not offer branch protection or rulesets on private repos on this plan (HTTP 403). Squash-only merging and delete-branch-on-merge are set at repo level. Needs the repo to go public or a plan upgrade.
+- [x] `.github/pull_request_template.md` (summary, definition of done, test plan, decisions to check)
+- [x] CI on every PR: lint, typecheck, format, unit, integration, build, e2e, OpenAPI/client drift, `npm audit` (prod deps); badge in README. Jobs: `server`, `client`, `e2e`.
+- [x] SECURITY.md, CONTRIBUTING.md, CLAUDE.md (env quirks), Dependabot
+- [ ] LICENSE (needs the owner to choose the licence and the copyright holder name)
 
 **Product shell**
 - [x] Favicon (SVG), page titles per route, app name/tagline, theme-color, 404 and error pages
 - [x] Design system accepted in docs before screens (tokens, light/dark, type, spacing, components); `/styleguide` page built
 - [x] UX state components built (loading, empty, error, forbidden, confirm-destructive, toasts); each screen applies them as it lands
-- [ ] a11y gate: structural axe in unit tests done (0.3); axe in Playwright for light/dark contrast and the keyboard pass come with 0.4
+- [x] a11y gate: axe in Playwright on every screen in light, dark and system-dark at desktop and phone size (incl. contrast); keyboard pass (skip link, keyboard-only sign-in, focus rings, dialog focus). Verified the gate fails on a deliberate contrast break.
 - [x] Responsive: decided per audience (worker = mobile first, admin = desktop first), see DESIGN_SYSTEM.md
 
 **Backend and data**
@@ -50,11 +51,11 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 - [x] Auth (JWT), roles and permission catalog (tested against ROLES.md), **restricted DB role** (app and tests run as it)
 - [ ] Audit trail (`submission_event`, append-only): lands with the sync core in phase 1
 - [x] Security headers (incl. CSP), login rate limit, secure cookies in production, no secrets in repo, dev-only seeded logins (push rate limit in phase 1)
-- [ ] Local dev: compose DB and seed command done (0.2); one command for e2e on a fresh DB comes with 0.4
+- [x] Local dev: compose stack (db, migrate, server, web), seed command, and `bash scripts/e2e.sh` for a fresh DB end to end
 
 **Delivery**
 - [ ] Deploy target chosen (**open: user said "not yet"**); HTTPS, deploy on tag, tag per milestone
-- [ ] Prod compose file + DEPLOY.md regardless of hosting
+- [ ] Prod compose file + DEPLOY.md regardless of hosting (slice 0.5)
 - [ ] Docs index, ADRs for hard-to-reverse decisions, conventions doc, backlog table
 
 ## Decisions already made

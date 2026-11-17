@@ -37,7 +37,7 @@ export function StyleguidePage() {
         <div className="swatches">
           {TOKENS.map((t) => (
             <div className="swatch" key={t}>
-              <i style={{ background: `var(--${t})` }} />
+              <i className={`sw-${t}`} />
               --{t}
             </div>
           ))}
@@ -47,7 +47,7 @@ export function StyleguidePage() {
       <section aria-labelledby="sg-type" className="stack">
         <h2 id="sg-type">Type</h2>
         <p>Body text is 16 px with a 1.5 line height.</p>
-        <p style={{ color: "var(--text-muted)" }}>Muted text for secondary information.</p>
+        <p className="muted">Muted text for secondary information.</p>
       </section>
 
       <section aria-labelledby="sg-buttons" className="stack">

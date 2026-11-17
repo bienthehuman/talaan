@@ -17,6 +17,11 @@ DEBUG = env("DJANGO_DEBUG")
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-only-insecure-key" if DEBUG else None)
 if not SECRET_KEY:
     raise ImproperlyConfigured("DJANGO_SECRET_KEY is required when DJANGO_DEBUG is off")
+# The key signs the JWTs (HS256); PyJWT warns below 32 bytes, so refuse a short one in production.
+if not DEBUG and len(SECRET_KEY) < 32:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be at least 32 characters when DJANGO_DEBUG is off"
+    )
 
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
