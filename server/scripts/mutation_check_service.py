@@ -140,6 +140,116 @@ M = [  # (description, file, old, new)
         "    for name in sorted(set(data) - set(properties)):",
         "    for name in []:",
     ),
+    # --- API layer (slice 1.3) ---
+    (
+        "push has no batch limit",
+        "sync/views.py",
+        "if isinstance(mutations, list) and len(mutations) > MAX_BATCH:",
+        "if False:",
+    ),
+    (
+        "push ignores the client protocol version",
+        "sync/views.py",
+        'enforce_client_schema(body.get("client_schema"))',
+        "None",
+    ),
+    (
+        "old clients are never refused (426)",
+        "sync/views.py",
+        "if version < settings.MIN_CLIENT_SCHEMA:",
+        "if False:",
+    ),
+    (
+        "device is never registered",
+        "sync/views.py",
+        'register_device(request.user, data["device_id"], data["app_version"])',
+        "pass",
+    ),
+    (
+        "admins may push worker mutations",
+        "sync/views.py",
+        "    permission_classes = [IsWorker]",
+        "    permission_classes = [IsWorkerOrAdmin]",
+    ),
+    ("expire-token never fires", "sync/views.py", "and applied < total:", "and False:"),
+    (
+        "pull returns newest first",
+        "sync/views.py",
+        'records.order_by("server_seq")',
+        'records.order_by("-server_seq")',
+    ),
+    (
+        "pull re-sends the record at the cursor",
+        "sync/views.py",
+        "server_seq__gt=cursor",
+        "server_seq__gte=cursor",
+    ),
+    (
+        "pull leaks other workers' records",
+        "sync/views.py",
+        "            records = records.filter(assignment__worker=request.user)",
+        "            pass",
+    ),
+    (
+        "pull never reports has_more",
+        "sync/views.py",
+        "has_more = len(page) > limit",
+        "has_more = False",
+    ),
+    (
+        "pull cursor does not advance",
+        "sync/views.py",
+        "page[-1].server_seq if page else cursor",
+        "cursor",
+    ),
+    (
+        "workers see every assignment",
+        "sync/views.py",
+        "            assignments = assignments.filter(worker=request.user)",
+        "            pass",
+    ),
+    (
+        "workers see every form version",
+        "sync/views.py",
+        "            versions = versions.filter(assignments__worker=request.user).distinct()",
+        "            pass",
+    ),
+    (
+        "unpublished drafts are listed",
+        "sync/views.py",
+        'FormVersion.objects.select_related("form").filter(published_at__isnull=False)',
+        'FormVersion.objects.select_related("form")',
+    ),
+    (
+        "drop-after-commit does nothing",
+        "sync/middleware.py",
+        'if find(faults, "drop-after-commit"):',
+        "if False:",
+    ),
+    (
+        "fail-before does nothing",
+        "sync/middleware.py",
+        'if find(faults, "fail-before"):',
+        "if False:",
+    ),
+    (
+        "delay is not capped",
+        "sync/middleware.py",
+        "time.sleep(min(delay.arg or 0, MAX_DELAY_MS) / 1000)",
+        "time.sleep((delay.arg or 0) / 1000)",
+    ),
+    (
+        "faults apply outside the sync endpoints",
+        "sync/middleware.py",
+        'if not header or not request.path.startswith("/api/sync/"):',
+        "if not header:",
+    ),
+    (
+        "fault middleware loads outside debug",
+        "sync/middleware.py",
+        "if not (settings.DEBUG and settings.FAULT_INJECTION):",
+        "if False:",
+    ),
 ]
 
 caught = survived = stale = 0

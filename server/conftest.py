@@ -142,3 +142,26 @@ def owner_conn():
     finally:
         conn.rollback()
         conn.close()
+
+
+@pytest.fixture
+def admin_client(admin_user) -> APIClient:
+    client = APIClient()
+    client.force_authenticate(admin_user)
+    return client
+
+
+@pytest.fixture
+def other_worker_client(other_worker) -> APIClient:
+    client = APIClient()
+    client.force_authenticate(other_worker)
+    return client
+
+
+@pytest.fixture
+def fault_injection(settings):
+    """Put the fault-injection middleware in the stack, as FAULT_INJECTION=1 does in development.
+    Create API clients *after* this fixture so they pick the middleware up."""
+    settings.DEBUG = True
+    settings.FAULT_INJECTION = True
+    settings.MIDDLEWARE = [*settings.MIDDLEWARE, "sync.middleware.FaultInjectionMiddleware"]

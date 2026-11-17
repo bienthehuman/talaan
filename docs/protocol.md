@@ -25,6 +25,9 @@ survival of browser storage eviction.
 ## 2. Versioning and compatibility
 
 - Every request carries `client_schema` (push body; `X-Client-Schema` header on all other calls).
+  A missing or non-numeric value is `400 client_schema_required`. The check runs after authentication
+  (a logged-out client learns to log in first) and **before** body validation, so an old client whose
+  body has a different shape still gets its 426.
 - If `client_schema < MIN_CLIENT_SCHEMA`, the server answers **426 Upgrade Required** with an
   RFC 7807 body (`code: client_too_old`). The client shows "update the app" and keeps local data.
 - Form schema changes are safe by design: a submission is pinned to the `form_version` it was
@@ -65,6 +68,14 @@ Admin actions (`approve`, `return`, `restore`, `delete`, field edit) are REST en
 - `submit` carries `fields: {}` (or final field values) and `base_version`.
 - `delete` carries `fields: {}` and `base_version`.
 - Maximum **50** mutations per request (more → 400 `batch_too_large`).
+- Only workers push: any other role gets `403 forbidden` for the whole request. Pushes are rate limited
+  per user (default `120/min`, `THROTTLE_PUSH`): `429 rate_limited` with `Retry-After`.
+- The body may carry `app_version` (a string, optional). The first push registers the `device`; later
+  ones refresh `last_seen_at` and `app_version`. A browser profile shared by two people keeps one device
+  id, which moves to whoever synced last; the ledger still records who sent each mutation.
+- A body that cannot be parsed (bad UUID, `mutations` not a list, negative `base_version`, ...) is
+  `400 validation_error` and applies nothing. An unknown `op` is **not** a 400: it is a `rejected`
+  (`invalid`) result for that mutation, so the rest of the batch still applies.
 - The server processes mutations **in order**, each in its **own transaction**. One failing mutation
   does not roll back the others.
 
@@ -226,13 +237,25 @@ local fields carry over. It gets the same idempotency and validation as any writ
 ```
 
 - Returns records visible to the user with `server_seq > cursor`, ordered by `server_seq`.
-- `limit` default 200, max 500. Initial cursor is `0`.
+- Visibility: a worker sees the records of their own assignments (including those of a later cancelled
+  assignment); an admin sees everything. Other roles get `403 forbidden`.
+- `limit` default 200, max 500 (a larger value is clamped, a non-number or less than 1 is
+  `400 validation_error`). `cursor` is a whole number, at least 0; the initial cursor is `0`.
+- `next_cursor` is the `server_seq` of the last record returned, or the cursor sent when there are none.
+- Each record has the same shape as the `record` in push results (`id`, `assignment_id`,
+  `form_version_id`, `version`, `field_versions`, `data`, `status`, `deleted`, `server_seq`).
 - Tombstones are included (`deleted: true`).
 - The client loops until `has_more` is false, saving the cursor in the same local transaction as
   the records it covers.
 - **At-least-once.** The client ignores a pulled record whose `version <= local serverVersion`.
 - Assignments and form versions are small; for the PoC they are re-fetched in full
   (`GET /api/assignments`, `GET /api/form-versions`), not cursor-based.
+  - `GET /api/assignments` returns `{"results": [{"id", "form_version_id", "form_name", "site_name",
+    "due_date", "cancelled"}]}`: a worker's own (cancelled ones are marked, not hidden), all for an admin.
+  - `GET /api/form-versions` returns `{"results": [{"id", "form_id", "form_name", "number", "schema",
+    "published_at"}]}`: published versions only; a worker gets the versions they have an assignment
+    for (an older version stays listed while newer ones exist, because their records are pinned to it).
+  - Both are plain lists, not paged, and both take `X-Client-Schema`.
 
 ### The gap problem
 
@@ -251,12 +274,34 @@ changes needs explicit confirmation. Local data is keyed by `userId`.
 ## 9. Error format
 
 Non-2xx responses (other than per-mutation results) use RFC 7807 (`application/problem+json`) with a
-stable `code`: `client_too_old` (426), `batch_too_large` (400), `unauthenticated` (401),
-`rate_limited` (429, with `Retry-After`), `server_error` (5xx).
+stable `code`:
 
-## 10. Fault injection (dev/test only, `FAULT_INJECTION=1`)
+| Status | `code` | When |
+|---|---|---|
+| 400 | `validation_error` | The request cannot be parsed; `errors` maps fields to messages |
+| 400 | `batch_too_large` | More than 50 mutations |
+| 400 | `client_schema_required` | No usable protocol version was sent |
+| 401 | `unauthenticated` | Missing, invalid or expired token |
+| 403 | `forbidden` | The role cannot use this endpoint |
+| 426 | `client_too_old` | `client_schema` below the server's minimum |
+| 429 | `rate_limited` | Throttled; `Retry-After` and `retry_after` say how long |
+| 5xx | `server_error` | Unexpected failure; safe to retry the same batch |
+| 400 / 503 | `invalid_fault` / `fault_injected` | Fault injection only (section 10) |
 
-Via `X-Fault` header or a rule set through a test-only endpoint:
-`drop-after-commit` (run, commit, then 503), `fail-before` (503, no DB access), `delay=<ms>`,
-`expire-token` (401 partway through a batch). The middleware must refuse to load when
-`DEBUG=0` and the environment is production.
+## 10. Fault injection (dev and test only)
+
+Installed only when `FAULT_INJECTION=1`, and the server refuses to start with it unless
+`DJANGO_DEBUG=1`; the middleware itself also refuses to load outside debug. Without it the header below is
+ignored. A test asks for a failure **per request** with the `X-Fault` header, so a fault applies to exactly the
+request that carries it and nothing is stored on the server (reliable with several workers; a
+Playwright test adds the header to one request with `page.route`). Only `/api/sync/` paths are affected.
+
+| Value | Effect |
+|---|---|
+| `fail-before` | `503 fault_injected` without running the view or touching the database |
+| `drop-after-commit` | Run the view (every mutation commits), then discard the response and answer `503`: "the server applied it but the response was lost" |
+| `delay=<ms>` | Run the view, then hold the response (capped at 30 000 ms) |
+| `expire-token[=<n>]` | Push only: after `n` mutations are applied (default 1) answer `401`, if more remain |
+
+Combine with commas (`delay=200,drop-after-commit`). An unknown or malformed value is `400 invalid_fault`,
+so a typo in a test fails loudly instead of injecting nothing. There is no endpoint that sets rules.
