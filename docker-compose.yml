@@ -1,4 +1,17 @@
-# Local development services. The app and client containers arrive in slice 0.4.
+# Local development and e2e stack: `docker compose up --build` serves the app at http://localhost:8080.
+# `docker compose up -d db` alone starts just the database for running the server on the host.
+# A production compose file arrives with slice 0.5.
+
+x-server-env: &server-env
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-only-compose-key}
+  DJANGO_DEBUG: "1"
+  DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,server
+  POSTGRES_DB: ${POSTGRES_DB:-talaan}
+  POSTGRES_HOST: db
+  POSTGRES_PORT: "5432"
+  # Throttling is covered by pytest. The e2e suite signs in many times a minute.
+  THROTTLE_LOGIN: 1000/min
+
 services:
   db:
     image: postgres:18
@@ -17,6 +30,60 @@ services:
       - ./docker/db/init.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d talaan"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: applies migrations as the OWNER role, then exits. The server never runs DDL.
+  migrate:
+    build: ./server
+    image: talaan-server:dev
+    command: python manage.py migrate --noinput
+    environment:
+      <<: *server-env
+      POSTGRES_USER: ${POSTGRES_OWNER_USER:-talaan_owner}
+      POSTGRES_PASSWORD: ${POSTGRES_OWNER_PASSWORD:-talaan_owner_dev}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  server:
+    build: ./server
+    image: talaan-server:dev
+    restart: unless-stopped
+    environment:
+      <<: *server-env
+      POSTGRES_USER: ${POSTGRES_USER:-talaan_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-talaan_app_dev}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=3)"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build:
+      context: ./client
+      args:
+        VITE_STYLEGUIDE: ${VITE_STYLEGUIDE:-1}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/index.html"]
       interval: 5s
       timeout: 3s
       retries: 10

@@ -329,3 +329,35 @@ dialog.dialog::backdrop {
   margin-bottom: var(--space-2);
   border: 1px solid var(--border);
 }
+
+/* Swatches use classes, not inline styles, so the strict CSP (no inline style) holds. */
+.swatch .sw-bg {
+  background: var(--bg);
+}
+.swatch .sw-surface {
+  background: var(--surface);
+}
+.swatch .sw-text {
+  background: var(--text);
+}
+.swatch .sw-text-muted {
+  background: var(--text-muted);
+}
+.swatch .sw-border {
+  background: var(--border);
+}
+.swatch .sw-accent {
+  background: var(--accent);
+}
+.swatch .sw-ok {
+  background: var(--ok);
+}
+.swatch .sw-warn {
+  background: var(--warn);
+}
+.swatch .sw-danger {
+  background: var(--danger);
+}
+.muted {
+  color: var(--text-muted);
+}

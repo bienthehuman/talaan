@@ -36,3 +36,10 @@ vite-plugin-pwa (client), pytest / Vitest / Playwright, Docker Compose, GitHub A
 - **`npm audit`** reports 4 moderate findings, all in the build-time chain `vite-plugin-pwa` > `workbox-build` > `glob`/`minimatch`. Not shipped to the browser. The suggested fix downgrades vite-plugin-pwa to 1.1.0; not done.
 - **Seed demo logins (dev only):** `python manage.py seed_demo` creates `admin`, `worker1`, `worker2` (password `demo-password-1`).
 - **Shell quirk:** do not use `pkill -f <pattern>` in a command that contains the pattern; it kills its own shell.
+- **Full stack:** `docker compose up -d --build --wait` serves the built app at http://127.0.0.1:8080 (nginx serves the client and proxies `/api`, `/admin`, `/static` to gunicorn). Services: `db`, `migrate` (one-shot, owner role), `server` (app role, non-root), `web`. Then `docker compose exec server python manage.py seed_demo`.
+- **E2E:** `bash scripts/e2e.sh` = fresh DB (`down -v`), build, seed, Playwright (74 tests, desktop + Pixel 7). It deletes the compose DB volume, which drops the host `talaan` and `talaan_test` databases: run `bash server/scripts/migrate.sh` afterwards before host pytest. `E2E_KEEP_DB=1` reuses the running stack. Extra args go to Playwright (`-g offline`, `--project=mobile`).
+- **E2E worker limit:** 2 workers (`e2e/playwright.config.ts`). The compose stack runs Postgres, gunicorn and nginx alongside.
+- **Healthchecks use `127.0.0.1`, not `localhost`:** inside the nginx container `localhost` resolves to IPv6 first and nginx listens on IPv4 only.
+- **CSP is strict (`'self'` only):** no inline `style=` attributes in the client; use classes. The nginx CSP for the shell is in `client/nginx/security-headers.conf`; Django sets its own on `/api` and `/admin`.
+- **Playwright `getByLabel("Password")` is ambiguous** (the show/hide button's label contains "password"); use `{ exact: true }`. Headings: use `exact: true` for "Assignments" (also matches "No assignments yet").
+- **GitHub plan:** branch protection and rulesets are unavailable on this private repo (403). CI job names `server`, `client`, `e2e` are meant to be the required checks once available.
