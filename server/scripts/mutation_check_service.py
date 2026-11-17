@@ -1,6 +1,7 @@
 """Plants deliberate bugs in the sync service and requires the tests to notice each one.
 
-    cd server && python scripts/mutation_check_service.py        (about 2 minutes)
+    cd server && python scripts/mutation_check_service.py        (about 8 minutes)
+    python scripts/mutation_check_service.py lock duplicate     (only matching entries)
 
 Run it after changing sync/services.py, forms/validation.py or submissions/guard.py. Each entry
 replaces an exact piece of source, runs the tests, and restores the file. A bug that no test notices
@@ -245,6 +246,12 @@ M = [  # (description, file, old, new)
         "if not header:",
     ),
     (
+        "a duplicate is answered with a fresh verdict, not the stored one",
+        "sync/services.py",
+        "        return prior.result\n",
+        '        return r.rejected(mutation_id, r.ID_TAKEN, "duplicate")\n',
+    ),
+    (
         "fault middleware loads outside debug",
         "sync/middleware.py",
         "if not (settings.DEBUG and settings.FAULT_INJECTION):",
@@ -252,8 +259,11 @@ M = [  # (description, file, old, new)
     ),
 ]
 
+ONLY = sys.argv[1:]  # optional: run only entries whose description contains one of these words
 caught = survived = stale = 0
 for desc, file, old, new in M:
+    if ONLY and not any(word in desc for word in ONLY):
+        continue
     path = ROOT / file
     original = path.read_text()
     if old not in original:

@@ -64,7 +64,7 @@ its database-level invariants first, then the rules without HTTP, then the API, 
 - `server/openapi.yml` and `client/src/lib/api-types.ts` regenerated; CI drift checks pass.
 - Mutation check extended to the API layer (batch cap, 426, visibility, cursor logic, every fault mode): `server/scripts/mutation_check_service.py` now plants 40 bugs.
 
-**1.4**
+**1.4** (in review)
 - Scenarios 3, 7, 8 use real threads against real Postgres as the app role.
 - Scenario 8 is shown failing with the advisory lock removed (recorded run in the write-up) and passing with it.
 - `v0.2.0` tagged; the phase demo is `pytest -m phase1`.
