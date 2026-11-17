@@ -12,6 +12,7 @@ from assignments.models import Assignment
 from conftest import next_server_seq
 from forms.models import Form, FormVersion
 from forms.samples import GENERATOR_INSPECTION
+from submissions.guard import write_access
 from submissions.models import Submission
 
 pytestmark = pytest.mark.django_db
@@ -19,7 +20,8 @@ pytestmark = pytest.mark.django_db
 
 def update(submission, **fields):
     """A raw UPDATE, the way code that skips the sync service would write it."""
-    return Submission.objects.filter(pk=submission.pk).update(**fields)
+    with write_access():
+        return Submission.objects.filter(pk=submission.pk).update(**fields)
 
 
 # --- creation -----------------------------------------------------------------------------------
@@ -156,7 +158,8 @@ def test_the_id_cannot_be_changed(make_submission):
 def test_a_submission_row_can_never_be_deleted(make_submission):
     submission = make_submission()
     with pytest.raises(DatabaseError, match="never deleted"), transaction.atomic():
-        Submission.objects.filter(pk=submission.pk).delete()
+        with write_access():
+            Submission.objects.filter(pk=submission.pk).delete()
 
 
 def test_status_changes_follow_the_same_version_rule(make_submission):

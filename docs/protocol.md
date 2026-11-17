@@ -106,6 +106,20 @@ One result per mutation, in order:
 
 `kind` is one of `field_conflict`, `deleted_remotely`, `edited_since_base` (delete vs newer edits).
 
+`fields` by kind: `field_conflict` lists each clashing field with `server_value`, `client_value` and
+`server_version`; `edited_since_base` lists the fields changed after the client's base with
+`server_value` and `server_version`; `deleted_remotely` has an empty list.
+
+### Result details
+
+- A `rejected` result carries `detail` (a sentence for people) and, for `invalid`, `errors`:
+  `[{"field", "code", "message"}]` with codes such as `required`, `unknown_field`, `type`, `enum`,
+  `minimum`, `maximum`, `maxLength`.
+- `record` is the server's copy: `id`, `assignment_id`, `form_version_id`, `version`, `field_versions`,
+  `data`, `status`, `deleted`, `server_seq`. It is attached to `applied` and `conflict` results, and to a
+  `rejected` result only when the user may see the record (so `not_found`, `forbidden`, `id_taken`
+  and `mutation_id_reuse` never reveal anything).
+
 ### Rejected codes
 
 | code | Meaning |
@@ -114,9 +128,10 @@ One result per mutation, in order:
 | `not_found` | Unknown record, or not visible to this user (the two are indistinguishable on purpose) |
 | `id_taken` | `create` for an id that exists under another user, or already exists here |
 | `invalid` | Failed validation against the pinned form version (`errors` lists fields) |
-| `invalid_state` | Op not allowed in the current status |
+| `invalid_state` | Op not allowed in the current status, or the assignment was cancelled (`create`) |
 | `unknown_form_version` | `assignment_id` missing, not yours, or form version unknown |
 | `mutation_id_reuse` | `mutation_id` already recorded for another user |
+| `forbidden` | The user's role cannot perform this op (for example an admin pushing a worker mutation) |
 
 ### Transient failures are not statuses
 
@@ -145,6 +160,41 @@ with exponential backoff and jitter. 401 pauses the cycle (section 8).
 8. **Stored results are snapshots.** A replayed mutation returns the result as it was, even if the
    record has changed since. The client reconciles through pull.
 9. **Device registration.** First sync upserts `device` and updates `last_seen_at`/`app_version`.
+10. **Clearing a field.** A value of `null` in `fields` removes the field from `data`. The clear is
+    versioned like any change (`field_versions[f]` is set), so a stale device that then types into the
+    cleared field gets a conflict instead of silently re-adding it.
+11. **Only accepted changes consume a version and a `server_seq`.** A conflict or rejection writes the
+    ledger row and an event and nothing else, so the sequence has no gaps from refused mutations.
+12. **Order of checks**, so the same mutation always gets the same verdict: role (`forbidden`), then
+    record visibility (`not_found`), then lock (`locked`), then deleted (`deleted_remotely` conflict),
+    then `base_version` sanity (`invalid`: it must be between 0 and the record's version), then field
+    conflicts, then validation (`invalid`).
+13. **Submit** checks only the fields sent with it for conflicts; the rest of the record is submitted as
+    the server holds it (a merge of what every device entered). Every `required` field must be present.
+    A submitted record is `invalid_state` to submit again, `locked` once approved.
+14. **Create** is refused as `unknown_form_version` when `assignment_id` is missing or not the user's,
+    and as `invalid_state` when the assignment was cancelled. The form version is taken from the
+    assignment, never from the client.
+15. **Events.** Every applied change, conflict and rejection on a record the user can see is appended to
+    `submission_event` (kind, actor, mutation id, detail) in the same transaction. Nothing is logged for
+    `not_found`, `forbidden`, `id_taken` or a rejected `create`.
+
+### Admin actions
+
+Server-side only (REST endpoints arrive with the review UI); they run through the same core as push,
+so they take the advisory lock, bump `version`, draw a `server_seq`, and leave a ledger row (device
+`00000000-0000-0000-0000-000000000000`) and an event.
+
+| Action | Allowed when | Result |
+|---|---|---|
+| `approve` | `submitted`, not deleted | status `approved` (workers locked out) |
+| `return` | `submitted` or `approved`, not deleted; **a reason is required** | status `returned` (workers can edit again); the previous status is kept in the event |
+| `restore` | deleted | clears `deleted_at` |
+| `delete` | not deleted | tombstone |
+| `edit` | not deleted; at least one field | applies fields (`null` clears); a `submitted` or `approved` record must stay complete |
+
+Anything else is `rejected` (`invalid_state`, or `invalid` for a missing reason or fields); a non-admin
+gets `forbidden`.
 
 ## 6. Conflict rules
 

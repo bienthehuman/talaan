@@ -1,0 +1,183 @@
+"""Plants deliberate bugs in the sync service and requires the tests to notice each one.
+
+    cd server && python scripts/mutation_check_service.py        (about 2 minutes)
+
+Run it after changing sync/services.py, forms/validation.py or submissions/guard.py. Each entry
+replaces an exact piece of source, runs the tests, and restores the file. A bug that no test notices
+means a rule is unprotected (exit 1). A pattern that no longer matches means the entry is stale
+after a refactor and must be updated (exit 2), so the check cannot quietly stop checking.
+"""
+
+import pathlib
+import subprocess
+import sys
+
+ROOT = pathlib.Path(".")
+M = [  # (description, file, old, new)
+    (
+        "no advisory lock",
+        "sync/services.py",
+        "            _take_sequence_lock()\n            result = handler()",
+        "            result = handler()",
+    ),
+    (
+        "conflict ignores 'same value is not a conflict'",
+        "sync/services.py",
+        "if server_version > base_version and server_value != value:",
+        "if server_version > base_version:",
+    ),
+    (
+        "conflict boundary off by one (>=)",
+        "sync/services.py",
+        "if server_version > base_version and server_value != value:",
+        "if server_version >= base_version and server_value != value:",
+    ),
+    (
+        "field_versions not bumped",
+        "sync/services.py",
+        "        field_versions[name] = new_version",
+        "        field_versions[name] = field_versions.get(name, 1)",
+    ),
+    (
+        "workers never locked out",
+        "sync/services.py",
+        "LOCKED_FOR_WORKERS = {Status.SUBMITTED, Status.APPROVED}",
+        "LOCKED_FOR_WORKERS = set()",
+    ),
+    (
+        "mutation_id_reuse not detected",
+        "sync/services.py",
+        "if prior.user_id != user.id:",
+        "if False:",
+    ),
+    (
+        "ledger result never stored",
+        "sync/services.py",
+        "            AppliedMutation.objects.filter(pk=mutation_id).update(result=result)\n",
+        "            pass\n",
+    ),
+    (
+        "rejection consumes a sequence value",
+        "sync/services.py",
+        '    if sub is not None:\n        _event(user, mutation_id, sub, EventKind.REJECTED, {"code": code})',
+        '    _next_server_seq()\n    if sub is not None:\n        _event(user, mutation_id, sub, EventKind.REJECTED, {"code": code})',
+    ),
+    (
+        "validation skipped",
+        "sync/services.py",
+        "    if fields or complete:\n        errors = validate_data",
+        "    if False:\n        errors = validate_data",
+    ),
+    (
+        "null no longer clears",
+        "sync/services.py",
+        "        if value is None:\n            new_data.pop(name, None)",
+        "        if False:\n            new_data.pop(name, None)",
+    ),
+    (
+        "submit does not require required fields",
+        "sync/services.py",
+        "        status=Status.SUBMITTED,\n        complete=True,",
+        "        status=Status.SUBMITTED,\n        complete=False,",
+    ),
+    (
+        "delete ignores newer work",
+        "sync/services.py",
+        "    if newer:\n        return _conflict",
+        "    if False:\n        return _conflict",
+    ),
+    (
+        "other workers' records are visible",
+        "sync/services.py",
+        "if sub is None or sub.assignment.worker_id != user.id:",
+        "if sub is None:",
+    ),
+    (
+        "admin actions open to everyone",
+        "sync/services.py",
+        "    if user.role != ADMIN or not user.can(permission):",
+        "    if False:",
+    ),
+    (
+        "create ignores an existing id",
+        "sync/services.py",
+        "    if Submission.objects.filter(pk=m.record_id).exists():",
+        "    if False:",
+    ),
+    (
+        "conflicts not logged",
+        "sync/services.py",
+        "    _event(\n        user,\n        mutation_id,\n        sub,\n        EventKind.CONFLICT,",
+        "    (lambda *a, **k: None)(\n        user,\n        mutation_id,\n        sub,\n        EventKind.CONFLICT,",
+    ),
+    (
+        "approve from any status",
+        "sync/services.py",
+        '        if sub.status != Status.SUBMITTED:\n            return refuse(f"Only a submitted record can be approved',
+        '        if False:\n            return refuse(f"Only a submitted record can be approved',
+    ),
+    (
+        "impossible base_version accepted",
+        "sync/services.py",
+        "    if m.base_version < 0 or m.base_version > sub.version:",
+        "    if False:",
+    ),
+    (
+        "deleted record can still be edited",
+        "sync/services.py",
+        'def _update(user: User, m: Mutation, sub: Submission) -> dict:\n    if sub.status in LOCKED_FOR_WORKERS:\n        return _reject(\n            user, m.mutation_id, r.LOCKED, f"The record is {sub.status} and locked.", sub=sub\n        )\n    if sub.deleted_at:',
+        'def _update(user: User, m: Mutation, sub: Submission) -> dict:\n    if sub.status in LOCKED_FOR_WORKERS:\n        return _reject(\n            user, m.mutation_id, r.LOCKED, f"The record is {sub.status} and locked.", sub=sub\n        )\n    if False:',
+    ),
+    (
+        "runtime write guard removed from save()",
+        "submissions/guard.py",
+        "    def save(self, *args, **kwargs):\n        check_write_access()\n",
+        "    def save(self, *args, **kwargs):\n",
+    ),
+    (
+        "unknown fields accepted",
+        "forms/validation.py",
+        "    for name in sorted(set(data) - set(properties)):",
+        "    for name in []:",
+    ),
+]
+
+caught = survived = stale = 0
+for desc, file, old, new in M:
+    path = ROOT / file
+    original = path.read_text()
+    if old not in original:
+        stale += 1
+        print(f"  STALE     {desc} (pattern not found in {file}; update this entry)")
+        continue
+    path.write_text(original.replace(old, new, 1))
+    try:
+        out = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "-q",
+                "-x",
+                "-p",
+                "no:cacheprovider",
+                "sync",
+                "forms",
+                "submissions",
+            ],
+            capture_output=True,
+            text=True,
+        ).stdout
+    finally:
+        path.write_text(original)
+    failed = "failed" in out.splitlines()[-1] or "error" in out.splitlines()[-1]
+    first = next((ln for ln in out.splitlines() if ln.startswith("FAILED")), "")
+    name = first.split("::")[-1].split(" ")[0] if first else ""
+    if failed:
+        caught += 1
+        print(f"  caught    {desc:55s} {name}")
+    else:
+        survived += 1
+        print(f"  SURVIVED  {desc}")
+print(f"\n{caught} caught, {survived} survived, {stale} stale")
+sys.exit(1 if survived else 2 if stale else 0)
