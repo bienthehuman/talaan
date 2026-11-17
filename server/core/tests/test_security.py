@@ -36,7 +36,7 @@ def _import_settings(**env) -> subprocess.CompletedProcess:
 
 
 def test_fault_injection_refused_outside_debug():
-    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="x", FAULT_INJECTION="1")
+    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="x" * 40, FAULT_INJECTION="1")
     assert result.returncode != 0
     assert "FAULT_INJECTION" in result.stderr
 
@@ -51,3 +51,14 @@ def test_secret_key_required_outside_debug(tmp_path):
     result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="")
     assert result.returncode != 0
     assert "DJANGO_SECRET_KEY" in result.stderr
+
+
+def test_short_secret_key_refused_outside_debug():
+    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="too-short")
+    assert result.returncode != 0
+    assert "at least 32 characters" in result.stderr
+
+
+def test_long_secret_key_accepted_outside_debug():
+    result = _import_settings(DJANGO_DEBUG="0", DJANGO_SECRET_KEY="x" * 40)
+    assert result.returncode == 0, result.stderr

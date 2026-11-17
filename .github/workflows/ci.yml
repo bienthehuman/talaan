@@ -33,7 +33,7 @@ jobs:
         working-directory: .
         run: |
           cp .env.example .env
-          sed -i 's/^DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=ci-only-secret/' .env
+          sed -i 's/^DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=ci-only-secret-key-for-tests-not-for-production/' .env
       # The same compose database as local development: the init script creates the owner and
       # least-privilege app roles, so tests run as the restricted role in CI too.
       - name: Start Postgres
