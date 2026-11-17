@@ -1,0 +1,173 @@
+name: Release
+
+# Pushing a tag such as v0.1.0 publishes the container images and a GitHub release, and, when a
+# deploy target is configured, deploys that version. See DEPLOY.md.
+#
+# Deploying is off until the repository variable DEPLOY_ENABLED is set to "true" and the secrets
+# below exist, so tagging a milestone is always safe even with no server.
+#
+# "Run workflow" with a version redeploys (or rolls back to) an existing release without rebuilding.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Existing release tag to deploy, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/talaan
+
+jobs:
+  verify:
+    name: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      checks: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: The tag points at a commit on main
+        run: |
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME is not on main. Tag a commit that has been merged."
+            exit 1
+          fi
+      - name: CI passed on exactly this commit
+        run: |
+          for name in server client e2e prod-smoke; do
+            conclusion="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" \
+              --jq "[.check_runs[] | select(.name == \"$name\")] | sort_by(.completed_at) | last | .conclusion")"
+            echo "$name: ${conclusion:-none}"
+            if [ "$conclusion" != "success" ]; then
+              echo "::error::Check '$name' is '${conclusion:-missing}' on $GITHUB_SHA. Wait for CI on main, then re-run this workflow."
+              exit 1
+            fi
+          done
+
+  images:
+    name: images (${{ matrix.name }})
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: server
+            context: server
+            build_args: ""
+          - name: web
+            context: client
+            # Production builds never route the style guide.
+            build_args: VITE_STYLEGUIDE=0
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          build-args: ${{ matrix.build_args }}
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:${{ github.ref_name }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  release:
+    name: github release
+    needs: images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create the release
+        run: |
+          flags=(--generate-notes --verify-tag --title "$GITHUB_REF_NAME")
+          # v0.2.0-rc1 and similar are marked as pre-releases.
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then flags+=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" "${flags[@]}"
+      - name: Say what happens next
+        run: |
+          {
+            echo "### Released $GITHUB_REF_NAME"
+            echo "Images: \`$IMAGE_PREFIX-server:$GITHUB_REF_NAME\` and \`$IMAGE_PREFIX-web:$GITHUB_REF_NAME\`"
+            if [ "${{ vars.DEPLOY_ENABLED }}" = "true" ]; then
+              echo "Deploying to the configured host (see the deploy job)."
+            else
+              echo "Not deployed: no deploy target is configured (repository variable \`DEPLOY_ENABLED\` is not \"true\")."
+              echo "Deploy by hand with \`bash scripts/deploy.sh $GITHUB_REF_NAME\` on the host; see DEPLOY.md."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: deploy
+    needs: [release]
+    # Runs after a tag release, or on its own for a manual redeploy/rollback (release is skipped then).
+    if: ${{ !cancelled() && vars.DEPLOY_ENABLED == 'true' && (needs.release.result == 'success' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ inputs.version || github.ref_name }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/talaan' }}
+    steps:
+      - name: Check the version and the secrets
+        run: |
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::'$VERSION' is not a release tag like v0.1.0"
+            exit 1
+          fi
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY DEPLOY_KNOWN_HOSTS; do
+            if [ -z "${!name}" ]; then echo "::error::Secret $name is not set"; exit 1; fi
+          done
+      - name: Deploy over SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The host keeps a checkout of this repository plus .env.prod (see DEPLOY.md). Checking out
+          # the tag makes the compose file and scripts match the images being deployed.
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd '$DEPLOY_PATH' && git fetch --tags --quiet && git checkout --quiet '$VERSION' && bash scripts/deploy.sh '$VERSION'"

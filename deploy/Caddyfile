@@ -1,0 +1,14 @@
+# TLS terminator for production. Caddy gets and renews the certificate for TALAAN_DOMAIN by itself
+# (Let's Encrypt), and for `localhost` it uses its own internal CA, which is what the CI smoke test
+# relies on. Ports 80 and 443 must reach this host and the domain's DNS must point here.
+{$TALAAN_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# nginx serves the built app and proxies /api, /admin and /static to Django.
+	reverse_proxy web:80
+}

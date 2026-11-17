@@ -12,8 +12,8 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Job names (server, client, e2e) are the required status checks for `main`. Do not rename them
-# without updating the branch rules.
+# Job names (server, client, e2e, prod-smoke) are the required status checks for `main` and are
+# also checked by the release workflow. Do not rename them without updating the branch ruleset.
 jobs:
   server:
     name: server
@@ -107,3 +107,57 @@ jobs:
             e2e/playwright-report
             e2e/test-results
           retention-days: 7
+
+  # Deploys the production compose stack exactly as a real host would, with throwaway secrets and
+  # Caddy's internal CA for `localhost`: deploy.sh, smoke checks, backup and restore, and a redeploy.
+  prod-smoke:
+    name: prod-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ENV_FILE: ${{ github.workspace }}/.env.prod
+      SMOKE_INSECURE: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - name: Production env file with throwaway secrets
+        run: |
+          {
+            echo "TALAAN_DOMAIN=localhost"
+            echo "TALAAN_VERSION=ci"
+            echo "DJANGO_SECRET_KEY=$(openssl rand -hex 32)"
+            echo "POSTGRES_SUPERUSER_PASSWORD=$(openssl rand -hex 16)"
+            echo "POSTGRES_OWNER_PASSWORD=$(openssl rand -hex 16)"
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)"
+            echo "HTTP_PORT=8081"
+            echo "HTTPS_PORT=8443"
+          } > .env.prod
+      - name: Deploy (build, migrate, start, smoke checks)
+        run: DEPLOY_BUILD=1 bash scripts/deploy.sh
+      - name: Create a user and sign in through the deployed stack
+        run: |
+          . scripts/lib.sh
+          load_env
+          compose exec -T -e DJANGO_SUPERUSER_PASSWORD=ci-smoke-pass-123 server \
+            python manage.py createsuperuser --noinput --username ci --email ci@example.invalid
+          SMOKE_USER=ci SMOKE_PASSWORD=ci-smoke-pass-123 bash scripts/smoke.sh "$(base_url)"
+      - name: Backup and restore round trip keeps the data and the app role's access
+        run: |
+          . scripts/lib.sh
+          load_env
+          bash scripts/backup.sh
+          RESTORE_YES=1 bash scripts/restore.sh latest
+          SMOKE_USER=ci SMOKE_PASSWORD=ci-smoke-pass-123 bash scripts/smoke.sh "$(base_url)"
+      - name: Redeploy over the running stack
+        run: DEPLOY_BUILD=1 bash scripts/deploy.sh
+      - name: Container logs
+        if: failure()
+        run: |
+          . scripts/lib.sh
+          load_env
+          compose logs --no-color --tail=200
+      - name: Tear down
+        if: always()
+        run: |
+          . scripts/lib.sh
+          load_env
+          compose down -v --remove-orphans

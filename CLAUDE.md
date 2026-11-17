@@ -22,7 +22,7 @@ vite-plugin-pwa (client), pytest / Vitest / Playwright, Docker Compose, GitHub A
 
 ## Environment notes
 
-- **Ports:** Talaan's Postgres is on host port **5434**. 5432 is a local Postgres; 5433 is the Hilom dev DB.
+- **Ports:** Talaan's Postgres is on host port **5434**. 5432 is a local Postgres; 5433 is another project's dev DB.
 - **Tools:** Python 3.12 (`server/.python-version`), Node 24, Docker + Compose, Postgres 18 image. No `uv`; use `python -m venv server/.venv`.
 - **Server setup:** `docker compose up -d db`, then in `server/`: `python -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt && bash scripts/migrate.sh`.
 - **Tests:** `cd server && python -m pytest`. They run against the pre-migrated `talaan_test` DB **as the least-privilege `talaan_app` role**, which has no DDL rights. After adding a migration, run `bash scripts/migrate.sh` (runs as `talaan_owner`) or pytest exits with a pending-migrations message.
@@ -42,4 +42,9 @@ vite-plugin-pwa (client), pytest / Vitest / Playwright, Docker Compose, GitHub A
 - **Healthchecks use `127.0.0.1`, not `localhost`:** inside the nginx container `localhost` resolves to IPv6 first and nginx listens on IPv4 only.
 - **CSP is strict (`'self'` only):** no inline `style=` attributes in the client; use classes. The nginx CSP for the shell is in `client/nginx/security-headers.conf`; Django sets its own on `/api` and `/admin`.
 - **Playwright `getByLabel("Password")` is ambiguous** (the show/hide button's label contains "password"); use `{ exact: true }`. Headings: use `exact: true` for "Assignments" (also matches "No assignments yet").
-- **GitHub plan:** branch protection and rulesets are unavailable on this private repo (403). CI job names `server`, `client`, `e2e` are meant to be the required checks once available.
+- **`main` is protected by a ruleset** (public repo): changes only via PR, squash only, strict required checks (`server`, `client`, `e2e`, `prod-smoke`), no bypass. You cannot push to `main`; open a PR. Merge with `gh pr merge --squash` only after checks pass, and only when the user says to.
+- **Production stack:** `docker-compose.prod.yml` (project name `talaan-prod`, separate from the dev stack) with Caddy for HTTPS. Deploy with `bash scripts/deploy.sh [version]`; scripts: `backup.sh`, `restore.sh`, `smoke.sh`, shared `lib.sh`. Details in `DEPLOY.md`. Test it locally with `ENV_FILE=<file> DEPLOY_BUILD=1 SMOKE_INSECURE=1 bash scripts/deploy.sh` using `TALAAN_DOMAIN=localhost HTTPS_PORT=8443 HTTP_PORT=8081` and throwaway secrets.
+- **Settings are strict outside debug:** `DJANGO_SECRET_KEY` of 32+ characters and `POSTGRES_PASSWORD` are required (no dev defaults). `NUM_PROXIES=2` in production (Caddy, nginx) so the login throttle sees real client addresses.
+- **Compose reads a `.env` in the repo root automatically.** The prod scripts always pass `--env-file`, which disables that; when testing prod compose by hand do the same or dev values leak in.
+- **Lint shell and workflows with Docker** (no local install): `docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck-alpine:stable shellcheck -x scripts/*.sh docker/db/init.sh` and `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest`.
+- **`gh pr edit` fails** with a Projects (classic) GraphQL error on this `gh` version; update PR bodies with `gh api -X PATCH repos/OWNER/REPO/pulls/N -F body=@file`. `gh repo edit --visibility` also lacks the confirm flag here; use the REST API.

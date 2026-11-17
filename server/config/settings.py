@@ -24,6 +24,9 @@ if not DEBUG and len(SECRET_KEY) < 32:
     )
 
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+# Django checks the Origin header on POST; behind a TLS-terminating proxy it must be listed, e.g.
+# https://talaan.example.com
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 # Dev/test only. The fault-injection middleware (phase 1) must never exist in production.
 FAULT_INJECTION = env.bool("FAULT_INJECTION", default=False)
@@ -78,6 +81,11 @@ TEMPLATES = [
     },
 ]
 
+# No dev default outside debug: a deploy that forgot the password must fail, not use a known one.
+DB_PASSWORD = env("POSTGRES_PASSWORD", default="talaan_app_dev" if DEBUG else None)
+if not DB_PASSWORD:
+    raise ImproperlyConfigured("POSTGRES_PASSWORD is required when DJANGO_DEBUG is off")
+
 # The app connects as a least-privilege role (no DDL). Migrations run as the owner role by
 # overriding POSTGRES_USER/POSTGRES_PASSWORD (scripts/migrate.sh). See ARCHITECTURE.md, section 7.
 DATABASES = {
@@ -85,7 +93,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": env("POSTGRES_DB", default="talaan"),
         "USER": env("POSTGRES_USER", default="talaan_app"),
-        "PASSWORD": env("POSTGRES_PASSWORD", default="talaan_app_dev"),
+        "PASSWORD": DB_PASSWORD,
         "HOST": env("POSTGRES_HOST", default="localhost"),
         "PORT": env("POSTGRES_PORT", default="5434"),
         "CONN_MAX_AGE": 60,
@@ -118,6 +126,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardPagination",
     "EXCEPTION_HANDLER": "core.errors.problem_exception_handler",
     "DEFAULT_THROTTLE_RATES": {"login": env("THROTTLE_LOGIN", default="10/min")},
+    # Number of proxies in front of Django (production: Caddy and nginx = 2). Without this every
+    # client shares the proxy's address and the login rate limit becomes one global bucket.
+    "NUM_PROXIES": env.int("NUM_PROXIES", default=None),
 }
 
 SIMPLE_JWT = {

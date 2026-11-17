@@ -48,6 +48,11 @@ npm test                        # unit tests (Vitest, jsdom)
 npm run build                   # production build with the service worker
 ```
 
+## Deploying
+
+One Docker host, HTTPS included. Nothing is hosted yet, but the production stack is tested on every
+pull request. See [DEPLOY.md](DEPLOY.md).
+
 ## Docs
 
 [docs/README.md](docs/README.md) is the index.
@@ -55,3 +60,7 @@ npm run build                   # production build with the service worker
 ## Guarantees and non-guarantees
 
 Filled in as each guarantee gets a passing test (see `docs/failure-scenarios.md`).
+
+## License
+
+[MIT](LICENSE)

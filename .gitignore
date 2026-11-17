@@ -36,3 +36,7 @@ pgdata/
 
 # django collectstatic output
 server/staticfiles/
+
+# database backups from scripts/backup.sh
+backups/
+.env.prod

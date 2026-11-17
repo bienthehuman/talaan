@@ -65,3 +65,18 @@ def test_login_is_rate_limited(api_client, worker):
     body = assert_problem(response, 429, "rate_limited")
     assert int(response["Retry-After"]) >= 1
     assert body["retry_after"] >= 1
+
+
+@pytest.mark.django_db
+def test_login_throttle_is_per_client_behind_the_proxies(api_client, worker, settings):
+    # Production has two proxies (Caddy, nginx). The client address is the one before them.
+    settings.REST_FRAMEWORK = {**settings.REST_FRAMEWORK, "NUM_PROXIES": 2}
+    bad = {"username": "worker1", "password": "wrong"}
+    client_a = {"HTTP_X_FORWARDED_FOR": "203.0.113.1, 10.0.0.2"}
+    client_b = {"HTTP_X_FORWARDED_FOR": "203.0.113.9, 10.0.0.2"}
+
+    for _ in range(5):
+        api_client.post("/api/auth/token/", bad, **client_a)
+    assert api_client.post("/api/auth/token/", bad, **client_a).status_code == 429
+    # A different client behind the same proxies is unaffected.
+    assert api_client.post("/api/auth/token/", bad, **client_b).status_code == 401
