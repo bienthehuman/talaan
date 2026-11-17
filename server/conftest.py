@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
+from pytest_django.plugin import blocking_manager_key
 from rest_framework.test import APIClient
 
 from accounts.models import User
@@ -35,6 +36,20 @@ def django_db_setup(django_db_blocker):
                 "Test database has unapplied migrations. Run: bash server/scripts/migrate.sh",
                 returncode=3,
             )
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_teardown(item, nextitem):
+    """Tests with real threads use `django_db(transaction=True)`: they need committed data, and
+    pytest-django flushes the database when they finish, which also deletes the roles that
+    migration 0002 seeds. This runs after the fixtures are torn down (so after the flush)."""
+    result = yield
+    marker = item.get_closest_marker("django_db")
+    if "transactional_db" in item.fixturenames or (marker and marker.kwargs.get("transaction")):
+        with item.config.stash[blocking_manager_key].unblock():
+            for name in (WORKER, ADMIN):
+                Group.objects.get_or_create(name=name)
+    return result
 
 
 @pytest.fixture(autouse=True)
