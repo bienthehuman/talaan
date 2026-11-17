@@ -12,7 +12,19 @@ pytest, Vitest, Playwright · Docker Compose, GitHub Actions.
 
 ## Run / test
 
-Coming with the phase-0 skeleton (one-command setup via Docker Compose).
+Server skeleton only so far (the client arrives in slice 0.3, full compose in 0.4).
+
+```bash
+cp .env.example .env            # then set DJANGO_SECRET_KEY
+docker compose up -d db
+cd server
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.txt
+bash scripts/migrate.sh         # migrations run as the owner role
+python manage.py seed_demo      # dev logins: admin, worker1, worker2
+python manage.py runserver      # API docs at http://localhost:8000/api/docs/
+python -m pytest                # runs as the least-privilege DB role
+```
 
 ## Docs
 

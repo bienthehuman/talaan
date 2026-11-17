@@ -33,3 +33,6 @@ Thumbs.db
 # local data
 *.sqlite3
 pgdata/
+
+# django collectstatic output
+server/staticfiles/
