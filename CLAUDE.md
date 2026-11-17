@@ -48,3 +48,11 @@ vite-plugin-pwa (client), pytest / Vitest / Playwright, Docker Compose, GitHub A
 - **Compose reads a `.env` in the repo root automatically.** The prod scripts always pass `--env-file`, which disables that; when testing prod compose by hand do the same or dev values leak in.
 - **Lint shell and workflows with Docker** (no local install): `docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck-alpine:stable shellcheck -x scripts/*.sh docker/db/init.sh` and `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest`.
 - **`gh pr edit` fails** with a Projects (classic) GraphQL error on this `gh` version; update PR bodies with `gh api -X PATCH repos/OWNER/REPO/pulls/N -F body=@file`. `gh repo edit --visibility` also lacks the confirm flag here; use the REST API.
+- **Server apps (phase 1):** `forms` (Form, FormVersion; schema rules in `forms/schema.py`), `assignments`, `submissions` (Submission, SubmissionEvent), `sync` (AppliedMutation, Device). The sync service itself arrives in slice 1.2.
+- **Submission rows are guarded by the database, not just by convention:** a trigger rejects any UPDATE that does not raise `version` by exactly 1 and `server_seq` strictly, any change to id/assignment/form version, and any DELETE. In tests use the `make_submission` fixture (sets up rows by hand) and `next_server_seq()`; production code must go through `sync.services` (slice 1.2).
+- **DB invariants are tested as the restricted app role.** Guards behind a privilege revoke (`submission_event`, ledger DELETE) also have an `owner_conn` test (conftest) that proves the trigger on its own; privileges are asserted with `has_table_privilege`.
+- **`bash server/scripts/mutation_check.sh`** disables each trigger/grant in the test DB, requires the guarding tests to fail, restores it (runs in CI, ~10 s). When you add a trigger or revoke, add a line to its `MUTATIONS` list. It talks to Postgres through `docker compose exec db`, so the compose db must be up.
+- **Ad-hoc SQL on the test DB:** `docker compose exec -T db psql -U postgres -d talaan_test -c "..."` (superuser inside the container).
+- **Django 6.1 admin:** overriding `get_actions` needs the `action_location` parameter (see `forms/admin.py`), otherwise a deprecation warning.
+- **ruff `DJ012`** wants model members in Django style order (fields, Meta, `__str__`, `save`, then other methods).
+

@@ -22,13 +22,29 @@ Indexes: `submission(server_seq)` (pull), `submission(assignment_id)`, `assignme
 
 ### Invariants enforced in the database
 
-- `submission.status` CHECK in (`draft`,`submitted`,`approved`,`returned`).
-- `submission.version >= 1`; `server_seq` unique and from sequence `submission_server_seq`.
-- Trigger: `form_version` rows with `published_at` set cannot be updated or deleted.
-- Trigger: `applied_mutation` and `submission_event` reject UPDATE (except `result` set within the
-  inserting transaction) and DELETE; the app DB role has no UPDATE/DELETE grant on `submission_event`.
-- `submission.form_version_id` must equal its assignment's `form_version_id` (checked on create).
-- App connects as a **least-privilege role** (no DDL, no superuser); migrations use a separate owner role.
+Each is enforced by the database whoever writes (code, admin, a shell) and has a test that runs as the
+least-privilege application role.
+
+- `submission.status` CHECK in (`draft`, `submitted`, `approved`, `returned`); `version >= 1`;
+  `server_seq` unique, taken from sequence `submission_server_seq`.
+- **One write path, enforced.** A trigger on `submission` rejects any change that is not exactly what
+  the sync service does:
+  - INSERT: `version` must be 1, and `form_version_id` must equal the assignment's.
+  - UPDATE: `id`, `assignment_id` and `form_version_id` never change; `version` must be the old value
+    plus exactly 1; `server_seq` must be strictly larger. A direct `.save()` that skips the version
+    bump or the sequence fails.
+  - DELETE: refused. Deletion is a tombstone (`deleted_at`).
+- `form_version`: a trigger refuses any UPDATE or DELETE once `published_at` is set (publishing itself,
+  `NULL` to a time on a draft, is the one allowed change). `(form_id, number)` is unique.
+- `submission_event` is append-only: no UPDATE or DELETE privilege for the application role, and a
+  trigger refusing both for every role.
+- `applied_mutation`: a row is inserted with an empty `result`, which can then be set exactly once and
+  must not be empty; no other column changes; no DELETE (privilege revoked and trigger).
+- The app connects as a **least-privilege role** (no DDL, no superuser); migrations use a separate
+  owner role. Triggers raise SQLSTATE `23514`, which Django surfaces as `IntegrityError`.
+
+`version` starts at 1 on creation (the create is the first accepted change, so `field_versions` of the
+initial fields are 1), and a `create` mutation carries `base_version: 0`.
 
 ## 2. Local stores (IndexedDB via Dexie)
 
@@ -82,6 +98,71 @@ UI labels: Pending = "Saved on this device", Synced = "Synced". They must never 
 
 ## 5. Form schema
 
-`form_version.schema` is JSON Schema (server) and drives Zod on the client. Each field has a type,
-`required`, and optional constraints. One schema, both sides. Validation of drafts ignores
-`required`; `submit` enforces it.
+`form_version.schema` is a deliberately small subset of JSON Schema (draft 2020-12), so the same document
+drives the server (`jsonschema`) and the client (Zod) with identical behaviour. The rules live in
+`server/forms/schema.py` and are checked when a version is published.
+
+- One flat object: `"type": "object"`, `"additionalProperties": false` (unknown fields are rejected), at
+  least one property. No nesting or arrays.
+- Field names are stable identifiers, `^[a-z][a-z0-9_]{0,63}$`: they are the keys of submission `data` and
+  of `field_versions`.
+- Field `type` is one of `string`, `number`, `integer`, `boolean`. Allowed keys per field: `type`,
+  `title`, `description`, `enum` (distinct non-empty strings, string fields only), `minLength`,
+  `maxLength`, `minimum`, `maximum`.
+- `required` lists field names that exist. **A draft may be incomplete**: validation of a `draft` or
+  `returned` save ignores `required`; `submit` enforces every required field (protocol.md section 5).
+- A published version is immutable. To change a form, publish a new version (ADR 0008).
+
+### Sample form schema
+
+The demo seed publishes this form. A test fails if this block and `server/forms/samples.py` differ.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "Generator inspection",
+  "properties": {
+    "site_contact": {
+      "type": "string",
+      "title": "Site contact",
+      "maxLength": 120
+    },
+    "oil_level": {
+      "type": "string",
+      "title": "Oil level",
+      "enum": [
+        "ok",
+        "low",
+        "empty"
+      ]
+    },
+    "oil_pressure_psi": {
+      "type": "number",
+      "title": "Oil pressure (psi)",
+      "minimum": 0,
+      "maximum": 200
+    },
+    "coolant_ok": {
+      "type": "boolean",
+      "title": "Coolant level is correct"
+    },
+    "hours_run": {
+      "type": "integer",
+      "title": "Hours run",
+      "minimum": 0
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 2000
+    }
+  },
+  "required": [
+    "oil_level",
+    "coolant_ok",
+    "hours_run"
+  ],
+  "additionalProperties": false
+}
+```

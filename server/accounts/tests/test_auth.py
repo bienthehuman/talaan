@@ -72,3 +72,18 @@ def test_seed_demo_creates_admin_and_two_workers(settings):
     assert User.objects.get(username="worker2").role == "worker"
     call_command("seed_demo")  # idempotent
     assert User.objects.filter(username__in=["admin", "worker1", "worker2"]).count() == 3
+
+
+def test_seed_demo_publishes_a_form_and_assigns_it_to_each_worker(settings):
+    from assignments.models import Assignment
+    from forms.models import Form
+
+    settings.DEBUG = True
+    call_command("seed_demo")
+    call_command("seed_demo")  # idempotent: nothing is duplicated
+    form = Form.objects.get(name="Generator inspection")
+    assert form.versions.count() == 1
+    assert form.versions.get().is_published
+    assert Assignment.objects.filter(worker__username="worker1").count() == 1
+    assert Assignment.objects.filter(worker__username="worker2").count() == 1
+    assert {a.site_name for a in Assignment.objects.all()} == {"North plant", "Harbour depot"}

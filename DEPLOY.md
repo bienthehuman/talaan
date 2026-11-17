@@ -94,9 +94,11 @@ workflow can also be run by hand with a version, to redeploy or roll back withou
 
 ## Images
 
-The Release workflow pushes `ghcr.io/bienthehuman/talaan-server` and `talaan-web` tagged with the
-release and `latest`. GitHub creates those packages private, so after the **first** release either
-make them public (package page, Package settings, Change visibility) or log the host in once:
+The Release workflow pushes `ghcr.io/bienthehuman/talaan-server` and `talaan-web`, tagged with the
+release and `latest`, and links them to this repository. While the repository is public the packages
+are public too, so a host can pull them with no login (verified for `v0.1.0`). If you fork this
+privately, or the packages show as private, make them public on the package page (Package settings,
+Change visibility) or log the host in once:
 
 ```bash
 echo "$GHCR_TOKEN" | docker login ghcr.io -u <github user> --password-stdin   # token with read:packages
