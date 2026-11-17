@@ -12,7 +12,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # collectstatic needs a key but no database; the real key comes from the environment at runtime.
-RUN DJANGO_SECRET_KEY=build-only python manage.py collectstatic --noinput
+RUN DJANGO_SECRET_KEY=build-only-key-never-used-at-runtime-0123456789 python manage.py collectstatic --noinput
 
 RUN useradd --system --uid 10001 app && chown -R app /app
 USER app
