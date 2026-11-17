@@ -28,5 +28,11 @@ vite-plugin-pwa (client), pytest / Vitest / Playwright, Docker Compose, GitHub A
 - **Tests:** `cd server && python -m pytest`. They run against the pre-migrated `talaan_test` DB **as the least-privilege `talaan_app` role**, which has no DDL rights. After adding a migration, run `bash scripts/migrate.sh` (runs as `talaan_owner`) or pytest exits with a pending-migrations message.
 - **DB roles:** `talaan_owner` owns the schema and runs migrations; `talaan_app` is the runtime role. The init script is `docker/db/init.sh` and only runs on a fresh volume (`docker compose down -v` to redo it). `talaan_test` additionally grants TRUNCATE so transactional tests can flush; `talaan` does not.
 - **Lint:** `cd server && ruff check . && ruff format --check .`
+- **Client setup:** `cd client && npm ci`. Dev server: `npm run dev` (port 5173, proxies `/api`, `/admin`, `/static` to Django on 8000). Checks: `npm run typecheck && npm run lint && npm run format:check && npm test`. Build: `npm run build`.
+- **TypeScript is pinned to 5.9, not 6 or 7.** `typescript-eslint` 8.73 needs below 6.1 and `openapi-typescript` 7.13 needs 5.x. Revisit when both support newer.
+- **API types:** `server/openapi.yml` is generated (`cd server && python manage.py spectacular --file openapi.yml --validate`); then `cd client && npm run gen:api` writes `src/lib/api-types.ts`. Regenerate both after any API change; CI will fail on drift (slice 0.4).
+- **Client tests** stub `fetch` (see `src/test/utils.tsx`) and use `axe-core` for structural a11y. Colour contrast is not measurable in jsdom; it is covered by the Playwright axe gate.
+- **Style guide** route `/styleguide` exists in dev and when built with `VITE_STYLEGUIDE=1` (e2e); it is absent from production builds.
+- **`npm audit`** reports 4 moderate findings, all in the build-time chain `vite-plugin-pwa` > `workbox-build` > `glob`/`minimatch`. Not shipped to the browser. The suggested fix downgrades vite-plugin-pwa to 1.1.0; not done.
 - **Seed demo logins (dev only):** `python manage.py seed_demo` creates `admin`, `worker1`, `worker2` (password `demo-password-1`).
 - **Shell quirk:** do not use `pkill -f <pattern>` in a command that contains the pattern; it kills its own shell.

@@ -12,7 +12,7 @@ pytest, Vitest, Playwright · Docker Compose, GitHub Actions.
 
 ## Run / test
 
-Server skeleton only so far (the client arrives in slice 0.3, full compose in 0.4).
+Server and client skeletons so far (one-command compose setup arrives in 0.4).
 
 ```bash
 cp .env.example .env            # then set DJANGO_SECRET_KEY
@@ -24,6 +24,14 @@ bash scripts/migrate.sh         # migrations run as the owner role
 python manage.py seed_demo      # dev logins: admin, worker1, worker2
 python manage.py runserver      # API docs at http://localhost:8000/api/docs/
 python -m pytest                # runs as the least-privilege DB role
+```
+
+```bash
+cd client
+npm ci
+npm run dev                     # http://localhost:5173, proxies /api to Django on :8000
+npm test                        # unit tests (Vitest, jsdom)
+npm run build                   # production build with the service worker
 ```
 
 ## Docs
