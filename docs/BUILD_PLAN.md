@@ -24,7 +24,7 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 | 0.0 | Repo basics, CLAUDE.md, this plan | in progress |
 | 0.1 | Design docs: architecture, data model (with correction paths), roles × steps, protocol, conventions, design system, ADR 0001–0009 | done (docs accepted 2026-11-17) |
 | 0.2 | Server skeleton: Django, DRF, simplejwt, Postgres, health, OpenAPI page, RFC 7807 errors | in review |
-| 0.3 | Client skeleton: Vite React TS, PWA shell, routing, login, theme tokens, 404/error pages | not started |
+| 0.3 | Client skeleton: Vite React TS, PWA shell, routing, login, theme tokens, 404/error pages | in review |
 | 0.4 | Compose, CI (build, lint, typecheck, format, unit, integration, e2e, OpenAPI drift), branch protection | not started |
 | 0.5 | Deploy skeleton (blocked on hosting decision) | blocked |
 
@@ -32,18 +32,18 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 
 **Repo and GitHub**
 - [x] README, `.gitignore`, `.gitattributes`, `.editorconfig`, `.env.example`
-- [ ] Version pins (`.nvmrc`, `packageManager`, `.python-version`), current versions checked at scaffold
+- [x] Version pins (`.nvmrc`, `packageManager`, `.python-version`, exact versions in lockfiles), current versions checked at scaffold
 - [ ] GitHub repo created; `main` protected (PRs required, squash only, no force-push, strict required checks)
 - [ ] `.github/pull_request_template.md` (summary, test plan, decisions to check)
 - [ ] CI on every PR: build, lint, typecheck, format, unit, integration, e2e, OpenAPI/client drift; badge in README
 - [ ] LICENSE, SECURITY.md, CONTRIBUTING.md, CLAUDE.md (env quirks), Dependabot/Renovate
 
 **Product shell**
-- [ ] Favicon (SVG), page titles per route, app name/tagline, theme-color, 404 and error pages
-- [ ] Design system accepted in docs before screens (tokens, light/dark, type, spacing, components)
-- [ ] UX states on every screen: loading, empty, error, forbidden, confirm-destructive, toasts
-- [ ] a11y gate (axe in e2e, light and dark) and keyboard pass
-- [ ] Responsive: decide per audience (worker = mobile first, admin = desktop)
+- [x] Favicon (SVG), page titles per route, app name/tagline, theme-color, 404 and error pages
+- [x] Design system accepted in docs before screens (tokens, light/dark, type, spacing, components); `/styleguide` page built
+- [x] UX state components built (loading, empty, error, forbidden, confirm-destructive, toasts); each screen applies them as it lands
+- [ ] a11y gate: structural axe in unit tests done (0.3); axe in Playwright for light/dark contrast and the keyboard pass come with 0.4
+- [x] Responsive: decided per audience (worker = mobile first, admin = desktop first), see DESIGN_SYSTEM.md
 
 **Backend and data**
 - [x] Health endpoint, API reference page, RFC 7807 errors with codes, list/paging contract (sort allow-list lands with the first list endpoint)
@@ -77,3 +77,4 @@ Each phase ends with an automated demo (pytest and/or Playwright) plus a release
 | .NET MAUI client speaking the same protocol | Source plan stretch | later | best proof the protocol is a contract |
 | Grafana dashboard on `/metrics` | Source plan stretch | later | |
 | Safe-watermark pull cursor replacing the advisory lock | ADR 0005 | later | |
+| Document 401/429/problem+json responses in the OpenAPI schema (removes the client `unwrap()` workaround) | Slice 0.3 | later | |
