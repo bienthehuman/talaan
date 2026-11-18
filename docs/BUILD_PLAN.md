@@ -69,7 +69,7 @@ its database-level invariants first, then the rules without HTTP, then the API, 
 - Scenario 8 is shown failing with the advisory lock removed (recorded run in the write-up) and passing with it.
 - `v0.2.0` tagged; the phase demo is `pytest -m phase1`.
 
-## Phase 2 slices: client local layer and engine
+## Phase 2 slices: client local layer and engine (done: tagged `v0.3.0` on 2026-11-18)
 
 Exit: scenarios 1, 9, 12 pass in CI, plus the client half of scenario 2; tagged `v0.3.0`. The UI reads
 IndexedDB only. Ordered by risk: the atomic local write first, then the engine on top of it, then auth
@@ -77,11 +77,11 @@ resume, then the thinnest UI that lets Playwright drive it all.
 
 | Slice | Content | Status |
 |---|---|---|
-| 2.1 | **Local layer** (`src/db/`). Dexie schema and migrations; stores per DATA_MODEL section 2; `meta` (`deviceId`, `userId`, cursor); repositories; `editSubmission` = record + outbox entry in one transaction; coalescing of unsent edits only; all data keyed by `userId`. | in review |
-| 2.2 | **Sync engine** (`src/sync/`). Push then pull, per-result handling (applied / conflict / rejected), reference-data download, backoff with jitter, error classes, Web Locks, triggers (start, `online`, 60 s, "Sync now"); real `SyncBadge` status. | in review |
-| 2.3 | **Auth resume.** Token refresh, 401 pause and resume with the outbox untouched, logout confirmation with unsent changes, token storage decision (ADR 0010). | in review |
-| 2.4 | **Worker UI, thin.** Assignments and submissions read from IndexedDB; form filler (Zod built from the form JSON) that creates, edits, submits, deletes offline. Conflict and rejected states are shown as status only (resolution screen is phase 3). | in review |
-| 2.5 | **Playwright scenarios and release.** Scenarios 1, 2 (client half), 9 against the compose stack with `X-Fault`; `v0.3.0`. | in review |
+| 2.1 | **Local layer** (`src/db/`). Dexie schema and migrations; stores per DATA_MODEL section 2; `meta` (`deviceId`, `userId`, cursor); repositories; `editSubmission` = record + outbox entry in one transaction; coalescing of unsent edits only; all data keyed by `userId`. | done |
+| 2.2 | **Sync engine** (`src/sync/`). Push then pull, per-result handling (applied / conflict / rejected), reference-data download, backoff with jitter, error classes, Web Locks, triggers (start, `online`, 60 s, "Sync now"); real `SyncBadge` status. | done |
+| 2.3 | **Auth resume.** Token refresh, 401 pause and resume with the outbox untouched, logout confirmation with unsent changes, token storage decision (ADR 0010). | done |
+| 2.4 | **Worker UI, thin.** Assignments and submissions read from IndexedDB; form filler (Zod built from the form JSON) that creates, edits, submits, deletes offline. Conflict and rejected states are shown as status only (resolution screen is phase 3). | done |
+| 2.5 | **Playwright scenarios and release.** Scenarios 1, 2 (client half), 9 against the compose stack with `X-Fault`; `v0.3.0`. | done |
 
 ### Definition of done per slice (phase 2)
 
@@ -109,6 +109,46 @@ resume, then the thinnest UI that lets Playwright drive it all.
 **2.5**
 - Scenarios 1, 2 (client half) and 9 are green in `e2e`, and each is shown to fail when its guarantee is broken.
 - `v0.3.0` tagged.
+
+## Phase 3 slices: conflicts
+
+Exit: scenarios 4, 5 and 6 pass in CI, so all twelve do; tagged `v0.4.0`. The server already detects and
+reports every conflict kind (phase 1) and the client already stores the report and stops syncing the
+record (slice 2.2). What is missing is a way for a person to decide, a way for an admin to cause scenario 6,
+and the proof in a real browser with two devices. Ordered so the test setup exists first.
+
+| Slice | Content | Status |
+|---|---|---|
+| 3.1 | **Admin action endpoint.** One REST endpoint over `apply_admin_action` (approve, return, restore, delete, edit), admin only, so there is a way to delete a record while a worker is offline and to restore it. Scenario 4 server half (`test_merge.py`). OpenAPI and client types regenerated. | not started |
+| 3.2 | **Resolution logic** (`client/src/db/resolve.ts`, engine). Turn the person's choices into a new mutation; keep the starting value for the screen; pull clears a `deleted_remotely` conflict when the admin restores; any new queued entry triggers a sync. No UI. | not started |
+| 3.3 | **Resolution screen** on the inspection page: starting value, mine and theirs per field, with a choice for each; the two other conflict kinds; header shows how many records need a decision. | not started |
+| 3.4 | **Playwright scenarios 4, 5, 6** with two browser contexts as two devices, then `v0.4.0`. | not started |
+
+### Definition of done per slice (phase 3)
+
+**3.1**
+- A non-admin gets 403; an unknown record, a bad action and a missing reason come back as the service's `rejected` results, never as a 500.
+- Every action goes through `apply_admin_action` (the existing write-path guard test still passes) and appears as an event.
+- Scenario 4 (`test_merge.py`): two devices edit different fields over HTTP, both are applied, the server holds both values.
+- Planted-bug check: dropping the permission class, or writing a record directly, fails a test. `openapi.yml` and `api-types.ts` regenerated.
+
+**3.2**
+- Resolving a `field_conflict` sends one new mutation (new id) with base = the server's current version, carrying the chosen "mine" fields and every non-conflicting local field, and none of the fields where the person chose "theirs".
+- Choosing "theirs" for every field sends nothing and leaves the record synced.
+- `deleted_remotely`: "discard" removes the local edits; "keep and wait" stays as is, and when a pull brings the restored record the edits are queued again under a new mutation id (the old id's stored answer is the conflict).
+- `edited_since_base` (a delete against newer edits): "keep the record" drops the delete; "delete anyway" sends a new delete at the current version.
+- The screen's starting value survives: edits record what each field held before the first unsent change.
+- Planted bugs fail a test (wrong base version, reusing the old mutation id, carrying a field the person gave up, not clearing on restore).
+
+**3.3**
+- Every conflict kind has a screen with plain words; a decision cannot be applied half-made; keyboard only works; axe passes in light and dark.
+- "Needs your decision" is visible on the list and counted in the header.
+
+**3.4**
+- Scenario 4: two devices edit different fields offline; both sync; both values on both devices and the server.
+- Scenario 5: two devices edit the same field offline; the second sees the conflict, nothing is overwritten; after resolving, a new version is applied and the other device sees it.
+- Scenario 6: an admin deletes while a worker edits offline; the worker gets `deleted_remotely`, local edits are kept until they decide; both outcomes (discard, and restore then resync) are covered.
+- Each is shown to fail when its guarantee is broken. All twelve scenarios green; `v0.4.0` tagged.
 
 ## Baseline checklist (phase 0)
 
