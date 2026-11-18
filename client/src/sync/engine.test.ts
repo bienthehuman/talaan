@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   applyPull,
+  applyResult,
   closeAll,
   createSubmission,
   dbFor,
@@ -8,6 +9,8 @@ import {
   deleteSubmission,
   editSubmission,
   getSubmission,
+  resolveFieldConflict,
+  takeBatch,
   type PushResult,
   type ServerRecord,
 } from "../db";
@@ -556,6 +559,74 @@ describe("a local change", () => {
     await createSubmission(dbFor(1), NEW);
     await new Promise((r) => setTimeout(r, 120));
     expect(s.pushes).toHaveLength(0);
+    sync.stop();
+  });
+});
+
+describe("work that arrives in other ways", () => {
+  it("a resolution (a re-issued entry) is sent without waiting for the next tick", async () => {
+    const db = dbFor(1);
+    const row = await createSubmission(db, { ...NEW, data: { notes: "start" } });
+    await db.outbox.clear();
+    await db.submissions.update(row.id, {
+      serverVersion: 1,
+      syncState: "synced",
+      shadow: {
+        data: { notes: "start" },
+        status: "draft",
+        version: 1,
+        fieldVersions: {},
+        deleted: false,
+      },
+    });
+    await editSubmission(db, row.id, { notes: "mine" });
+    const [sent] = await takeBatch(db);
+    await applyResult(db, sent!, {
+      mutation_id: sent!.mutationId,
+      status: "conflict",
+      conflict: {
+        kind: "field_conflict",
+        fields: [{ field: "notes", server_value: "theirs", server_version: 2 }],
+      },
+      record: record(row.id, 2, { notes: "theirs" }),
+    });
+
+    const s = server();
+    const sync = new SyncEngine({ db, userId: 1, deviceId: "d", changeDelayMs: 20 });
+    sync.start();
+    await vi.waitFor(() => expect(s.pulls).toHaveLength(1));
+    expect(s.pushes).toHaveLength(0); // the conflicted record is not sent while it waits
+
+    await resolveFieldConflict(db, row.id, { notes: "mine" });
+    await vi.waitFor(() => expect(s.pushes).toHaveLength(1));
+    expect(s.pushes[0]!.mutations[0]).toMatchObject({
+      op: "update",
+      base_version: 2,
+      fields: { notes: "mine" },
+    });
+    expect(s.pushes[0]!.mutations[0]!.mutation_id).not.toBe(sent!.mutationId);
+    sync.stop();
+  });
+
+  it("work that arrives while a cycle is running gets another cycle straight after", async () => {
+    const db = dbFor(1);
+    await createSubmission(db, NEW);
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const s = server();
+    const base = s.fetch.getMockImplementation()!;
+    s.fetch.mockImplementation(async (request: Request) => {
+      if (new URL(request.url).pathname === "/api/sync/pull/") await gate;
+      return base(request);
+    });
+    const sync = new SyncEngine({ db, userId: 1, deviceId: "d", changeDelayMs: 10 });
+    sync.start();
+    await vi.waitFor(() => expect(s.fetch.mock.calls.length).toBeGreaterThan(0)); // the pull is waiting: the push step is already over
+
+    await createSubmission(db, NEW); // new work after this cycle's push step, while it is stuck in the pull
+    await new Promise((r) => setTimeout(r, 60)); // the change timer fires into a running cycle
+    release();
+    await vi.waitFor(() => expect(s.pushes).toHaveLength(2));
     sync.stop();
   });
 });

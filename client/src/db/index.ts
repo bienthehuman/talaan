@@ -12,3 +12,11 @@ export {
   takeBatch,
 } from "./apply";
 export type { PushResult, ServerRecord } from "./apply";
+export {
+  IncompleteResolutionError,
+  loadConflict,
+  NothingToResolveError,
+  resolveEditedSinceBase,
+  resolveFieldConflict,
+} from "./resolve";
+export type { ConflictView, FieldChoice, FieldConflictView } from "./resolve";

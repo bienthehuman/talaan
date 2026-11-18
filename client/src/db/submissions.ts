@@ -116,19 +116,27 @@ export function editSubmission(
       syncState: "pending",
       updatedAt: Date.now(),
     };
+    // What each field held before this edit: the "starting value" on the conflict screen.
+    const prior: Record<string, FieldValue> = {};
+    for (const name of Object.keys(changed))
+      prior[name] = name in row.data ? row.data[name]! : null;
     const last = await lastEntry(db, id);
     if (last && last.sentAt === null && (last.op === "create" || last.op === "update")) {
       const fields = { ...last.fields, ...changed };
       if (last.op === "create") {
         for (const [name, value] of Object.entries(fields)) if (value === null) delete fields[name];
+        await db.outbox.update(last.seq!, { fields });
+      } else {
+        // The first value a field held stays the starting value, however often it is edited.
+        await db.outbox.update(last.seq!, { fields, before: { ...prior, ...last.before } });
       }
-      await db.outbox.update(last.seq!, { fields });
     } else {
       await db.outbox.add({
         mutationId: newMutationId(),
         recordId: id,
         op: "update",
         fields: changed,
+        before: prior,
         baseVersion: row.serverVersion,
         sentAt: null,
         attempts: 0,
