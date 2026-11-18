@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Outlet } from "react-router";
+import { Link, NavLink, Outlet } from "react-router";
 import { useAuth } from "../auth/AuthContext";
 import { useOnline } from "../hooks/useOnline";
 import { useSyncStatus } from "../sync/status";
@@ -35,6 +35,46 @@ export function RootLayout() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
+      <header className={styles.band}>
+        <div className={styles.bar}>
+          <Link to="/" className={`${styles.brand} tap-link`}>
+            <img src="/favicon.svg" alt="" />
+            Talaan
+          </Link>
+          <div className={styles.account}>
+            {user && <span className={styles.user}>{user.username}</span>}
+            <ThemeToggle className={styles.onBand} />
+            {user && (
+              <Button variant="secondary" small className={styles.onBand} onClick={requestSignOut}>
+                Sign out
+              </Button>
+            )}
+          </div>
+        </div>
+        {user?.role === "worker" && (
+          <div className={styles.sync}>
+            <Link to="/sync" className={`${styles.status} tap-link`}>
+              <span className={`${styles.numeral} ${pending > 0 ? styles.waiting : ""}`}>
+                {pending}
+              </span>{" "}
+              pending · Last sync: {formatLastSync(lastSyncAt)}
+            </Link>
+            {conflicts > 0 && (
+              <Link to="/" className={`${styles.needsDecision} tap-link`}>
+                {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
+              </Link>
+            )}
+            <Button
+              className={styles.syncNow}
+              onClick={syncNow}
+              disabled={state === "syncing"}
+              aria-busy={state === "syncing" || undefined}
+            >
+              {state === "syncing" ? "Syncing…" : "Sync now"}
+            </Button>
+          </div>
+        )}
+      </header>
       {!online && (
         <Banner kind="warn">
           You're offline. Changes are saved on this device and will sync when you're back online.
@@ -48,53 +88,23 @@ export function RootLayout() {
           to update.
         </Banner>
       )}
-      <header className={styles.header}>
-        <Link to="/" className={`${styles.brand} tap-link`}>
-          <img src="/favicon.svg" alt="" />
-          Talaan
-        </Link>
-        {user?.role === "admin" && (
-          <nav aria-label="Admin" className={styles.adminNav}>
-            <Link to="/manage/review">Review</Link>
-            <Link to="/manage/forms">Forms</Link>
-            <Link to="/manage/assignments">Assignments</Link>
-            <Link to="/manage/conflicts">Conflict log</Link>
+      {user?.role === "admin" ? (
+        <div className={styles.shell}>
+          <nav aria-label="Admin" className={styles.rail}>
+            <NavLink to="/manage/review">Review</NavLink>
+            <NavLink to="/manage/forms">Forms</NavLink>
+            <NavLink to="/manage/assignments">Assignments</NavLink>
+            <NavLink to="/manage/conflicts">Conflict log</NavLink>
           </nav>
-        )}
-        <div className={styles.account}>
-          {user && <span className={styles.user}>{user.username}</span>}
-          <ThemeToggle />
-          {user && (
-            <Button variant="secondary" small onClick={requestSignOut}>
-              Sign out
-            </Button>
-          )}
+          <main id="main" tabIndex={-1} className={styles.main}>
+            <Outlet />
+          </main>
         </div>
-        {user?.role === "worker" && (
-          <div className={styles.sync}>
-            <Link to="/sync" className="tap-link">
-              {pending} pending · Last sync: {formatLastSync(lastSyncAt)}
-            </Link>
-            {conflicts > 0 && (
-              <Link to="/" className={`${styles.needsDecision} tap-link`}>
-                {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
-              </Link>
-            )}
-            <Button
-              variant="secondary"
-              small
-              className={styles.syncNow}
-              onClick={syncNow}
-              disabled={state === "syncing"}
-            >
-              {state === "syncing" ? "Syncing…" : "Sync now"}
-            </Button>
-          </div>
-        )}
-      </header>
-      <main id="main" tabIndex={-1}>
-        <Outlet />
-      </main>
+      ) : (
+        <main id="main" tabIndex={-1}>
+          <Outlet />
+        </main>
+      )}
       <ConfirmDialog
         open={confirmingSignOut}
         title="Sign out with unsent changes?"

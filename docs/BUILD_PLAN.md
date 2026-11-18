@@ -217,8 +217,8 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 |---|---|---|
 | 5.0 | **Docs.** Redesign plan, DESIGN_SYSTEM.md v2, ADR 0012, PRODUCT.md. | done |
 | 5.1 | **Foundation.** `tokens.css` v2, self-hosted Barlow fonts precached, global primitives restyled. No markup changes (`theme-color`, favicon and manifest colours move to 5.3 with the band). | done |
-| 5.2 | **Components.** Buttons (primary, secondary, quiet, destructive), fields, Yes/No segments, station line (in `SyncBadge`), status chip, banner, toast, dialog, table, quiet empty states, skeletons; `/styleguide` updated. | in review |
-| 5.3 | **Shell.** Sign band header (worker numeral, Sync now primary), admin rail and phone tab row with `aria-current`. | |
+| 5.2 | **Components.** Buttons (primary, secondary, quiet, destructive), fields, Yes/No segments, station line (in `SyncBadge`), status chip, banner, toast, dialog, table, quiet empty states, skeletons; `/styleguide` updated. | done |
+| 5.3 | **Shell.** Sign band header (worker numeral, Sync now primary), admin rail and phone tab row with `aria-current`; favicon, PWA icons, manifest and `theme-color` in the band colour. | in review |
 | 5.4 | **Worker pages.** Assignments, inspection (sticky submit, Delete moved), sync status, conflict panel, login, 404/error. | |
 | 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | |
 | 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | |
