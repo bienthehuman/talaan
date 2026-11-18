@@ -89,5 +89,5 @@ secure cookies, no secrets in repo, axe a11y gate, `FAULT_INJECTION` refuses to 
 - Local data is not encrypted at rest.
 - Browsers may evict storage for sites that are not installed; Safari is most aggressive.
   Mitigation: `navigator.storage.persist()` and prompting to install.
-- The advisory lock serializes writes (ADR 0005).
+- The advisory lock serializes writes (ADR 0005). Measured ceiling on a laptop: about 120 accepted mutations per second, with the lock held about 7.8 ms per mutation (docs/loadtest/results.md).
 - Tombstones are never purged (ADR 0006).

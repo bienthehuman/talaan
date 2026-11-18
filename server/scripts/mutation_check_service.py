@@ -384,6 +384,12 @@ M = [  # (description, file, old, new)
         "",
     ),
     (
+        "lock timing not logged",
+        "sync/services.py",
+        "        logs.set_context(\n            lock_wait_ms=",
+        "        logs.set_context(\n            _unused=",
+    ),
+    (
         "fault middleware loads outside debug",
         "sync/middleware.py",
         "if not (settings.DEBUG and settings.FAULT_INJECTION):",

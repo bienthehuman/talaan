@@ -40,3 +40,4 @@ server/staticfiles/
 # database backups from scripts/backup.sh
 backups/
 .env.prod
+loadtest/results/*/server-*.log
