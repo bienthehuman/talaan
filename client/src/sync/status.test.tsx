@@ -10,11 +10,11 @@ import { useSyncStatus } from "./status";
 afterEach(() => closeAll());
 
 function Probe() {
-  const { pending, lastSyncAt, state, syncNow } = useSyncStatus();
+  const { pending, conflicts, lastSyncAt, state, syncNow } = useSyncStatus();
   return (
     <>
       <p>
-        {pending} pending, {state}, {lastSyncAt ? "synced" : "never synced"}
+        {pending} pending, {conflicts} to decide, {state}, {lastSyncAt ? "synced" : "never synced"}
       </p>
       <button onClick={syncNow}>Sync now</button>
     </>
@@ -42,7 +42,7 @@ function setup() {
 describe("useSyncStatus", () => {
   it("shows nothing pending and never synced when there is no engine", () => {
     render(<Probe />);
-    expect(screen.getByText("0 pending, idle, never synced")).toBeInTheDocument();
+    expect(screen.getByText("0 pending, 0 to decide, idle, never synced")).toBeInTheDocument();
   });
 
   it("follows the outbox live and the engine state", async () => {
@@ -73,9 +73,21 @@ describe("useSyncStatus", () => {
     );
     const db = setup();
     await createSubmission(db, { assignmentId: 1, formVersionId: 1 });
-    await screen.findByText("1 pending, idle, never synced");
+    await screen.findByText("1 pending, 0 to decide, idle, never synced");
 
     await userEvent.setup().click(screen.getByRole("button", { name: "Sync now" }));
-    await waitFor(() => expect(screen.getByText("0 pending, idle, synced")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("0 pending, 0 to decide, idle, synced")).toBeInTheDocument(),
+    );
+  });
+
+  it("counts the inspections waiting for a decision, live", async () => {
+    const db = setup();
+    const row = await createSubmission(db, { assignmentId: 1, formVersionId: 1 });
+    await screen.findByText(/1 pending, 0 to decide/);
+    await db.submissions.update(row.id, { syncState: "conflict" });
+    await screen.findByText(/1 pending, 1 to decide/);
+    await db.submissions.update(row.id, { syncState: "pending" });
+    await screen.findByText(/1 pending, 0 to decide/);
   });
 });

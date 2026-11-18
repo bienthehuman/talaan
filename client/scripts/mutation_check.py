@@ -52,6 +52,12 @@ M=[
 ("starting value forgotten after the first edit","src/db/submissions.ts","before: { ...prior, ...last.before }","before: { ...last.before, ...prior }"),
 ("a re-issued entry is not treated as new work","src/sync/engine.ts","`${e.seq}:${e.mutationId}`","`${e.seq}`"),
 ("work during a cycle waits for the next tick","src/sync/engine.ts","if (this.running) this.again = true;","if (this.running) return;"),
+("own delete stays hidden while it is in conflict","src/db/apply.ts","          ? false\n          : row.deleted,","          ? row.deleted\n          : row.deleted,"),
+("form stays editable during a conflict","src/pages/SubmissionPage.tsx",'if (row.syncState === "conflict") {\n    return "Your changes','if (false) {\n    return "Your changes'),
+("choices can be applied half made","src/components/ConflictPanel.tsx","disabled={undecided.length > 0}","disabled={false}"),
+("mine and theirs swapped on screen","src/components/ConflictPanel.tsx","Use theirs: {formatValue(field(f.field), f.theirs)}","Use theirs: {formatValue(field(f.field), f.mine)}"),
+("header never counts decisions","src/sync/status.ts","conflicts: sync ? conflicts : 0,","conflicts: 0,"),
+("delete anyway asks for nothing and keeps instead","src/components/ConflictPanel.tsx",'resolveEditedSinceBase(db, row.id, "delete")','resolveEditedSinceBase(db, row.id, "keep")'),
 ]
 bad=0
 for d,f,old,new in M:

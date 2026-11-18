@@ -7,6 +7,8 @@ import type { EngineState } from "./engine";
  *  pending and nothing has synced. */
 export interface SyncStatus {
   pending: number;
+  /** Inspections waiting for the person to decide a conflict. */
+  conflicts: number;
   lastSyncAt: Date | null;
   state: EngineState;
   syncNow: () => void;
@@ -25,19 +27,27 @@ export function useSyncStatus(): SyncStatus {
   const engineStatus = useSyncExternalStore(source.subscribe, source.getStatus);
 
   const [pending, setPending] = useState(0);
+  const [conflicts, setConflicts] = useState(0);
   useEffect(() => {
     if (!sync) return;
     const subscription = liveQuery(() => sync.db.outbox.count()).subscribe({
       next: setPending,
       error: () => setPending(0),
     });
-    return () => subscription.unsubscribe();
+    const waiting = liveQuery(() =>
+      sync.db.submissions.where("syncState").equals("conflict").count(),
+    ).subscribe({ next: setConflicts, error: () => setConflicts(0) });
+    return () => {
+      subscription.unsubscribe();
+      waiting.unsubscribe();
+    };
   }, [sync]);
 
   const syncNow = useCallback(() => void sync?.syncNow(), [sync]);
   const resume = useCallback(() => void sync?.resume(), [sync]);
   return {
     pending: sync ? pending : 0,
+    conflicts: sync ? conflicts : 0,
     lastSyncAt: engineStatus.lastSyncAt === null ? null : new Date(engineStatus.lastSyncAt),
     state: engineStatus.state,
     syncNow,

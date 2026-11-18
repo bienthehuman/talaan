@@ -7,10 +7,11 @@ import { getSession } from "../auth/session";
 import { renderApp, signIn } from "../test/utils";
 
 // Stub the sync status so there are unsent changes .
-const status = vi.hoisted(() => ({ pending: 3 }));
+const status = vi.hoisted(() => ({ pending: 3, conflicts: 0 }));
 vi.mock("../sync/status", () => ({
   useSyncStatus: () => ({
     pending: status.pending,
+    conflicts: status.conflicts,
     lastSyncAt: null,
     state: "idle",
     syncNow: () => {},
@@ -21,6 +22,7 @@ vi.mock("../sync/status", () => ({
 
 beforeEach(() => {
   status.pending = 3;
+  status.conflicts = 0;
 });
 
 afterEach(() => whenWiped()); // a sign-out's data removal must not run into the next test
@@ -77,5 +79,24 @@ describe("signing out removes the person's data from the device", () => {
     await vi.waitFor(async () => expect(await Dexie.exists("talaan-user-2")).toBe(false));
     expect(await Dexie.exists("talaan-user-3")).toBe(true);
     expect(getSession()).toBeNull();
+  });
+});
+
+describe("the header", () => {
+  it("says how many inspections need a decision, and links to the list", async () => {
+    status.conflicts = 2;
+    signIn();
+    renderApp("/");
+    expect(await screen.findByRole("link", { name: "2 need your decision" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+  });
+
+  it("says nothing when there is nothing to decide", async () => {
+    signIn();
+    renderApp("/");
+    await screen.findByRole("heading", { name: "Assignments" });
+    expect(screen.queryByText(/need your decision|needs your decision/)).not.toBeInTheDocument();
   });
 });

@@ -191,7 +191,7 @@ describe("the form", () => {
     expect(screen.getByLabelText("Notes")).toBeDisabled();
   });
 
-  it("shows a conflict as a status, keeps the person's data, and can discard it", async () => {
+  it("puts the form on hold while a conflict waits for a decision", async () => {
     const row = await newRecord({ notes: "mine" });
     await db().submissions.update(row.id, {
       syncState: "conflict",
@@ -204,19 +204,21 @@ describe("the form", () => {
         fieldVersions: {},
         deleted: false,
       },
+      conflict: {
+        kind: "field_conflict",
+        fields: [{ field: "notes", server_value: "theirs", server_version: 2 }],
+      },
     });
     signIn();
     renderApp(`/submissions/${row.id}`);
-    const user = userEvent.setup();
-    expect(await screen.findByText(/Someone else changed this inspection/)).toBeInTheDocument();
-    expect(screen.getByText("Needs your decision")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Your changes to this inspection are on hold until you decide below.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Needs your decision").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Notes")).toHaveValue("mine");
     expect(screen.getByLabelText("Notes")).toBeDisabled();
-
-    await user.click(screen.getByRole("button", { name: "Discard my changes" }));
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Discard" }));
-    await waitFor(() => expect(screen.getByLabelText("Notes")).toHaveValue("theirs"));
-    expect(await db().outbox.count()).toBe(0);
   });
 
   it("explains a rejection", async () => {

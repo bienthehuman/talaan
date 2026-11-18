@@ -16,7 +16,7 @@ function formatLastSync(date: Date | null): string {
 export function RootLayout() {
   const { user, logout } = useAuth();
   const online = useOnline();
-  const { pending, lastSyncAt, state, syncNow, resume } = useSyncStatus();
+  const { pending, conflicts, lastSyncAt, state, syncNow, resume } = useSyncStatus();
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
 
   function requestSignOut() {
@@ -52,6 +52,11 @@ export function RootLayout() {
             <span>
               {pending} pending · Last sync: {formatLastSync(lastSyncAt)}
             </span>
+          )}
+          {user && conflicts > 0 && (
+            <Link to="/" className="needs-decision">
+              {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
+            </Link>
           )}
           <ThemeToggle />
           {user && (
