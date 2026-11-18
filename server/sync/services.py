@@ -14,6 +14,7 @@ Only accepted changes consume a version and a `server_seq`. Conflicts and reject
 ledger row and an event, and nothing else, so `server_seq` has no gaps from refused mutations.
 """
 
+import logging
 import uuid
 from dataclasses import dataclass, field
 
@@ -29,6 +30,8 @@ from submissions.models import EventKind, Status, Submission, SubmissionEvent
 
 from . import results as r
 from .models import AppliedMutation
+
+log = logging.getLogger("talaan.sync")
 
 # Advisory-lock key. Every sync write takes it before drawing a server_seq and holds it to commit,
 # so sequence values become visible in order and a pull cursor never skips one (ADR 0005).
@@ -124,7 +127,20 @@ def _run_once(user: User, device_id: uuid.UUID, mutation_id: uuid.UUID, handler)
             return r.rejected(
                 mutation_id, r.MUTATION_ID_REUSE, "This mutation id was already used."
             )
+        _count_replay(mutation_id)
+        log.info("replay", extra={"event": "replay", "mutation_id": mutation_id})
         return prior.result
+
+
+def _count_replay(mutation_id: uuid.UUID) -> None:
+    """A retry of an already applied mutation, counted for /metrics. One row per mutation, so
+    concurrent retries of different mutations never contend."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO sync_replay (mutation_id, count) VALUES (%s, 1) "
+            "ON CONFLICT (mutation_id) DO UPDATE SET count = sync_replay.count + 1",
+            [mutation_id],
+        )
 
 
 def _take_sequence_lock() -> None:

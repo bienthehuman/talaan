@@ -22,6 +22,7 @@ swagger_csp = {
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("metrics", sync_views.MetricsView.as_view(), name="metrics"),
     path("api/health/", HealthView.as_view(), name="health"),
     path("api/auth/token/", LoginView.as_view(), name="token_obtain"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

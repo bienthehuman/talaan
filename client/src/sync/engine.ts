@@ -244,7 +244,7 @@ export class SyncEngine {
   private async pull(): Promise<void> {
     let cursor = (await getMeta<number>(this.db, "syncCursor")) ?? 0;
     for (;;) {
-      const page = await pullPage(cursor);
+      const page = await pullPage(cursor, this.deviceId);
       await applyPull(this.db, page.records, page.next_cursor);
       cursor = page.next_cursor;
       if (!page.has_more) return;

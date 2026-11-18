@@ -141,7 +141,7 @@ tc exec server python manage.py shell
 - **No hosted demo** and no seeded demo logins. `seed_demo` only runs with debug on. A public demo
   with a nightly reset is in the backlog (`docs/BUILD_PLAN.md`).
 - **No monitoring or alerting.** Use `tc ps`, the logs and an external uptime check on
-  `/api/health/`. Metrics arrive with the operability work in v1.
+  `/api/health/`. Metrics and logs are described below.
 - **Single host, single database.** No replicas or failover.
 - **Fault injection is unavailable.** It needs debug on, and production runs with debug off; the
   server will not start with both `FAULT_INJECTION` and debug off.
@@ -157,3 +157,19 @@ tc exec server python manage.py shell
 | Admin login says "CSRF verification failed" | The domain in `.env.prod` differs from the one in the browser. |
 | Everyone gets "too many attempts" at login | The proxy count is wrong, so all users share one address. The stack sets `NUM_PROXIES=2` (Caddy, nginx); do not add another proxy in front without raising it. |
 | `pull access denied` | The images are private. See [Images](#images). |
+
+## Logs and metrics
+
+- **Logs** are JSON lines on stdout (`tc logs server`), each with a `request_id`; sync lines also carry
+  `device_id` and `mutation_id`. Follow one request through all of its lines with
+  `tc logs server | grep <request_id>`. Responses return the id in `X-Request-ID`, so a user can quote it. No
+  tokens, passwords or form data are logged (the field list is fixed in `server/core/logs.py`).
+- **Metrics**: set `METRICS_TOKEN` in `.env.prod` (`openssl rand -hex 24`), redeploy, and scrape
+  `http://server:8000/metrics` with `Authorization: Bearer <token>` from a container on the stack's network.
+  The public site answers 404 for `/metrics`; with no token the endpoint does not exist.
+  `docker compose -p talaan-prod exec server python -c "import urllib.request as u;r=u.Request('http://127.0.0.1:8000/metrics',headers={'Authorization':'Bearer '+__import__('os').environ['METRICS_TOKEN']});print(u.urlopen(r).read().decode())"`
+- What to watch: `talaan_pull_lag_records_max` (a device falling behind), `talaan_rejections_total` and
+  `talaan_conflicts_total` (rates, by reason), `talaan_retries_total` (a flaky network or a slow server),
+  `talaan_pull_age_seconds_max` (a device that stopped syncing). The full list is in `docs/protocol.md`
+  section 12.
+

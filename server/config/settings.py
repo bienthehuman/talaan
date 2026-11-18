@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "core.middleware.RequestLogMiddleware",  # first, so its timing covers everything else
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -188,9 +189,26 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+# One JSON object per line in production (core/logs.py); plain text in debug unless LOG_FORMAT=json.
+LOG_FORMAT = env("LOG_FORMAT", default="plain" if DEBUG else "json")
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "filters": {"context": {"()": "core.logs.ContextFilter"}},
+    "formatters": {
+        "json": {"()": "core.logs.JsonFormatter"},
+        "plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": LOG_FORMAT if LOG_FORMAT in ("json", "plain") else "json",
+            "filters": ["context"],
+        }
+    },
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
 }
+
+# GET /metrics needs `Authorization: Bearer <METRICS_TOKEN>`. Unset outside debug means the endpoint
+# does not exist (404), so a production stack never exposes numbers by accident.
+METRICS_TOKEN = env("METRICS_TOKEN", default="")

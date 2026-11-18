@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /** List assignments */
-        get: operations["admin_assignments_list"];
+        get: operations["api_admin_assignments_list"];
         put?: never;
         /** Assign a published form version to a worker */
-        post: operations["admin_assignments_create"];
+        post: operations["api_admin_assignments_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -32,7 +32,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Cancel an assignment (existing submissions stay) */
-        post: operations["admin_assignments_cancel_create"];
+        post: operations["api_admin_assignments_cancel_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -50,7 +50,7 @@ export interface paths {
          * The conflict log
          * @description Every refused change from a worker's device: conflicts and rejections, newest first.
          */
-        get: operations["admin_conflicts_list"];
+        get: operations["api_admin_conflicts_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -67,7 +67,7 @@ export interface paths {
             cookie?: never;
         };
         /** One form version with its schema */
-        get: operations["admin_form_versions_retrieve"];
+        get: operations["api_admin_form_versions_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -84,10 +84,10 @@ export interface paths {
             cookie?: never;
         };
         /** Forms with their versions */
-        get: operations["admin_forms_list"];
+        get: operations["api_admin_forms_list"];
         put?: never;
         /** Create a form (it has no versions yet) */
-        post: operations["admin_forms_create"];
+        post: operations["api_admin_forms_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -108,7 +108,7 @@ export interface paths {
          * @description Publish a new version of a form. The schema is checked with the same rules as the Django
          *     admin, and a published version can never change (ADR 0008).
          */
-        post: operations["admin_forms_versions_create"];
+        post: operations["api_admin_forms_versions_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -128,7 +128,7 @@ export interface paths {
          * Check a form schema without publishing it
          * @description For the editor's live feedback: the problems a publish would report, without publishing.
          */
-        post: operations["admin_forms_check_schema_create"];
+        post: operations["api_admin_forms_check_schema_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -146,7 +146,7 @@ export interface paths {
          * List submissions (the review queue)
          * @description The review queue: every submission, newest change first.
          */
-        get: operations["admin_submissions_list"];
+        get: operations["api_admin_submissions_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -163,7 +163,7 @@ export interface paths {
             cookie?: never;
         };
         /** One submission with its data, form schema and event history */
-        get: operations["admin_submissions_retrieve"];
+        get: operations["api_admin_submissions_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -188,7 +188,7 @@ export interface paths {
          *     Same core as push (docs/protocol.md section 5): advisory lock, version bump, ledger row, event.
          *     The answer is the service's result, so a refusal is a 200 with `rejected`.
          */
-        post: operations["admin_submissions_actions_create"];
+        post: operations["api_admin_submissions_actions_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -203,7 +203,7 @@ export interface paths {
             cookie?: never;
         };
         /** Workers an assignment can be given to */
-        get: operations["admin_workers_list"];
+        get: operations["api_admin_workers_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -223,7 +223,7 @@ export interface paths {
          * Assignments (the whole list, not paged)
          * @description Endpoints that take the client's protocol version in the X-Client-Schema header.
          */
-        get: operations["assignments_retrieve"];
+        get: operations["api_assignments_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -242,7 +242,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Exchange credentials for an access and refresh token. Rate limited per client. */
-        post: operations["auth_token_create"];
+        post: operations["api_auth_token_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -262,7 +262,7 @@ export interface paths {
          * @description Takes a refresh type JSON web token and returns an access type JSON web
          *     token if the refresh token is valid.
          */
-        post: operations["auth_token_refresh_create"];
+        post: operations["api_auth_token_refresh_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -280,7 +280,7 @@ export interface paths {
          * Published form versions the user needs (the whole list, not paged)
          * @description Endpoints that take the client's protocol version in the X-Client-Schema header.
          */
-        get: operations["form_versions_retrieve"];
+        get: operations["api_form_versions_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -297,7 +297,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Liveness and database check. No auth, no side effects. */
-        get: operations["health_retrieve"];
+        get: operations["api_health_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -313,7 +313,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["me_retrieve"];
+        get: operations["api_me_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -333,7 +333,7 @@ export interface paths {
          * Pull changes since a cursor
          * @description Endpoints that take the client's protocol version in the X-Client-Schema header.
          */
-        get: operations["sync_pull_retrieve"];
+        get: operations["api_sync_pull_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -355,7 +355,7 @@ export interface paths {
          * Push local changes
          * @description Applies up to 50 mutations in order, each in its own transaction, and returns one result per mutation. A repeated mutation_id returns its stored result.
          */
-        post: operations["sync_push_create"];
+        post: operations["api_sync_push_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -767,7 +767,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    admin_assignments_list: {
+    api_admin_assignments_list: {
         parameters: {
             query?: {
                 /** @description Default any. */
@@ -794,7 +794,7 @@ export interface operations {
             };
         };
     };
-    admin_assignments_create: {
+    api_admin_assignments_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -819,7 +819,7 @@ export interface operations {
             };
         };
     };
-    admin_assignments_cancel_create: {
+    api_admin_assignments_cancel_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -840,7 +840,7 @@ export interface operations {
             };
         };
     };
-    admin_conflicts_list: {
+    api_admin_conflicts_list: {
         parameters: {
             query?: {
                 /** @description Whether the same worker changed the record on the server afterwards. */
@@ -868,7 +868,7 @@ export interface operations {
             };
         };
     };
-    admin_form_versions_retrieve: {
+    api_admin_form_versions_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -889,7 +889,7 @@ export interface operations {
             };
         };
     };
-    admin_forms_list: {
+    api_admin_forms_list: {
         parameters: {
             query?: {
                 /** @description Number of results to return per page. */
@@ -913,7 +913,7 @@ export interface operations {
             };
         };
     };
-    admin_forms_create: {
+    api_admin_forms_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -938,7 +938,7 @@ export interface operations {
             };
         };
     };
-    admin_forms_versions_create: {
+    api_admin_forms_versions_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -965,7 +965,7 @@ export interface operations {
             };
         };
     };
-    admin_forms_check_schema_create: {
+    api_admin_forms_check_schema_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -990,7 +990,7 @@ export interface operations {
             };
         };
     };
-    admin_submissions_list: {
+    api_admin_submissions_list: {
         parameters: {
             query?: {
                 assignment?: number;
@@ -1021,7 +1021,7 @@ export interface operations {
             };
         };
     };
-    admin_submissions_retrieve: {
+    api_admin_submissions_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -1042,7 +1042,7 @@ export interface operations {
             };
         };
     };
-    admin_submissions_actions_create: {
+    api_admin_submissions_actions_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1109,7 +1109,7 @@ export interface operations {
             };
         };
     };
-    admin_workers_list: {
+    api_admin_workers_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -1128,7 +1128,7 @@ export interface operations {
             };
         };
     };
-    assignments_retrieve: {
+    api_assignments_retrieve: {
         parameters: {
             query?: never;
             header: {
@@ -1182,7 +1182,7 @@ export interface operations {
             };
         };
     };
-    auth_token_create: {
+    api_auth_token_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1207,7 +1207,7 @@ export interface operations {
             };
         };
     };
-    auth_token_refresh_create: {
+    api_auth_token_refresh_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1232,7 +1232,7 @@ export interface operations {
             };
         };
     };
-    form_versions_retrieve: {
+    api_form_versions_retrieve: {
         parameters: {
             query?: never;
             header: {
@@ -1286,7 +1286,7 @@ export interface operations {
             };
         };
     };
-    health_retrieve: {
+    api_health_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -1312,7 +1312,7 @@ export interface operations {
             };
         };
     };
-    me_retrieve: {
+    api_me_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -1331,7 +1331,7 @@ export interface operations {
             };
         };
     };
-    sync_pull_retrieve: {
+    api_sync_pull_retrieve: {
         parameters: {
             query?: {
                 /** @description Last server_seq already received (0 to start). */
@@ -1342,6 +1342,8 @@ export interface operations {
             header: {
                 /** @description The client's protocol version. Below the server's minimum the answer is 426. */
                 "X-Client-Schema": number;
+                /** @description This device's id, so the server can report how far behind it is. */
+                "X-Device-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -1398,7 +1400,7 @@ export interface operations {
             };
         };
     };
-    sync_push_create: {
+    api_sync_push_create: {
         parameters: {
             query?: never;
             header?: never;

@@ -6,7 +6,7 @@ info:
 paths:
   /api/admin/assignments/:
     get:
-      operationId: admin_assignments_list
+      operationId: api_admin_assignments_list
       summary: List assignments
       parameters:
       - in: query
@@ -35,7 +35,7 @@ paths:
         schema:
           type: integer
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -46,10 +46,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedAdminAssignmentList'
           description: ''
     post:
-      operationId: admin_assignments_create
+      operationId: api_admin_assignments_create
       summary: Assign a published form version to a worker
       tags:
-      - admin
+      - api
       requestBody:
         content:
           application/json:
@@ -73,7 +73,7 @@ paths:
           description: ''
   /api/admin/assignments/{id}/cancel/:
     post:
-      operationId: admin_assignments_cancel_create
+      operationId: api_admin_assignments_cancel_create
       summary: Cancel an assignment (existing submissions stay)
       parameters:
       - in: path
@@ -82,7 +82,7 @@ paths:
           type: integer
         required: true
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -94,7 +94,7 @@ paths:
           description: ''
   /api/admin/conflicts/:
     get:
-      operationId: admin_conflicts_list
+      operationId: api_admin_conflicts_list
       description: 'Every refused change from a worker''s device: conflicts and rejections,
         newest first.'
       summary: The conflict log
@@ -131,7 +131,7 @@ paths:
         schema:
           type: integer
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -143,7 +143,7 @@ paths:
           description: ''
   /api/admin/form-versions/{id}/:
     get:
-      operationId: admin_form_versions_retrieve
+      operationId: api_admin_form_versions_retrieve
       summary: One form version with its schema
       parameters:
       - in: path
@@ -152,7 +152,7 @@ paths:
           type: integer
         required: true
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -164,7 +164,7 @@ paths:
           description: ''
   /api/admin/forms/:
     get:
-      operationId: admin_forms_list
+      operationId: api_admin_forms_list
       summary: Forms with their versions
       parameters:
       - name: limit
@@ -180,7 +180,7 @@ paths:
         schema:
           type: integer
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -191,10 +191,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedFormList'
           description: ''
     post:
-      operationId: admin_forms_create
+      operationId: api_admin_forms_create
       summary: Create a form (it has no versions yet)
       tags:
-      - admin
+      - api
       requestBody:
         content:
           application/json:
@@ -218,7 +218,7 @@ paths:
           description: ''
   /api/admin/forms/{id}/versions/:
     post:
-      operationId: admin_forms_versions_create
+      operationId: api_admin_forms_versions_create
       description: |-
         Publish a new version of a form. The schema is checked with the same rules as the Django
         admin, and a published version can never change (ADR 0008).
@@ -230,7 +230,7 @@ paths:
           type: integer
         required: true
       tags:
-      - admin
+      - api
       requestBody:
         content:
           application/json:
@@ -254,12 +254,12 @@ paths:
           description: ''
   /api/admin/forms/check-schema/:
     post:
-      operationId: admin_forms_check_schema_create
+      operationId: api_admin_forms_check_schema_create
       description: 'For the editor''s live feedback: the problems a publish would
         report, without publishing.'
       summary: Check a form schema without publishing it
       tags:
-      - admin
+      - api
       requestBody:
         content:
           application/json:
@@ -283,7 +283,7 @@ paths:
           description: ''
   /api/admin/submissions/:
     get:
-      operationId: admin_submissions_list
+      operationId: api_admin_submissions_list
       description: 'The review queue: every submission, newest change first.'
       summary: List submissions (the review queue)
       parameters:
@@ -323,7 +323,7 @@ paths:
           type: integer
         description: The worker's user id.
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -335,7 +335,7 @@ paths:
           description: ''
   /api/admin/submissions/{record_id}/:
     get:
-      operationId: admin_submissions_retrieve
+      operationId: api_admin_submissions_retrieve
       summary: One submission with its data, form schema and event history
       parameters:
       - in: path
@@ -345,7 +345,7 @@ paths:
           format: uuid
         required: true
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -357,7 +357,7 @@ paths:
           description: ''
   /api/admin/submissions/{record_id}/actions/:
     post:
-      operationId: admin_submissions_actions_create
+      operationId: api_admin_submissions_actions_create
       description: |-
         An admin acts on one submission: approve, return, restore, delete or edit.
 
@@ -372,7 +372,7 @@ paths:
           format: uuid
         required: true
       tags:
-      - admin
+      - api
       requestBody:
         content:
           application/json:
@@ -426,10 +426,10 @@ paths:
           description: ''
   /api/admin/workers/:
     get:
-      operationId: admin_workers_list
+      operationId: api_admin_workers_list
       summary: Workers an assignment can be given to
       tags:
-      - admin
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -443,7 +443,7 @@ paths:
           description: ''
   /api/assignments/:
     get:
-      operationId: assignments_retrieve
+      operationId: api_assignments_retrieve
       description: Endpoints that take the client's protocol version in the X-Client-Schema
         header.
       summary: Assignments (the whole list, not paged)
@@ -456,7 +456,7 @@ paths:
           answer is 426.
         required: true
       tags:
-      - assignments
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -492,11 +492,11 @@ paths:
           description: ''
   /api/auth/token/:
     post:
-      operationId: auth_token_create
+      operationId: api_auth_token_create
       description: Exchange credentials for an access and refresh token. Rate limited
         per client.
       tags:
-      - auth
+      - api
       requestBody:
         content:
           application/json:
@@ -518,12 +518,12 @@ paths:
           description: ''
   /api/auth/token/refresh/:
     post:
-      operationId: auth_token_refresh_create
+      operationId: api_auth_token_refresh_create
       description: |-
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
-      - auth
+      - api
       requestBody:
         content:
           application/json:
@@ -545,7 +545,7 @@ paths:
           description: ''
   /api/form-versions/:
     get:
-      operationId: form_versions_retrieve
+      operationId: api_form_versions_retrieve
       description: Endpoints that take the client's protocol version in the X-Client-Schema
         header.
       summary: Published form versions the user needs (the whole list, not paged)
@@ -558,7 +558,7 @@ paths:
           answer is 426.
         required: true
       tags:
-      - form-versions
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -594,10 +594,10 @@ paths:
           description: ''
   /api/health/:
     get:
-      operationId: health_retrieve
+      operationId: api_health_retrieve
       description: Liveness and database check. No auth, no side effects.
       tags:
-      - health
+      - api
       security:
       - {}
       responses:
@@ -611,9 +611,9 @@ paths:
           description: Database unreachable (problem+json)
   /api/me/:
     get:
-      operationId: me_retrieve
+      operationId: api_me_retrieve
       tags:
-      - me
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -625,7 +625,7 @@ paths:
           description: ''
   /api/sync/pull/:
     get:
-      operationId: sync_pull_retrieve
+      operationId: api_sync_pull_retrieve
       description: Endpoints that take the client's protocol version in the X-Client-Schema
         header.
       summary: Pull changes since a cursor
@@ -637,6 +637,12 @@ paths:
         description: The client's protocol version. Below the server's minimum the
           answer is 426.
         required: true
+      - in: header
+        name: X-Device-Id
+        schema:
+          type: string
+        description: This device's id, so the server can report how far behind it
+          is.
       - in: query
         name: cursor
         schema:
@@ -648,7 +654,7 @@ paths:
           type: integer
         description: Page size, default 200, at most 500.
       tags:
-      - sync
+      - api
       security:
       - jwtAuth: []
       responses:
@@ -690,13 +696,13 @@ paths:
           description: ''
   /api/sync/push/:
     post:
-      operationId: sync_push_create
+      operationId: api_sync_push_create
       description: Applies up to 50 mutations in order, each in its own transaction,
         and returns one result per mutation. A repeated mutation_id returns its stored
         result.
       summary: Push local changes
       tags:
-      - sync
+      - api
       requestBody:
         content:
           application/json:

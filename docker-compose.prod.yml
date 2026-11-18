@@ -20,6 +20,10 @@ x-server-env: &server-env
   JWT_ACCESS_MINUTES: ${JWT_ACCESS_MINUTES:-5}
   JWT_REFRESH_DAYS: ${JWT_REFRESH_DAYS:-7}
   LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  # JSON lines on stdout. /metrics exists only when a token is set, and only inside the stack
+  # (the public proxy answers 404): scrape http://server:8000/metrics with that token.
+  LOG_FORMAT: json
+  METRICS_TOKEN: ${METRICS_TOKEN:-}
   # Two proxies in front of Django (Caddy, nginx): the client address is the one before them.
   NUM_PROXIES: "2"
 

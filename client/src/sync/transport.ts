@@ -56,11 +56,12 @@ export function pushBatch(deviceId: string, entries: OutboxEntry[]): Promise<Pus
   ).then((body) => (body as unknown as { results: PushResult[] }).results);
 }
 
-export function pullPage(cursor: number): Promise<PullPage> {
+export function pullPage(cursor: number, deviceId: string): Promise<PullPage> {
   return settle(() =>
     api.GET("/api/sync/pull/", {
       signal: signal(),
-      params: { query: { cursor }, header },
+      // The device id lets the server report how far behind each device is (operability only).
+      params: { query: { cursor }, header: { ...header, "X-Device-Id": deviceId } },
     }),
   ).then((body) => body as unknown as PullPage);
 }

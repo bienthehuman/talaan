@@ -541,6 +541,15 @@ describe("triggers", () => {
   });
 });
 
+describe("pull", () => {
+  it("tells the server which device is asking, so it can report how far behind it is", async () => {
+    const s = server();
+    await engine().syncNow();
+    const pull = s.fetch.mock.calls.map(([r]) => r).find((r) => r.url.includes("/api/sync/pull/"));
+    expect(pull!.headers.get("X-Device-Id")).toBe("dev-1");
+  });
+});
+
 describe("a local change", () => {
   it("is sent shortly afterwards without waiting for the next tick", async () => {
     const s = server();
