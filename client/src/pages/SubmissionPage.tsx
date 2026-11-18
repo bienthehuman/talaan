@@ -16,6 +16,7 @@ import {
 } from "../db";
 import { useLive, useLocalDb } from "../db/useLive";
 import { FormFieldInput } from "../forms/FormFields";
+import { textToValue } from "../forms/convert";
 import { loadForm } from "../forms/local";
 import type { FormField } from "../forms/schema";
 import { validateRecord, type FieldErrors } from "../forms/validate";
@@ -32,15 +33,6 @@ function lockedReason(row: LocalSubmission): string | null {
   if (row.status === "submitted") return "Submitted. It can't be edited here.";
   if (row.status === "approved") return "Approved and locked.";
   return null;
-}
-
-/** Text typed into a field -> the value to save, or an error and no save. */
-function toValue(field: FormField, text: string): { value: FieldValue } | { error: string } {
-  if (text.trim() === "") return { value: null };
-  if (field.type === "string") return { value: text };
-  const n = Number(text);
-  if (!Number.isFinite(n)) return { error: "Enter a number." };
-  return { value: n };
 }
 
 /** Does the saved value say what the typed text says? Numbers must match exactly as written, so "1."
@@ -157,7 +149,7 @@ export function SubmissionPage() {
       return;
     }
     setTyped((t) => ({ ...t, [field.name]: raw }));
-    const converted = toValue(field, raw);
+    const converted = textToValue(field, raw);
     if ("error" in converted) {
       setFieldErrors((e) => ({ ...e, [field.name]: converted.error }));
       return;

@@ -8,7 +8,8 @@ import { SyncEngine } from "./engine";
 /** Runs the sync engine for the signed-in user and stops it on sign-out. */
 export function SyncProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const userId = user?.id ?? null;
+  // Only workers have a device to sync: admins work online through the admin API.
+  const userId = user && user.role === "worker" ? user.id : null;
 
   const engine = useMemo(
     () =>

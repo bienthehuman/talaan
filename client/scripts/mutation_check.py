@@ -58,6 +58,18 @@ M=[
 ("mine and theirs swapped on screen","src/components/ConflictPanel.tsx","Use theirs: {formatValue(field(f.field), f.theirs)}","Use theirs: {formatValue(field(f.field), f.mine)}"),
 ("header never counts decisions","src/sync/status.ts","conflicts: sync ? conflicts : 0,","conflicts: 0,"),
 ("delete anyway asks for nothing and keeps instead","src/components/ConflictPanel.tsx",'resolveEditedSinceBase(db, row.id, "delete")','resolveEditedSinceBase(db, row.id, "keep")'),
+("queue does not open on submitted","src/pages/admin/ReviewQueuePage.tsx",'params.get("status") ?? "submitted"','params.get("status") ?? "all"'),
+("a new filter keeps the old page","src/pages/admin/ReviewQueuePage.tsx",'next.delete("offset"); // a new filter starts from the first page',""),
+("approve offered for any status","src/pages/admin/ReviewDetailPage.tsx",'!record.deleted && status === "submitted";','!record.deleted;'),
+("return accepted without a reason","src/components/ReasonDialog.tsx","if (!reason.trim()) {","if (false) {"),
+("edit sends every field","src/pages/admin/ReviewDetailPage.tsx","if ((field.name in data ? data[field.name] : null) !== value) changes[field.name] = value;","changes[field.name] = value;"),
+("edit skips validation","src/pages/admin/ReviewDetailPage.tsx","if (Object.keys(checked).length > 0) return;",""),
+("delete without confirmation","src/pages/admin/ReviewDetailPage.tsx",'onClick={() => setDialog("delete")}','onClick={() => void run("delete")}'),
+("workers can open admin pages","src/auth/RequireRole.tsx","if (user?.role !== role) {","if (false) {"),
+("admins run the sync engine","src/sync/SyncProvider.tsx",'user && user.role === "worker" ? user.id : null','user ? user.id : null'),
+("refused action reported as done","src/pages/admin/ReviewDetailPage.tsx",'if (result.status === "applied") {',"if (true) {"),
+("detail not reloaded after an action","src/pages/admin/ReviewDetailPage.tsx","        setEditing(false);\n        reload();","        setEditing(false);"),
+("network failure not explained","src/admin/api.ts","    throw new NetworkError();","    throw error;"),
 ]
 bad=0
 for d,f,old,new in M:

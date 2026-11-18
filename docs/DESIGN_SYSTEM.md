@@ -99,3 +99,20 @@ lost until they choose to discard (always behind a confirmation).
   while this waits.
 - The header shows "N need your decision" (a link to the list) whenever any inspection is waiting.
 
+## Admin pages (phase 4)
+
+Admins work online through the admin API and have no device to sync, so the header shows no pending count or
+"Sync now" for them. They land on the review queue. The screens live under `/manage/...`, not `/admin/...`:
+the proxy sends `/admin` to the Django admin.
+
+- **Review queue** (`/manage/review`): a table (site, form and version, worker, status, updated, a "Review"
+  link whose name includes the site). It opens on *submitted* records; filters for status, worker and
+  active/deleted; 25 per page with Previous/Next. Changing a filter returns to the first page.
+- **Submission** (`/manage/review/:id`): who, status and versions; the answers with the form's own field
+  titles; the full history (who did what, with a return's reason). Actions appear only when they can work:
+  Approve (submitted), Return to worker (submitted or approved, with a required reason), Edit answers, Delete
+  (behind a confirmation), Restore (deleted records only). A refusal from the server is shown in words.
+- **Edit answers** validates with the same rules as the worker form and sends only the fields that changed
+  (a cleared field as `null`); a submitted or approved record must stay complete.
+- A worker who opens an admin route sees "You don't have access to this page" and no admin request is made.
+
