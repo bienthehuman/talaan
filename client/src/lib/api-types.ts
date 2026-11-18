@@ -4,6 +4,29 @@
  */
 
 export interface paths {
+    "/api/admin/submissions/{record_id}/actions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Act on a submission as an admin
+         * @description An admin acts on one submission: approve, return, restore, delete or edit.
+         *
+         *     Same core as push (docs/protocol.md section 5): advisory lock, version bump, ledger row, event.
+         *     The answer is the service's result, so a refusal is a 200 with `rejected`.
+         */
+        post: operations["admin_submissions_actions_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/assignments/": {
         parameters: {
             query?: never;
@@ -158,6 +181,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AdminActionRequestRequest: {
+            action: string;
+            /** @default  */
+            reason: string;
+            fields?: {
+                [key: string]: unknown;
+            };
+        };
         Assignment: {
             id: number;
             form_version_id: number;
@@ -331,6 +362,73 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    admin_submissions_actions_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminActionRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AdminActionRequestRequest"];
+                "multipart/form-data": components["schemas"]["AdminActionRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MutationResult"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     assignments_retrieve: {
         parameters: {
             query?: never;

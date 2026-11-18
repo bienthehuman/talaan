@@ -119,7 +119,7 @@ and the proof in a real browser with two devices. Ordered so the test setup exis
 
 | Slice | Content | Status |
 |---|---|---|
-| 3.1 | **Admin action endpoint.** One REST endpoint over `apply_admin_action` (approve, return, restore, delete, edit), admin only, so there is a way to delete a record while a worker is offline and to restore it. Scenario 4 server half (`test_merge.py`). OpenAPI and client types regenerated. | not started |
+| 3.1 | **Admin action endpoint.** One REST endpoint over `apply_admin_action` (approve, return, restore, delete, edit), admin only, so there is a way to delete a record while a worker is offline and to restore it. Scenario 4 server half (`test_merge.py`). OpenAPI and client types regenerated. | in review |
 | 3.2 | **Resolution logic** (`client/src/db/resolve.ts`, engine). Turn the person's choices into a new mutation; keep the starting value for the screen; pull clears a `deleted_remotely` conflict when the admin restores; any new queued entry triggers a sync. No UI. | not started |
 | 3.3 | **Resolution screen** on the inspection page: starting value, mine and theirs per field, with a choice for each; the two other conflict kinds; header shows how many records need a decision. | not started |
 | 3.4 | **Playwright scenarios 4, 5, 6** with two browser contexts as two devices, then `v0.4.0`. | not started |

@@ -16,3 +16,10 @@ class IsWorkerOrAdmin(BasePermission):
     def has_permission(self, request, view) -> bool:
         user = request.user
         return bool(user and user.is_authenticated and user.role in {WORKER, ADMIN})
+
+
+class IsAdmin(BasePermission):
+    message = "Only admins can do this."
+
+    def has_permission(self, request, view) -> bool:
+        return bool(request.user and request.user.is_authenticated and request.user.role == ADMIN)

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from accounts.drf import IsWorker, IsWorkerOrAdmin
+from accounts.drf import IsAdmin, IsWorker, IsWorkerOrAdmin
 from accounts.permissions import WORKER
 from assignments.models import Assignment
 from forms.models import FormVersion
@@ -20,7 +20,7 @@ from .devices import register_device
 from .exceptions import BatchTooLarge, ClientSchemaMissing, ClientTooOld
 from .faults import find
 from .results import record_payload
-from .services import Mutation, apply_mutation
+from .services import Mutation, apply_admin_action, apply_mutation
 
 MAX_BATCH = 50
 DEFAULT_PULL_LIMIT = 200
@@ -223,3 +223,27 @@ class FormVersionListView(HeaderSchemaView):
                 ]
             }
         )
+
+
+class AdminActionView(APIView):
+    """An admin acts on one submission: approve, return, restore, delete or edit.
+
+    Same core as push (docs/protocol.md section 5): advisory lock, version bump, ledger row, event.
+    The answer is the service's result, so a refusal is a 200 with `rejected`."""
+
+    permission_classes = [IsAdmin]
+    pagination_class = None
+
+    @extend_schema(
+        request=s.AdminActionRequestSerializer,
+        responses={200: s.MutationResultSerializer, 400: s.ProblemSerializer, **PROBLEMS},
+        summary="Act on a submission as an admin",
+    )
+    def post(self, request, record_id):
+        serializer = s.AdminActionRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        result = apply_admin_action(
+            request.user, record_id, data["action"], reason=data["reason"], fields=data["fields"]
+        )
+        return Response(result)

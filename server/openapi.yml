@@ -4,6 +4,75 @@ info:
   version: 0.1.0
   description: 'Offline-first field data sync. Protocol: docs/protocol.md'
 paths:
+  /api/admin/submissions/{record_id}/actions/:
+    post:
+      operationId: admin_submissions_actions_create
+      description: |-
+        An admin acts on one submission: approve, return, restore, delete or edit.
+
+        Same core as push (docs/protocol.md section 5): advisory lock, version bump, ledger row, event.
+        The answer is the service's result, so a refusal is a 200 with `rejected`.
+      summary: Act on a submission as an admin
+      parameters:
+      - in: path
+        name: record_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminActionRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminActionRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminActionRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '426':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: ''
   /api/assignments/:
     get:
       operationId: assignments_retrieve
@@ -313,6 +382,22 @@ paths:
           description: ''
 components:
   schemas:
+    AdminActionRequestRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          minLength: 1
+          maxLength: 32
+        reason:
+          type: string
+          default: ''
+          maxLength: 500
+        fields:
+          type: object
+          additionalProperties: {}
+      required:
+      - action
     Assignment:
       type: object
       properties:
