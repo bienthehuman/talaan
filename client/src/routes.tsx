@@ -1,7 +1,10 @@
-import type { RouteObject } from "react-router";
+import { Navigate, type RouteObject } from "react-router";
 import { RequireAuth } from "./auth/RequireAuth";
+import { RequireRole } from "./auth/RequireRole";
 import { RootLayout } from "./components/RootLayout";
-import { AssignmentsPage } from "./pages/AssignmentsPage";
+import { HomePage } from "./pages/HomePage";
+import { ReviewDetailPage } from "./pages/admin/ReviewDetailPage";
+import { ReviewQueuePage } from "./pages/admin/ReviewQueuePage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { RouteError } from "./pages/RouteError";
@@ -23,7 +26,16 @@ export const routes: RouteObject[] = [
           {
             element: <RequireAuth />,
             children: [
-              { index: true, element: <AssignmentsPage /> },
+              { index: true, element: <HomePage /> },
+              {
+                path: "manage",
+                element: <RequireRole role="admin" />,
+                children: [
+                  { index: true, element: <Navigate to="/manage/review" replace /> },
+                  { path: "review", element: <ReviewQueuePage /> },
+                  { path: "review/:id", element: <ReviewDetailPage /> },
+                ],
+              },
               { path: "submissions/:id", element: <SubmissionPage /> },
             ],
           },

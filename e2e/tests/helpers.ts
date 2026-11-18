@@ -3,13 +3,17 @@ import { expect, type APIRequestContext, type Browser, type Page } from "@playwr
 /** Seeded by `python manage.py seed_demo` (scripts/e2e.sh does this). */
 export const WORKER = { username: "worker1", password: "demo-password-1" };
 
-export async function signIn(page: Page, who = WORKER) {
+/** The seeded admin. Admins start on the review queue, not on assignments. */
+export const ADMIN = { username: "admin", password: "demo-password-1" };
+
+export async function signIn(page: Page, who: { username: string; password: string } = WORKER) {
   await page.goto("/login");
   await page.getByLabel("Username").fill(who.username);
   // exact: the show/hide button's label also contains the word "password"
   await page.getByLabel("Password", { exact: true }).fill(who.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Assignments", exact: true })).toBeVisible();
+  const landing = who.username === ADMIN.username ? "Review" : "Assignments";
+  await expect(page.getByRole("heading", { name: landing, exact: true })).toBeVisible();
 }
 
 /** Wait until a service worker is installed and controlling this page, so offline reloads work. */

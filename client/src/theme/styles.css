@@ -210,6 +210,69 @@ a {
   color: var(--danger);
 }
 
+/* Admin tables and detail */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.table th {
+  font-weight: 600;
+}
+.filters {
+  align-items: flex-end;
+}
+.admin-nav {
+  display: flex;
+  gap: var(--space-4);
+  margin-inline-end: auto;
+  margin-inline-start: var(--space-4);
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin: 0;
+}
+.meta dt,
+.answers dt {
+  color: var(--text-muted, inherit);
+  font-size: 0.875rem;
+}
+.meta dd,
+.answers dd {
+  margin: 0;
+  font-weight: 600;
+}
+.answers {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+.history {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+.history li + li {
+  margin-top: var(--space-3);
+}
+
 /* Lists and form choices */
 .list {
   list-style: none;

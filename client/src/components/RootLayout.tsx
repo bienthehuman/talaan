@@ -35,7 +35,7 @@ export function RootLayout() {
           You're offline. Changes are saved on this device and will sync when you're back online.
         </Banner>
       )}
-      {user && state === "paused-auth" && <ReauthPrompt onSignedIn={resume} />}
+      {user?.role === "worker" && state === "paused-auth" && <ReauthPrompt onSignedIn={resume} />}
       {state === "upgrade-required" && (
         <Banner kind="danger">
           This version of the app is too old to sync. Your changes are safe on this device. Reload
@@ -47,13 +47,18 @@ export function RootLayout() {
           <img src="/favicon.svg" alt="" />
           Talaan
         </Link>
+        {user?.role === "admin" && (
+          <nav aria-label="Admin" className="admin-nav">
+            <Link to="/manage/review">Review</Link>
+          </nav>
+        )}
         <div className="header-meta">
-          {user && (
+          {user?.role === "worker" && (
             <span>
               {pending} pending · Last sync: {formatLastSync(lastSyncAt)}
             </span>
           )}
-          {user && conflicts > 0 && (
+          {user?.role === "worker" && conflicts > 0 && (
             <Link to="/" className="needs-decision">
               {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
             </Link>
@@ -61,9 +66,11 @@ export function RootLayout() {
           <ThemeToggle />
           {user && (
             <>
-              <Button variant="secondary" small onClick={syncNow} disabled={state === "syncing"}>
-                {state === "syncing" ? "Syncing…" : "Sync now"}
-              </Button>
+              {user.role === "worker" && (
+                <Button variant="secondary" small onClick={syncNow} disabled={state === "syncing"}>
+                  {state === "syncing" ? "Syncing…" : "Sync now"}
+                </Button>
+              )}
               <span>{user.username}</span>
               <Button variant="secondary" small onClick={requestSignOut}>
                 Sign out

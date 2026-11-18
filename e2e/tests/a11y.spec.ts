@@ -1,13 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { signIn } from "./helpers";
+import { ADMIN, signIn } from "./helpers";
 
 // The accessibility gate (docs/DESIGN_SYSTEM.md section 5): no violations in light, dark and
 // "system" dark, on every screen. Colour contrast is checked here because it needs a real browser.
 
-const SCREENS: { name: string; path: string; signedIn?: boolean }[] = [
+const SCREENS: { name: string; path: string; signedIn?: boolean; admin?: boolean }[] = [
   { name: "sign in", path: "/login" },
   { name: "assignments", path: "/", signedIn: true },
+  { name: "review queue", path: "/manage/review", signedIn: true, admin: true },
   { name: "page not found", path: "/no-such-page" },
   { name: "style guide", path: "/styleguide" },
 ];
@@ -41,8 +42,10 @@ for (const theme of THEMES) {
         if (stored) localStorage.setItem("talaan.theme", stored);
       }, theme.stored);
 
-      if (screen.signedIn) await signIn(page);
-      else await page.goto(screen.path);
+      if (screen.signedIn) {
+        await signIn(page, screen.admin ? ADMIN : undefined);
+        if (screen.path !== "/") await page.goto(screen.path);
+      } else await page.goto(screen.path);
       await page.waitForLoadState("networkidle");
 
       expect(await scan(page)).toEqual([]);
