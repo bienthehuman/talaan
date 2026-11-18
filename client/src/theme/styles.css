@@ -240,6 +240,52 @@ textarea.input {
   height: 20px;
   accent-color: var(--accent);
 }
+/* Yes/No as one segmented control: still native radios underneath, so "unanswered" stays possible and the
+   keyboard works as usual (docs/DESIGN_SYSTEM.md section 4). */
+.segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(96px, 1fr);
+  border: 1.5px solid var(--control-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.segmented .choice {
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease);
+}
+.segmented .choice + .choice {
+  border-inline-start: 1.5px solid var(--control-border);
+}
+.segmented .choice:hover {
+  background: var(--surface-2);
+}
+.segmented .choice:has(input:checked) {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.segmented .choice:has(input:checked) input {
+  accent-color: var(--accent-text);
+}
+.segmented .choice:has(input:focus-visible) {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+.segmented:has(input[aria-invalid="true"]) {
+  border-color: var(--danger);
+  border-width: 2px;
+}
+fieldset:disabled .segmented {
+  background: var(--surface-2);
+}
+fieldset:disabled .segmented .choice {
+  cursor: default;
+}
 .choice {
   display: inline-flex;
   gap: var(--space-2);

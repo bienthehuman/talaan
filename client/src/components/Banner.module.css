@@ -1,10 +1,13 @@
+/* Full-width strip under the header. A coloured edge and icon-free words; the text stays body colour. */
 .banner {
   display: flex;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
   align-items: center;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 2px solid currentColor;
-  background: var(--surface);
+  border-inline-start: 6px solid currentColor;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, currentColor 8%, var(--surface));
   font-weight: 600;
 }
 .info {

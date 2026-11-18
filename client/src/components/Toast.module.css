@@ -15,14 +15,27 @@
 }
 .toast {
   background: var(--surface);
-  border: 2px solid var(--border);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-inline-start: 6px solid var(--accent);
   border-radius: var(--radius);
   padding: var(--space-3) var(--space-4);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  box-shadow: var(--shadow-raised);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .toast {
+    animation: rise var(--dur) var(--ease);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 .success {
-  border-color: var(--ok);
+  border-inline-start-color: var(--ok);
 }
 .error {
-  border-color: var(--danger);
+  border-inline-start-color: var(--danger);
 }

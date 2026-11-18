@@ -1,7 +1,9 @@
 import type { ButtonHTMLAttributes } from "react";
 import styles from "./Button.module.css";
 
-type Variant = "primary" | "secondary" | "destructive";
+/** docs/DESIGN_SYSTEM.md section 4. `destructive` is the outlined form for page flow; `danger` is the
+ *  solid form, used only to confirm inside a dialog. */
+type Variant = "primary" | "secondary" | "quiet" | "destructive" | "danger";
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;

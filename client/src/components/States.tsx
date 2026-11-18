@@ -4,8 +4,11 @@ import styles from "./States.module.css";
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className={styles.state} role="status" aria-live="polite">
-      <p>{label}</p>
+    <div className={styles.loading} role="status" aria-live="polite">
+      <span className="sr-only">{label}</span>
+      <span className={styles.skeleton} aria-hidden="true" />
+      <span className={styles.skeleton} aria-hidden="true" />
+      <span className={styles.skeleton} aria-hidden="true" />
     </div>
   );
 }
@@ -20,7 +23,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className={styles.state}>
+    <div className={`${styles.state} ${styles.empty}`}>
       <h2>{title}</h2>
       {children && <p>{children}</p>}
       {action}

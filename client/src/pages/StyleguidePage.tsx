@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Banner } from "../components/Banner";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { StatusChip } from "../components/StatusChip";
 import { SyncBadge, type SyncState } from "../components/SyncBadge";
 import { EmptyState, ErrorState, ForbiddenState, LoadingState } from "../components/States";
 import { PasswordField, TextField } from "../components/TextField";
@@ -61,8 +62,11 @@ export function StyleguidePage() {
         <div className="row">
           <Button>Primary</Button>
           <Button variant="secondary">Secondary</Button>
+          <Button variant="quiet">Quiet</Button>
           <Button variant="destructive">Destructive</Button>
+          <Button variant="danger">Confirm delete</Button>
           <Button disabled>Disabled</Button>
+          <Button aria-busy="true">Busy…</Button>
           <Button small>Small</Button>
         </div>
       </section>
@@ -72,14 +76,40 @@ export function StyleguidePage() {
         <TextField label="Site name" hint="As written on the assignment." />
         <TextField label="Oil level" error="Choose a level before you submit." />
         <PasswordField label="Password" />
+        <fieldset className="field field--choice">
+          <legend>Coolant level is correct</legend>
+          <div className="segmented">
+            {["Yes", "No"].map((c) => (
+              <label key={c} className="choice">
+                <input type="radio" name="sg-yesno" defaultChecked={c === "Yes"} />
+                {c}
+              </label>
+            ))}
+          </div>
+        </fieldset>
       </section>
 
       <section aria-labelledby="sg-badges" className="stack">
-        <h2 id="sg-badges">Sync badges</h2>
-        <div className="row">
+        <h2 id="sg-badges">Station line</h2>
+        <ul className="list">
           {STATES.map((s) => (
-            <SyncBadge key={s} state={s} reason={s === "rejected" ? "approved" : undefined} />
+            <li key={s} className="list-row">
+              <SyncBadge state={s} reason={s === "rejected" ? "approved" : undefined} />
+            </li>
           ))}
+          <li className="list-row">
+            <SyncBadge state="synced" reviewed />
+          </li>
+        </ul>
+        <SyncBadge state="pending" full />
+        <SyncBadge state="conflict" full />
+        <h3>Status chips</h3>
+        <div className="row">
+          <StatusChip status="draft" />
+          <StatusChip status="submitted" />
+          <StatusChip status="approved" />
+          <StatusChip status="returned" />
+          <StatusChip status="submitted" deleted />
         </div>
       </section>
 

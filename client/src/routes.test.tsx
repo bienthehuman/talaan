@@ -43,7 +43,7 @@ describe("routing", () => {
       "Needs your decision",
       "Not accepted: approved",
     ]) {
-      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
     await expectNoA11yViolations(container);
   });

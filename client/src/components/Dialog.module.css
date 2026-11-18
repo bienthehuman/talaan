@@ -1,12 +1,13 @@
 /* Shared by ConfirmDialog and ReasonDialog. */
 .dialog {
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--text);
   padding: var(--space-5);
   max-width: min(480px, calc(100vw - 2 * var(--space-4)));
+  box-shadow: var(--shadow-raised);
 }
 .dialog::backdrop {
-  background: rgb(0 0 0 / 0.5);
+  background: rgb(11 12 14 / 0.6);
 }

@@ -8,29 +8,66 @@
   min-width: var(--tap);
   padding: 0 var(--space-4);
   border-radius: var(--radius);
-  border: 2px solid transparent;
+  border: 1.5px solid transparent;
   font: inherit;
   font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.button:active:not([disabled], [aria-disabled="true"]) {
+  transform: translateY(1px);
 }
 .button[disabled],
 .button[aria-disabled="true"] {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+.button[aria-busy="true"] {
+  cursor: progress;
 }
 .primary {
   background: var(--accent);
   color: var(--accent-text);
 }
+.primary:hover:not([disabled]) {
+  background: var(--accent-hover);
+}
 .secondary {
-  background: transparent;
+  background: var(--surface);
   color: var(--text);
   border-color: var(--control-border);
 }
+.secondary:hover:not([disabled]) {
+  background: var(--surface-2);
+  border-color: var(--text-muted);
+}
+.quiet {
+  background: transparent;
+  color: var(--accent);
+  padding-inline: var(--space-3);
+}
+.quiet:hover:not([disabled]) {
+  background: var(--surface-2);
+  color: var(--accent-hover);
+}
 .destructive {
+  background: var(--surface);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.destructive:hover:not([disabled]),
+.danger {
   background: var(--danger);
   color: var(--accent-text);
+  border-color: var(--danger);
+}
+.danger:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--text));
 }
 .small {
   min-height: var(--tap-min);

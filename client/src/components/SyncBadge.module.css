@@ -1,21 +1,85 @@
-/* Icon + text, never colour alone. */
+/* The station line (docs/DESIGN_SYSTEM.md section 3). Stops sit at the same positions on every row.
+   Icon + words carry the state; the line is never the only signal. */
 .badge {
+  --stop: 12px;
+  --gap: 22px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.line {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--stop);
+  column-gap: var(--gap);
+  align-items: center;
+  /* Room for the current stop's halo. */
+  margin-inline: 4px;
+}
+/* The track behind the stops. */
+.line::before {
+  content: "";
+  position: absolute;
+  inset-inline: calc(var(--stop) / 2);
+  top: calc(var(--stop) / 2 - 1.5px);
+  height: 3px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+.stop {
+  position: relative;
+  width: var(--stop);
+  height: var(--stop);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 2.5px solid var(--control-border);
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+/* Stops already passed: a solid connector to the next stop, in the state colour. */
+.passed {
+  background: currentColor;
+  border-color: currentColor;
+}
+.passed::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: calc(50% - 1.5px);
+  width: calc(var(--gap) + 3px);
+  height: 3px;
+  background: currentColor;
+}
+.here {
+  background: currentColor;
+  border-color: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 22%, transparent);
+}
+/* The line breaks before the office: no coloured connector into the red stop, only the grey track. */
+.passed:has(+ .broken)::after {
+  content: none;
+}
+.label {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 2px var(--space-3);
-  border-radius: 999px;
-  border: 2px solid currentColor;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  background: var(--surface);
 }
-.badge svg {
+.label svg {
   width: 16px;
   height: 16px;
+  flex: none;
 }
 .pending {
   color: var(--pending);
+}
+.pending .here {
+  background: var(--pending-mark);
+  border-color: var(--pending-mark);
 }
 .syncing {
   color: var(--accent);
@@ -27,14 +91,56 @@
 .rejected {
   color: var(--danger);
 }
+/* conflict/rejected: what got through is shown neutral, so only the break is red. */
+.conflict .passed,
+.rejected .passed {
+  color: var(--text-muted);
+}
+
+/* Full line: station names under the stops (inspection and sync pages). */
+.full {
+  --stop: 14px;
+  --gap: 62px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+/* Names wrap to two lines under their stop; the margins keep the outer names inside the box. */
+.full .line {
+  margin-inline: 36px;
+  margin-bottom: 36px;
+}
+.station {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  width: 72px;
+  transform: translateX(-50%);
+  text-align: center;
+  line-height: 1.2;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .spinner {
     animation: spin 1s linear infinite;
+    transform-origin: 12px 12px;
+  }
+  .syncing .here {
+    animation: pulse 1.2s var(--ease) infinite;
   }
 }
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 10%, transparent);
   }
 }
