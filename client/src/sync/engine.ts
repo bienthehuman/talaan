@@ -8,6 +8,7 @@ import {
   takeBatch,
   type TalaanDb,
 } from "../db";
+import type { RefreshOutcome } from "../auth/refresh";
 import { backoffMs } from "./backoff";
 import { SyncFailure, type Failure } from "./classify";
 import { BUSY, withSyncLock } from "./lock";
@@ -35,6 +36,18 @@ export interface EngineOptions {
   deviceId: string;
   /** Injectable for exact backoff tests. */
   random?: () => number;
+  /** Called once per cycle on a 401. `refreshed` means try the cycle again. */
+  refresh?: () => Promise<RefreshOutcome>;
+}
+
+/** Engines that are running, so sign-out can stop one and wait for it before wiping its data. */
+const running = new Map<number, SyncEngine>();
+
+export async function stopEngineFor(userId: number): Promise<void> {
+  const engine = running.get(userId);
+  if (!engine) return;
+  engine.stop();
+  await engine.settled();
 }
 
 export class SyncEngine {
@@ -42,6 +55,7 @@ export class SyncEngine {
   private readonly userId: number;
   private readonly deviceId: string;
   private readonly random: () => number;
+  private readonly refresh: (() => Promise<RefreshOutcome>) | undefined;
   private status: EngineStatus = {
     state: "idle",
     lastSyncAt: null,
@@ -60,6 +74,7 @@ export class SyncEngine {
     this.userId = options.userId;
     this.deviceId = options.deviceId;
     this.random = options.random ?? Math.random;
+    this.refresh = options.refresh;
   }
 
   getStatus = (): EngineStatus => this.status;
@@ -78,6 +93,7 @@ export class SyncEngine {
   start(): void {
     if (this.started) return;
     this.started = true;
+    running.set(this.userId, this);
     window.addEventListener("online", this.onTrigger);
     this.interval = setInterval(this.onTrigger, SYNC_INTERVAL_MS);
     void getMeta<number>(this.db, "lastSyncAt").then((at) => {
@@ -88,6 +104,7 @@ export class SyncEngine {
 
   stop(): void {
     this.started = false;
+    if (running.get(this.userId) === this) running.delete(this.userId);
     window.removeEventListener("online", this.onTrigger);
     clearInterval(this.interval);
     clearTimeout(this.retryTimer);
@@ -99,6 +116,11 @@ export class SyncEngine {
     if (state === "paused-auth" || state === "upgrade-required" || state === "error") return;
     void this.syncNow();
   };
+
+  /** Resolves when no cycle is running. */
+  async settled(): Promise<void> {
+    await this.running?.catch(() => undefined);
+  }
 
   /** After the user signs in again or the token is refreshed. */
   resume(): Promise<CycleOutcome> {
@@ -120,21 +142,39 @@ export class SyncEngine {
     return outcome === BUSY ? "busy" : outcome;
   }
 
-  private async cycle(): Promise<CycleOutcome> {
-    this.set({ state: "syncing", retryAt: null });
+  /** One attempt, with one token refresh if the server says 401. */
+  private async cycle(refreshed = false): Promise<CycleOutcome> {
     try {
-      await this.push();
-      await this.pull();
-      await saveReferenceData(this.db, await fetchAssignments(), await fetchFormVersions());
-      const now = Date.now();
-      await setMeta(this.db, "lastSyncAt", now);
-      this.failures = 0;
-      this.set({ state: "idle", lastSyncAt: now, lastError: null });
+      await this.attempt();
       return "ok";
     } catch (error) {
-      if (error instanceof SyncFailure) return this.fail(error.failure);
-      throw error;
+      if (!(error instanceof SyncFailure)) {
+        // The local database failed (closed on sign-out, storage full). Never an unhandled rejection.
+        if (!this.db.isOpen()) return "busy"; // wiped on sign-out
+        return this.fail({ kind: "fatal", reason: "local_error" });
+      }
+      const failure = error.failure;
+      if (failure.kind === "auth" && this.refresh && !refreshed) {
+        const outcome = await this.refresh();
+        if (outcome === "refreshed") return this.cycle(true);
+        if (outcome === "unreachable") {
+          return this.fail({ kind: "transient", reason: "network", retryAfterMs: 0 });
+        }
+        return this.fail({ kind: "auth", reason: "session_expired" });
+      }
+      return this.fail(failure);
     }
+  }
+
+  private async attempt(): Promise<void> {
+    this.set({ state: "syncing", retryAt: null });
+    await this.push();
+    await this.pull();
+    await saveReferenceData(this.db, await fetchAssignments(), await fetchFormVersions());
+    const now = Date.now();
+    await setMeta(this.db, "lastSyncAt", now);
+    this.failures = 0;
+    this.set({ state: "idle", lastSyncAt: now, lastError: null });
   }
 
   private async push(): Promise<void> {

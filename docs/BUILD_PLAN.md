@@ -79,7 +79,7 @@ resume, then the thinnest UI that lets Playwright drive it all.
 |---|---|---|
 | 2.1 | **Local layer** (`src/db/`). Dexie schema and migrations; stores per DATA_MODEL section 2; `meta` (`deviceId`, `userId`, cursor); repositories; `editSubmission` = record + outbox entry in one transaction; coalescing of unsent edits only; all data keyed by `userId`. | in review |
 | 2.2 | **Sync engine** (`src/sync/`). Push then pull, per-result handling (applied / conflict / rejected), reference-data download, backoff with jitter, error classes, Web Locks, triggers (start, `online`, 60 s, "Sync now"); real `SyncBadge` status. | in review |
-| 2.3 | **Auth resume.** Token refresh, 401 pause and resume with the outbox untouched, logout confirmation with unsent changes, token storage decision (ADR 0010). | not started |
+| 2.3 | **Auth resume.** Token refresh, 401 pause and resume with the outbox untouched, logout confirmation with unsent changes, token storage decision (ADR 0010). | in review |
 | 2.4 | **Worker UI, thin.** Assignments and submissions read from IndexedDB; form filler (Zod built from the form JSON) that creates, edits, submits, deletes offline. Conflict and rejected states are shown as status only (resolution screen is phase 3). | not started |
 | 2.5 | **Playwright scenarios and release.** Scenarios 1, 2 (client half), 9 against the compose stack with `X-Fault`; `v0.3.0`. | not started |
 
@@ -166,5 +166,6 @@ resume, then the thinnest UI that lets Playwright drive it all.
 | Public demo: seeded logins and a nightly data reset, without running Django in debug | Playbook, slice 0.5 | when a host exists | needs its own demo flag; `seed_demo` is debug-only today |
 | Monitoring and alerting (uptime check on `/api/health/`, metrics) | Slice 0.5 | v1 operability | `/metrics` is in the v1 plan |
 | Sign release images (cosign) and publish an SBOM | Slice 0.5 | later | |
+| Revoke refresh tokens server-side (rotation with grace for a lost refresh response, or a per-user token version) | ADR 0010 | later | |
 | Clear the Dependabot `minimatch` alert (build-time only, via vite-plugin-pwa > workbox-build > glob): try an npm `overrides` entry, or dismiss as tolerable | Slice 0.5 | when convenient | `npm audit --omit=dev` is already clean |
 | Postgres major-version upgrade procedure, tested | Slice 0.5 | later | currently a manual note in DEPLOY.md |

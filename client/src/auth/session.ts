@@ -1,8 +1,7 @@
 /** Persisted session so the app opens offline after the first login.
  *
- *  Tokens live in localStorage for the skeleton. This is a known trade-off (readable by any script
- *  on the origin, which CSP limits to our own); phase 2 revisits it together with token refresh and
- *  keys all local data by userId. */
+ *  Tokens live in localStorage; the trade-off and the alternatives are in ADR 0010. Local data is
+ *  kept in one IndexedDB database per user (src/db). */
 
 export interface SessionUser {
   id: number;

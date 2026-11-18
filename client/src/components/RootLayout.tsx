@@ -6,6 +6,7 @@ import { useSyncStatus } from "../sync/status";
 import { Banner } from "./Banner";
 import { Button } from "./Button";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { ReauthPrompt } from "./ReauthPrompt";
 import { ThemeToggle } from "./ThemeToggle";
 
 function formatLastSync(date: Date | null): string {
@@ -15,7 +16,7 @@ function formatLastSync(date: Date | null): string {
 export function RootLayout() {
   const { user, logout } = useAuth();
   const online = useOnline();
-  const { pending, lastSyncAt, state, syncNow } = useSyncStatus();
+  const { pending, lastSyncAt, state, syncNow, resume } = useSyncStatus();
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
 
   function requestSignOut() {
@@ -34,6 +35,7 @@ export function RootLayout() {
           You're offline. Changes are saved on this device and will sync when you're back online.
         </Banner>
       )}
+      {user && state === "paused-auth" && <ReauthPrompt onSignedIn={resume} />}
       {state === "upgrade-required" && (
         <Banner kind="danger">
           This version of the app is too old to sync. Your changes are safe on this device. Reload

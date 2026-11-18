@@ -28,6 +28,7 @@ function setup() {
     getStatus: engine.getStatus,
     subscribe: engine.subscribe,
     syncNow: () => engine.syncNow(),
+    resume: () => engine.resume(),
     db,
   };
   render(

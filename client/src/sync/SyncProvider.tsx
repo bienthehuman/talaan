@@ -1,5 +1,6 @@
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useAuth } from "../auth/AuthContext";
+import { refreshSession } from "../auth/refresh";
 import { dbFor, getDeviceId } from "../db";
 import { SyncContext, type EngineHandle } from "./context";
 import { SyncEngine } from "./engine";
@@ -13,7 +14,12 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     () =>
       userId === null
         ? null
-        : new SyncEngine({ db: dbFor(userId), userId, deviceId: getDeviceId() }),
+        : new SyncEngine({
+            db: dbFor(userId),
+            userId,
+            deviceId: getDeviceId(),
+            refresh: refreshSession,
+          }),
     [userId],
   );
 
@@ -30,6 +36,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
             getStatus: engine.getStatus,
             subscribe: engine.subscribe,
             syncNow: () => engine.syncNow(),
+            resume: () => engine.resume(),
             db: dbFor(userId),
           }
         : null,
