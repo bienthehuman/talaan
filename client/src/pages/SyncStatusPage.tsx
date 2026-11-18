@@ -91,7 +91,7 @@ export function SyncStatusPage() {
           </div>
         </dl>
         <p role="status">{describeState(status.state, status.pending, status.retryAt)}</p>
-        <div>
+        <div className="actions">
           <Button
             variant={status.pending > 0 ? "primary" : "secondary"}
             onClick={status.syncNow}

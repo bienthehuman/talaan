@@ -10,7 +10,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { InstallPrompt } from "./InstallPrompt";
 import { ReauthPrompt } from "./ReauthPrompt";
 import styles from "./RootLayout.module.css";
-import { ThemeToggle } from "./ThemeToggle";
+import { AccountMenu } from "./AccountMenu";
 
 function formatLastSync(date: Date | null): string {
   return date ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "never";
@@ -41,15 +41,7 @@ export function RootLayout() {
             <img src="/favicon.svg" alt="" />
             Talaan
           </Link>
-          <div className={styles.account}>
-            {user && <span className={styles.user}>{user.username}</span>}
-            <ThemeToggle className={styles.onBand} />
-            {user && (
-              <Button variant="secondary" small className={styles.onBand} onClick={requestSignOut}>
-                Sign out
-              </Button>
-            )}
-          </div>
+          <AccountMenu user={user} onSignOut={requestSignOut} />
         </div>
         {user?.role === "worker" && (
           <div className={styles.sync}>

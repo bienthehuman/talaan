@@ -222,6 +222,7 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 | 5.4 | **Worker pages.** Assignments, inspection (sticky submit, Delete moved), sync status, conflict panel, login, 404/error (via the quiet states from 5.2). | done |
 | 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | done |
 | 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | done |
+| 5.8 | **Controls polish** (owner feedback after `v1.1.0`): input focus as a highlight, eye button in password fields, roomier and styled selects and date fields, account menu with the theme as three choices and Sign out, right-aligned button groups, centred dialogs. | in review |
 
 ### Definition of done per slice (phase 5)
 

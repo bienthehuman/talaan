@@ -270,8 +270,8 @@ export function SubmissionPage() {
         ))}
         {!locked && (
           <div className={styles.actions}>
-            <Button type="submit">Submit inspection</Button>
             <span className={styles.saved}>Every change is saved on this device as you type.</span>
+            <Button type="submit">Submit inspection</Button>
           </div>
         )}
         {row.syncState === "rejected" && (

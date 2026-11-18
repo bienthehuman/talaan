@@ -87,8 +87,9 @@ labels, with 0.06 em tracking.
   are 0 and the "Sending" stop does not pulse.
 - Tap targets: `--tap` 48 px default, `--tap-min` 44 px minimum on worker pages (section 4); admin controls
   ≥ 40 px.
-- Focus: 3 px ring in `--accent` (`--band-focus` on the band), 2 px offset, on every interactive element;
-  never removed.
+- Focus: 3 px ring in `--accent` (`--band-focus` on the band), 2 px offset, on buttons, links and choices;
+  never removed. Text fields, selects and the Yes/No group show focus as a highlight instead: an `--accent`
+  edge and a 4 px halo (the edge change alone is ≥ 3:1).
 
 ## 3. Sync state: the station line
 
@@ -118,12 +119,13 @@ a list reads top to bottom.
   approval.
 
 **Header: the sign band.** A `--band` bar across the top in both schemes. Row 1: the brand mark (a ring
-in the line colour) and "Talaan", then the account controls (user name, theme, Sign out) as quiet buttons
-on the band. Worker row 2: the pending count as one large numeral with "pending · Last sync 08:32" beside
+in the line colour) and "Talaan", then the account menu: an avatar and the user name ("Account: worker1")
+that opens a panel with who is signed in, the theme as three plain choices (System, Light, Dark) and Sign
+out. Signed out, the same control is "Display settings" and holds only the theme. It is a disclosure (Tab
+moves through the panel; Escape or a click outside closes it), not an ARIA menu. Worker row 2: the pending count as one large numeral with "pending · Last sync 08:32" beside
 it (still one link to `/sync`, accessible name unchanged), "N need your decision" as a red chip when there
 is one, and Sync now as the solid primary. So a phone header is two rows, and the tab order follows the rows.
-Below 600 px the theme button shows only its icon (half-filled circle, sun, moon); its accessible name stays
-"Theme: System / Light / Dark".
+The theme is no longer a button that cycles through choices.
 
 **Admin navigation.** Desktop: a left rail on `--surface-2` with Review, Forms, Assignments, Conflict log;
 the current page has `aria-current="page"`, an accent bar and bold text. Below 900 px: the same links as a
@@ -156,6 +158,16 @@ update required, storage not persisted), empty state, skeleton/loading, error st
   the whole row clickable as well as its named link (`row-link`). Below 600 px a table can become a list of
   cards (`<Table stack>`, cells carry `data-label`; empty cells are hidden). The table roles survive, which the
   mobile e2e project checks.
+
+- **Button groups** (`actions`): right-aligned, with the most important action last, at the far right
+  (Cancel, then Delete; Previous, then Next). A leading count or hint stays on the left. Dialogs are centred
+  on the screen both ways.
+- **Password fields**: the familiar eye button inside the field's right edge ("Show password" / "Hide
+  password", `aria-pressed`).
+- **Selects**: our chevron and the same inner spacing as text fields. Where the browser supports a
+  customizable select (`appearance: base-select`), the open list matches too (surface, radius, shadow, tinted
+  selected option); elsewhere it is the system list. **Date fields** use our calendar icon; the calendar
+  itself stays the system one, which is the best picker on a phone and works with assistive technology.
 
 Every control a worker taps is at least `--tap-min` (44 px; default 48), measured in CI (section 2 and
 "Worker experience" below).

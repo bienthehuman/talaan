@@ -184,7 +184,7 @@ function Editor({
               </ul>
             </div>
           )}
-          <div>
+          <div className="actions">
             <Button disabled={!canPublish} onClick={() => setConfirming(true)}>
               Publish version {next}
             </Button>

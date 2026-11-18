@@ -33,6 +33,7 @@ describe("signing out with unsent changes", () => {
     signIn();
     renderApp("/");
     const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /^Account/ }));
     await user.click(screen.getByRole("button", { name: "Sign out" }));
 
     const dialog = screen.getByRole("dialog", { name: "Sign out with unsent changes?" });
@@ -47,6 +48,7 @@ describe("signing out with unsent changes", () => {
     signIn();
     renderApp("/");
     const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /^Account/ }));
     await user.click(screen.getByRole("button", { name: "Sign out" }));
     await user.click(screen.getByRole("button", { name: "Sign out and delete" }));
 
@@ -58,7 +60,9 @@ describe("signing out with unsent changes", () => {
     status.pending = 1;
     signIn();
     renderApp("/");
-    await userEvent.setup().click(screen.getByRole("button", { name: "Sign out" }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /^Account/ }));
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
     expect(screen.getByRole("dialog")).toHaveTextContent(
       "1 change is saved only on this device. Signing out will delete it.",
     );
@@ -73,6 +77,7 @@ describe("signing out removes the person's data from the device", () => {
     renderApp("/");
     const user = userEvent.setup();
 
+    await user.click(screen.getByRole("button", { name: /^Account/ }));
     await user.click(screen.getByRole("button", { name: "Sign out" }));
     expect(await Dexie.exists("talaan-user-2")).toBe(true); // asked first; nothing deleted yet
     await user.click(screen.getByRole("button", { name: "Sign out and delete" }));

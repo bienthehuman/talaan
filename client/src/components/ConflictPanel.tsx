@@ -101,7 +101,7 @@ export function ConflictPanel({ db, row, definition, onDiscard }: Props) {
               {problem}
             </p>
           )}
-          <div className="row">
+          <div className="actions">
             <Button onClick={() => void apply()} disabled={undecided.length > 0}>
               Apply my choices
             </Button>
@@ -129,7 +129,7 @@ export function ConflictPanel({ db, row, definition, onDiscard }: Props) {
             To keep working on it, ask an admin to restore it. Your changes are sent again
             automatically once it is back. Or discard them.
           </p>
-          <div className="row">
+          <div className="actions">
             <Button variant="secondary" onClick={onDiscard}>
               Discard my changes
             </Button>
@@ -150,7 +150,7 @@ export function ConflictPanel({ db, row, definition, onDiscard }: Props) {
               </li>
             ))}
           </ul>
-          <div className="row">
+          <div className="actions">
             <Button onClick={() => void resolveEditedSinceBase(db, row.id, "keep")}>
               Keep the inspection
             </Button>

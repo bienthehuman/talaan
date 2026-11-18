@@ -57,7 +57,7 @@ export function ReasonDialog({ open, title, label, confirmLabel, onConfirm, onCa
           </span>
         )}
       </div>
-      <div className="row">
+      <div className="actions">
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>

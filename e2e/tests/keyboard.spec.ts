@@ -28,7 +28,7 @@ test("every interactive element shows a visible focus ring", async ({ page }) =>
   const stops = [
     "Skip to content",
     "Talaan",
-    "Theme: System",
+    "Display settings",
     "Username",
     "Show password",
     "Sign in",
@@ -38,10 +38,17 @@ test("every interactive element shows a visible focus ring", async ({ page }) =>
     const outline = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
       const cs = getComputedStyle(el);
-      return { width: parseFloat(cs.outlineWidth), style: cs.outlineStyle };
+      // Buttons and links get a 3 px outline; text fields a highlight (accent edge and halo) instead.
+      return {
+        width: parseFloat(cs.outlineWidth),
+        style: cs.outlineStyle,
+        halo: cs.boxShadow !== "none" && el.matches(".input"),
+      };
     });
-    expect(outline.style, `stop ${i + 1}`).not.toBe("none");
-    expect(outline.width, `stop ${i + 1}`).toBeGreaterThanOrEqual(2);
+    if (!outline.halo) {
+      expect(outline.style, `stop ${i + 1}`).not.toBe("none");
+      expect(outline.width, `stop ${i + 1}`).toBeGreaterThanOrEqual(2);
+    }
   }
 });
 

@@ -162,7 +162,7 @@ export function ConflictLogPage() {
               ))}
             </tbody>
           </Table>
-          <nav className="row" aria-label="Pages">
+          <nav className="actions" aria-label="Pages">
             <span>
               {offset + 1}–{offset + results.length} of {count}
             </span>

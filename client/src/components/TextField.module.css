@@ -1,4 +1,36 @@
 .inputGroup {
+  position: relative;
   display: flex;
-  gap: var(--space-2);
+}
+/* Room inside the field for the adornment button. */
+.adorned :global(.input) {
+  padding-inline-end: calc(var(--tap-min) + var(--space-2));
+}
+/* The eye button sits inside the field's right edge: 44 px target, quiet until hovered. */
+.reveal {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.reveal:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.reveal[aria-pressed="true"] {
+  color: var(--accent);
+}
+.reveal svg {
+  width: 22px;
+  height: 22px;
 }
