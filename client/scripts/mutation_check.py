@@ -28,8 +28,16 @@ M=[
 ("refresh requests not shared","src/auth/refresh.ts","inFlight ??= run().finally","inFlight = run().finally"),
 ("refresh forgets the refresh token","src/auth/refresh.ts","saveSession({ ...session, access });",'saveSession({ ...session, access, refresh: "" });'),
 ("re-login accepts a different person","src/auth/AuthContext.tsx","if (me.id !== current.id) throw new WrongUserError();",""),
-("sign-out keeps the data","src/auth/AuthContext.tsx","void stopEngineFor(leaving).then(() => deleteDbFor(leaving));","void stopEngineFor(leaving);"),
+("sign-out keeps the data","src/auth/AuthContext.tsx","void wipeUser(leaving);","void 0;"),
 ("401 after refresh does not pause","src/sync/engine.ts",'return this.fail({ kind: "auth", reason: "session_expired" });','return this.fail({ kind: "transient", reason: "x", retryAfterMs: 0 });'),
+("form saves values the server would refuse","src/pages/SubmissionPage.tsx","if (!check[field.name]) void save(field, converted.value);","void save(field, converted.value);"),
+("submit skips the required-field check","src/pages/SubmissionPage.tsx","validateRecord(definition, row!.data, { complete: true })","validateRecord(definition, row!.data, { complete: false })"),
+("a refused value vanishes from the screen","src/pages/SubmissionPage.tsx","text !== undefined && sameValue(f, text, row.data[f.name])","text !== undefined"),
+("submitted form stays editable","src/pages/SubmissionPage.tsx","disabled={locked !== null}","disabled={false}"),
+("cancelled assignment can start inspections","src/pages/AssignmentsPage.tsx","{!assignment.cancelled && (","{true && ("),
+("list shows deleted inspections","src/pages/AssignmentsPage.tsx",".filter((s) => !s.deleted)",""),
+("required fields not enforced by the validator","src/forms/validate.ts","complete && field.required ? base : base.optional()","base.optional()"),
+("integer accepts fractions",'src/forms/validate.ts','z.number().int({ error: "Enter a whole number." })','z.number()'),
 ]
 bad=0
 for d,f,old,new in M:

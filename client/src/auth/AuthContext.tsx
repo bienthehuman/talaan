@@ -1,8 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { deleteDbFor } from "../db";
 import { api, unwrap } from "../lib/api";
 import { ApiError, NetworkError } from "../lib/problem";
-import { stopEngineFor } from "../sync/engine";
+import { whenWiped, wipeUser } from "./wipe";
 import { clearSession, getSession, saveSession, type SessionUser } from "./session";
 
 interface AuthValue {
@@ -27,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const tokens = unwrap(await api.POST("/api/auth/token/", { body: { username, password } }));
 
+      await whenWiped(); // a sign-out in progress must finish before new local data exists
       // Store the token first so the /me request carries it.
       saveSession({ ...tokens, user: { id: 0, username, role: null, permissions: [] } });
       let me;
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     if (leaving !== undefined) {
       // A shared device must not keep the last person's records. Stop their sync, then delete.
-      void stopEngineFor(leaving).then(() => deleteDbFor(leaving));
+      void wipeUser(leaving);
     }
   }, [user]);
 
