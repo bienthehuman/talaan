@@ -41,3 +41,5 @@ server/staticfiles/
 backups/
 .env.prod
 loadtest/results/*/server-*.log
+docs/media/*.webm
+e2e/demo-output/
