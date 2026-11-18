@@ -22,6 +22,7 @@ import { statusLabel } from "../../lib/status";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
+import styles from "./ReviewDetailPage.module.css";
 
 const KIND_LABEL: Record<string, string> = {
   created: "Created",
@@ -181,7 +182,7 @@ export function ReviewDetailPage() {
           />
         )}
         {form && !editing && (
-          <dl className="answers">
+          <dl className={styles.answers}>
             {form.fields.map((f) => (
               <div key={f.name}>
                 <dt>{f.title}</dt>
@@ -197,7 +198,7 @@ export function ReviewDetailPage() {
         {record.events.length === 0 ? (
           <EmptyState title="No history yet" />
         ) : (
-          <ol className="history">
+          <ol className={styles.history}>
             {record.events.map((e) => (
               <li key={e.id}>
                 <strong>{KIND_LABEL[e.kind] ?? e.kind}</strong> · version {e.version}

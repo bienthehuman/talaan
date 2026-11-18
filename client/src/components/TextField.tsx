@@ -1,5 +1,6 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Button } from "./Button";
+import styles from "./TextField.module.css";
 
 interface FieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
   label: string;
@@ -22,7 +23,7 @@ export function TextField({ label, hint, error, adornment, ...input }: FieldProp
           {hint}
         </span>
       )}
-      <div className="input-group">
+      <div className={styles.inputGroup}>
         <input
           id={id}
           className="input"

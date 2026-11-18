@@ -1,0 +1,10 @@
+.state {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+}
+.state h2 {
+  margin-bottom: var(--space-2);
+}
+.state p {
+  color: var(--text-muted);
+}

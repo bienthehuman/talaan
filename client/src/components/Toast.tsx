@@ -7,6 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { Button } from "./Button";
+import styles from "./Toast.module.css";
 
 type Kind = "info" | "success" | "error";
 interface ToastItem {
@@ -43,22 +45,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="toasts">
+      <div className={styles.toasts}>
         {/* An error is announced at once; other toasts wait for a pause. Each list keeps its own region. */}
-        <div className="toast-list">
+        <div className={styles.list}>
           {items
             .filter((t) => t.kind === "error")
             .map((t) => (
-              <div key={t.id} className="toast toast--error" role="alert">
+              <div key={t.id} className={`${styles.toast} ${styles.error}`} role="alert">
                 <ToastBody item={t} onDismiss={dismiss} />
               </div>
             ))}
         </div>
-        <div className="toast-list" role="status" aria-live="polite">
+        <div className={styles.list} role="status" aria-live="polite">
           {items
             .filter((t) => t.kind !== "error")
             .map((t) => (
-              <div key={t.id} className={`toast toast--${t.kind}`}>
+              <div
+                key={t.id}
+                className={
+                  t.kind === "success" ? `${styles.toast} ${styles.success}` : styles.toast
+                }
+              >
                 <ToastBody item={t} onDismiss={dismiss} />
               </div>
             ))}
@@ -72,9 +79,9 @@ function ToastBody({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
   return (
     <>
       {item.message}{" "}
-      <button className="btn btn--secondary btn--small" onClick={() => onDismiss(item.id)}>
+      <Button variant="secondary" small onClick={() => onDismiss(item.id)}>
         Dismiss
-      </button>
+      </Button>
     </>
   );
 }

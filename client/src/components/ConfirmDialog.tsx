@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Button } from "./Button";
+import styles from "./Dialog.module.css";
 
 interface Props {
   open: boolean;
@@ -31,7 +32,7 @@ export function ConfirmDialog({
   }, [open]);
 
   return (
-    <dialog ref={ref} className="dialog" aria-labelledby="confirm-title" onCancel={onCancel}>
+    <dialog ref={ref} className={styles.dialog} aria-labelledby="confirm-title" onCancel={onCancel}>
       <h2 id="confirm-title">{title}</h2>
       <p>{message}</p>
       <div className="row">

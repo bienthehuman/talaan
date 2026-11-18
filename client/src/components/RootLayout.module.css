@@ -1,0 +1,58 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--text);
+  text-decoration: none;
+  margin-right: auto;
+}
+.brand img {
+  width: 28px;
+  height: 28px;
+}
+.adminNav {
+  display: flex;
+  gap: var(--space-4);
+  margin-inline-end: auto;
+  margin-inline-start: var(--space-4);
+}
+/* Account controls share the brand's row; a worker's sync status is a strip of its own below, so on a
+   phone the header is two rows rather than three. */
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.user {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-inline-end: var(--space-1);
+}
+.sync {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-4);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+.syncNow {
+  margin-inline-start: auto;
+}
+.needsDecision {
+  color: var(--danger);
+  font-weight: 600;
+}

@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { Button } from "./Button";
+import styles from "./States.module.css";
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="state" role="status" aria-live="polite">
+    <div className={styles.state} role="status" aria-live="polite">
       <p>{label}</p>
     </div>
   );
@@ -19,7 +20,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="state">
+    <div className={styles.state}>
       <h2>{title}</h2>
       {children && <p>{children}</p>}
       {action}
@@ -37,7 +38,7 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="state" role="alert">
+    <div className={styles.state} role="alert">
       <h2>{title}</h2>
       <p>{children}</p>
       {onRetry && <Button onClick={onRetry}>Try again</Button>}
@@ -47,7 +48,7 @@ export function ErrorState({
 
 export function ForbiddenState() {
   return (
-    <div className="state">
+    <div className={styles.state}>
       <h2>You don't have access to this page</h2>
       <p>Ask an admin if you think you should.</p>
     </div>

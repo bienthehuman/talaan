@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { createForm, listForms } from "../../admin/api";
-import { Button } from "../../components/Button";
+import { Button, buttonClass } from "../../components/Button";
 import { EmptyState, ErrorState, LoadingState } from "../../components/States";
 import { TextField } from "../../components/TextField";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
@@ -76,7 +76,7 @@ export function FormsPage() {
               </ul>
             )}
             <div>
-              <Link className="btn btn--secondary" to={`/manage/forms/${form.id}/edit`}>
+              <Link className={buttonClass("secondary")} to={`/manage/forms/${form.id}/edit`}>
                 {latest ? "New version" : "Write the first version"}
               </Link>
             </div>

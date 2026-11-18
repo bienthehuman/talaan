@@ -11,6 +11,7 @@ import { useDebounced } from "../../hooks/useDebounced";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { fieldErrors, messageFor } from "../../lib/problem";
+import styles from "./FormEditorPage.module.css";
 
 /** A starting point for a form with no versions yet. */
 const STARTER = {
@@ -138,7 +139,7 @@ function Editor({
         changes; inspections already started keep the version they began on.
       </p>
 
-      <div className="editor">
+      <div className={styles.editor}>
         <div className="stack">
           <div className="field">
             <label htmlFor="schema">Form schema (JSON)</label>

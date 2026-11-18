@@ -16,6 +16,7 @@ import { TextField } from "../../components/TextField";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { fieldErrors, messageFor } from "../../lib/problem";
+import { Table } from "../../components/Table";
 
 const PAGE = 25;
 
@@ -215,50 +216,47 @@ export function AssignmentsAdminPage() {
       )}
       {results.length > 0 && (
         <>
-          <div className="table-wrap">
-            <table className="table">
-              <caption className="sr-only">Assignments</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Site</th>
-                  <th scope="col">Form</th>
-                  <th scope="col">Worker</th>
-                  <th scope="col">Due</th>
-                  <th scope="col">Inspections</th>
-                  <th scope="col">State</th>
-                  <th scope="col">
-                    <span className="sr-only">Actions</span>
-                  </th>
+          <Table caption="Assignments">
+            <thead>
+              <tr>
+                <th scope="col">Site</th>
+                <th scope="col">Form</th>
+                <th scope="col">Worker</th>
+                <th scope="col">Due</th>
+                <th scope="col">Inspections</th>
+                <th scope="col">State</th>
+                <th scope="col">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((a) => (
+                <tr key={a.id}>
+                  <td>{a.site_name}</td>
+                  <td>
+                    {a.form_name} v{a.form_version_number}
+                  </td>
+                  <td>{a.worker.username}</td>
+                  <td>{a.due_date ?? ""}</td>
+                  <td>{a.submissions}</td>
+                  <td>{a.cancelled ? "Cancelled" : "Active"}</td>
+                  <td>
+                    {!a.cancelled && (
+                      <Button
+                        variant="secondary"
+                        small
+                        aria-label={`Cancel ${a.site_name}`}
+                        onClick={() => setCancelling(a)}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {results.map((a) => (
-                  <tr key={a.id}>
-                    <td>{a.site_name}</td>
-                    <td>
-                      {a.form_name} v{a.form_version_number}
-                    </td>
-                    <td>{a.worker.username}</td>
-                    <td>{a.due_date ?? ""}</td>
-                    <td>{a.submissions}</td>
-                    <td>{a.cancelled ? "Cancelled" : "Active"}</td>
-                    <td>
-                      {!a.cancelled && (
-                        <Button
-                          variant="secondary"
-                          small
-                          aria-label={`Cancel ${a.site_name}`}
-                          onClick={() => setCancelling(a)}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </Table>
           <nav className="row" aria-label="Pages">
             <span>
               {offset + 1}–{offset + results.length} of {count}

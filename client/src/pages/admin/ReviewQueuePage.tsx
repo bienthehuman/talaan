@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, LoadingState } from "../../components/States";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
+import { Table } from "../../components/Table";
 
 const PAGE = 25;
 const STATUSES: SubmissionStatus[] = ["submitted", "approved", "returned", "draft"];
@@ -110,44 +111,41 @@ export function ReviewQueuePage() {
       )}
       {results.length > 0 && (
         <>
-          <div className="table-wrap">
-            <table className="table">
-              <caption className="sr-only">Submissions</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Site</th>
-                  <th scope="col">Form</th>
-                  <th scope="col">Worker</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Updated</th>
-                  <th scope="col">
-                    <span className="sr-only">Open</span>
-                  </th>
+          <Table caption="Submissions">
+            <thead>
+              <tr>
+                <th scope="col">Site</th>
+                <th scope="col">Form</th>
+                <th scope="col">Worker</th>
+                <th scope="col">Status</th>
+                <th scope="col">Updated</th>
+                <th scope="col">
+                  <span className="sr-only">Open</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.site_name}</td>
+                  <td>
+                    {r.form_name} v{r.form_version_number}
+                  </td>
+                  <td>{r.worker.username}</td>
+                  <td>
+                    {statusLabel(r.status ?? "draft")}
+                    {r.deleted ? " (deleted)" : ""}
+                  </td>
+                  <td>{r.updated_at ? new Date(r.updated_at).toLocaleString() : ""}</td>
+                  <td>
+                    <Link to={`/manage/review/${r.id}`} aria-label={`Review ${r.site_name}`}>
+                      Review
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {results.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.site_name}</td>
-                    <td>
-                      {r.form_name} v{r.form_version_number}
-                    </td>
-                    <td>{r.worker.username}</td>
-                    <td>
-                      {statusLabel(r.status ?? "draft")}
-                      {r.deleted ? " (deleted)" : ""}
-                    </td>
-                    <td>{r.updated_at ? new Date(r.updated_at).toLocaleString() : ""}</td>
-                    <td>
-                      <Link to={`/manage/review/${r.id}`} aria-label={`Review ${r.site_name}`}>
-                        Review
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </Table>
           <nav className="row" aria-label="Pages">
             <span>
               {offset + 1}–{offset + results.length} of {count}

@@ -1,0 +1,40 @@
+/* Icon + text, never colour alone. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-3);
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  background: var(--bg);
+}
+.badge svg {
+  width: 16px;
+  height: 16px;
+}
+.pending {
+  color: var(--warn);
+}
+.syncing {
+  color: var(--accent);
+}
+.synced {
+  color: var(--ok);
+}
+.conflict,
+.rejected {
+  color: var(--danger);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

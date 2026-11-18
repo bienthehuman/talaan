@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "./Button";
+import styles from "./Dialog.module.css";
 
 interface Props {
   open: boolean;
@@ -36,7 +37,7 @@ export function ReasonDialog({ open, title, label, confirmLabel, onConfirm, onCa
   }
 
   return (
-    <dialog ref={ref} className="dialog" aria-labelledby={`${id}-title`} onCancel={onCancel}>
+    <dialog ref={ref} className={styles.dialog} aria-labelledby={`${id}-title`} onCancel={onCancel}>
       <h2 id={`${id}-title`}>{title}</h2>
       <div className="field">
         <label htmlFor={`${id}-reason`}>{label}</label>

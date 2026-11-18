@@ -91,7 +91,7 @@ describe("a field conflict", () => {
     expect(within(group).getByRole("radio", { name: "Keep mine: mine" })).not.toBeChecked();
     expect(within(group).getByRole("radio", { name: "Use theirs: theirs" })).not.toBeChecked();
     expect(within(panel).getByText("Hours run: 7")).toBeInTheDocument();
-    expect(screen.getByText("Needs your decision", { selector: ".badge" })).toBeInTheDocument();
+    expect(screen.getByText("Needs your decision", { selector: "span" })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 

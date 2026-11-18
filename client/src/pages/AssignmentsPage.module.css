@@ -1,0 +1,11 @@
+.more > summary {
+  display: list-item;
+  min-height: var(--tap-min);
+  padding-block: calc((var(--tap-min) - 1.5em) / 2);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+.more[open] > summary {
+  margin-bottom: var(--space-2);
+}

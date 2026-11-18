@@ -3,6 +3,7 @@ import { useAuth, WrongUserError } from "../auth/AuthContext";
 import { messageFor } from "../lib/problem";
 import { Button } from "./Button";
 import { PasswordField } from "./TextField";
+import { bannerClass } from "./Banner";
 
 /** Shown when the server no longer accepts the saved session. Nothing is lost: unsent changes stay
  *  on the device and sync once the person signs in again. */
@@ -34,7 +35,7 @@ export function ReauthPrompt({ onSignedIn }: { onSignedIn: () => void }) {
   }
 
   return (
-    <form className="banner banner--warn reauth" onSubmit={submit} aria-busy={busy} noValidate>
+    <form className={bannerClass("warn")} onSubmit={submit} aria-busy={busy} noValidate>
       <p role="status">
         Your session has expired. Sign in again to keep syncing. Your changes are safe on this
         device.

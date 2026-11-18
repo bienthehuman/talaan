@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+import styles from "./Button.module.css";
 
 type Variant = "primary" | "secondary" | "destructive";
 
@@ -7,9 +8,13 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   small?: boolean;
 }
 
-export function Button({ variant = "primary", small, className, type = "button", ...rest }: Props) {
-  const classes = ["btn", `btn--${variant}`, small ? "btn--small" : "", className ?? ""]
+/** The button look as a class string, for a router `Link` that should look like a button. */
+export function buttonClass(variant: Variant = "primary", small = false, extra?: string): string {
+  return [styles.button, styles[variant], small ? styles.small : "", extra ?? ""]
     .filter(Boolean)
     .join(" ");
-  return <button type={type} className={classes} {...rest} />;
+}
+
+export function Button({ variant = "primary", small, className, type = "button", ...rest }: Props) {
+  return <button type={type} className={buttonClass(variant, small, className)} {...rest} />;
 }

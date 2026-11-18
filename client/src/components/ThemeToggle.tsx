@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { applyTheme, getStoredTheme, nextTheme, type ThemeChoice } from "../theme/theme";
 import { Button } from "./Button";
+import styles from "./ThemeToggle.module.css";
 
 const LABEL: Record<ThemeChoice, string> = { system: "System", light: "Light", dark: "Dark" };
 
@@ -35,7 +36,7 @@ export function ThemeToggle() {
       }}
     >
       <svg
-        className="icon"
+        className={styles.icon}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
