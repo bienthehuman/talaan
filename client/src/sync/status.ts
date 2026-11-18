@@ -1,10 +1,40 @@
-/** Sync status shown in the header. STUB until the sync engine lands in phase 2: there is no outbox
- *  yet, so nothing can be pending and nothing has ever synced. The shape is the real one. */
+import { liveQuery } from "dexie";
+import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from "react";
+import { SyncContext } from "./context";
+import type { EngineState } from "./engine";
+
+/** What the header shows. Without an engine (signed out, or a test with no provider) nothing is
+ *  pending and nothing has synced. */
 export interface SyncStatus {
   pending: number;
   lastSyncAt: Date | null;
+  state: EngineState;
+  syncNow: () => void;
 }
 
+const NONE = { subscribe: () => () => {}, getStatus: () => IDLE };
+const IDLE = { state: "idle", lastSyncAt: null, retryAt: null, lastError: null } as const;
+
 export function useSyncStatus(): SyncStatus {
-  return { pending: 0, lastSyncAt: null };
+  const sync = useContext(SyncContext);
+  const source = sync ?? NONE;
+  const engineStatus = useSyncExternalStore(source.subscribe, source.getStatus);
+
+  const [pending, setPending] = useState(0);
+  useEffect(() => {
+    if (!sync) return;
+    const subscription = liveQuery(() => sync.db.outbox.count()).subscribe({
+      next: setPending,
+      error: () => setPending(0),
+    });
+    return () => subscription.unsubscribe();
+  }, [sync]);
+
+  const syncNow = useCallback(() => void sync?.syncNow(), [sync]);
+  return {
+    pending: sync ? pending : 0,
+    lastSyncAt: engineStatus.lastSyncAt === null ? null : new Date(engineStatus.lastSyncAt),
+    state: engineStatus.state,
+    syncNow,
+  };
 }
