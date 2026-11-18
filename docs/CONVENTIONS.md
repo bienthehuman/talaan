@@ -45,6 +45,9 @@ Status: accepted.
 - Zod schemas are derived from the form JSON; no hand-written duplicates of form rules.
 - Sentence case for all UI text. Every screen has loading, empty, error, forbidden and
   confirm-destructive states.
+- Styles (ADR 0011): a class used by one component goes in `Component.module.css` beside it; tokens, base
+  styles, accessibility utilities and primitives shared by several components stay global in `src/theme/`.
+  Token values only, never raw colours; no inline `style=` (CSP); tests never select by class.
 
 ## Testing
 

@@ -13,7 +13,8 @@ the axe gate and a manual check confirm them once built.
 ## 2. Tokens
 
 CSS custom properties on `:root`, overridden for dark with `[data-theme="dark"]` and
-`prefers-color-scheme` (user choice wins). No raw colours in components.
+`prefers-color-scheme` (user choice wins). No raw colours in components. Where a style lives (global
+primitive or component CSS Module) is set by [ADR 0011](adr/0011-css-modules-for-component-styles.md).
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
