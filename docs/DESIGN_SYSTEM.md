@@ -55,7 +55,8 @@ numeral uses `#f5b84b` (10:1 on the band).
 ### Type
 
 Barlow (body, UI, data) and Barlow Semi Condensed (headings, the pending numeral, station and table-header
-labels), self-hosted woff2, Latin subset, weights 400/500/600/700 and 600/700. `font-display: swap` with a
+labels), self-hosted woff2, Latin subset, three files: Barlow 400 and 600, Barlow Semi Condensed 700 (about
+68 KB). Bold body text uses the 600 file. `font-display: swap` with a
 metric-adjusted system fallback so text does not jump. Precached by the service worker (ADR 0012).
 
 | Token | Size | Use |

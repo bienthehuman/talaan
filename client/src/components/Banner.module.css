@@ -11,7 +11,7 @@
   color: var(--accent);
 }
 .warn {
-  color: var(--warn);
+  color: var(--pending);
 }
 .danger {
   color: var(--danger);

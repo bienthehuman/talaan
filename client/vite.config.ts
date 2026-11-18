@@ -35,7 +35,7 @@ export default defineConfig({
       workbox: {
         // Cache the app shell so it loads with no network. API calls are never cached here:
         // data lives in IndexedDB and moves through the sync engine.
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,ico,webmanifest,woff2}"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /^\/static\//],
         cleanupOutdatedCaches: true,

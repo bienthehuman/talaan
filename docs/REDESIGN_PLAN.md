@@ -46,7 +46,7 @@ Navigation, controls and layout stay standard web patterns (PRODUCT.md principle
 
   Dark mode keeps the band, lifts the ground to `#121417`, and uses tuned tints of the same hues.
 - **Type.** Barlow (body, UI, data) plus Barlow Semi Condensed (headings, the big numeral, station labels),
-  self-hosted woff2, Latin subset, 6 files (about 70 KB), precached by the service worker so it works
+  self-hosted woff2, Latin subset, 3 files (about 68 KB), precached by the service worker so it works
   offline. A fixed scale, ratio about 1.2: 13 / 14 / 16 / 18 / 22 / 28 / 40 (numeral 52). Inputs stay at
   16 px or larger. Tabular figures for times and counts.
 - **Borrowed disciplines** (from the challengers the direction beat): one 8 px cell grid that everything

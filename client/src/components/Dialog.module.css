@@ -2,7 +2,7 @@
 .dialog {
   border: 2px solid var(--border);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   padding: var(--space-5);
   max-width: min(480px, calc(100vw - 2 * var(--space-4)));

@@ -14,6 +14,35 @@ test("the app shell opens with the network off after one visit", async ({ page, 
   await expect(page.getByText(/You're offline/)).toBeVisible();
 });
 
+test("the self-hosted fonts load offline and nothing is fetched from another origin", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  const foreign: string[] = [];
+  page.on("request", (req) => {
+    const url = new URL(req.url());
+    if (url.protocol.startsWith("http") && url.origin !== new URL(baseURL!).origin)
+      foreign.push(req.url());
+  });
+  await page.goto("/login");
+  await waitForServiceWorkerControl(page);
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+
+  // ADR 0012: Barlow comes from the precache, so headings and body use it with no network.
+  const loaded = await page.evaluate(async () => {
+    await document.fonts.ready;
+    return [...document.fonts]
+      .filter((f) => f.status === "loaded")
+      .map((f) => `${f.family.replaceAll('"', "")} ${f.weight}`);
+  });
+  expect(loaded).toEqual(expect.arrayContaining(["Barlow 400", "Barlow Semi Condensed 700"]));
+  expect(foreign).toEqual([]);
+});
+
 test("a deep link opens offline and renders the client's 404", async ({ page, context }) => {
   await page.goto("/login");
   await waitForServiceWorkerControl(page);
