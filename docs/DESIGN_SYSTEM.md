@@ -21,7 +21,8 @@ CSS custom properties on `:root`, overridden for dark with `[data-theme="dark"]`
 | `--surface` | `#f4f6f8` | `#1a212b` | Cards, panels |
 | `--text` | `#14191f` | `#e8edf2` | Body (target ≥ 7:1 on `--bg`) |
 | `--text-muted` | `#4a5563` | `#a9b4c0` | Secondary (≥ 4.5:1) |
-| `--border` | `#c9d1da` | `#2f3a47` | Dividers, inputs |
+| `--border` | `#c9d1da` | `#2f3a47` | Dividers, card and table lines (decorative) |
+| `--control-border` | `#7d8794` | `#66737f` | Edges that identify a control: inputs, secondary buttons (≥ 3:1 on `--bg` and `--surface`, WCAG 1.4.11) |
 | `--accent` | `#0b57d0` | `#8ab4ff` | Primary actions, focus ring |
 | `--ok` | `#1b6e3c` | `#6fd39a` | Synced, approved |
 | `--warn` | `#8a5300` | `#f5b84b` | Saved on device, pending |
@@ -45,6 +46,11 @@ Focus: 3 px visible ring in `--accent` on every interactive element; never remov
 
 The app header shows pending count and the time of the last successful sync.
 
+**Header layout.** The first row is the brand and the account controls (user name, theme, Sign out). A worker
+gets a second row, a strip with "N pending · Last sync", "N need your decision" when there is one, and Sync
+now. So a phone header is two rows, and the tab order follows the rows. Below 600 px the theme button shows only
+its icon (half-filled circle, sun, moon); its accessible name stays "Theme: System / Light / Dark".
+
 ## 4. Components
 
 Button (primary, secondary, destructive), text input, textarea, select, checkbox/radio group,
@@ -62,6 +68,9 @@ and dark; it is the target of the axe test.
 - Full keyboard pass on login, form filler and conflict screen. Labels on every control.
 - Respect `prefers-reduced-motion` and `prefers-color-scheme`.
 - Error messages say what happened and what to do, in sentence case, never colour alone.
+- Toasts: an error toast is announced at once (`role="alert"`) and stays until dismissed; other toasts are
+  polite (`role="status"`) and clear themselves.
+- Record statuses read in sentence case everywhere ("Submitted", "Returned"); the raw value is for the API.
 
 ## 6. Page chrome
 
@@ -70,14 +79,17 @@ tagline "Offline-first field data sync". 404 and error pages share the empty/err
 
 ## Worker pages (phase 2)
 
-- **Assignments** (`/`): one card per assignment with its inspections, each with a sync badge, and a
-  "New inspection" button (not shown for cancelled assignments). Everything is read from the device.
+- **Assignments** (`/`): one card per assignment: its "New inspection" button first (not shown for cancelled
+  assignments), then its inspections, newest first, each with a sync badge. The newest five stay in view, and
+  so does any inspection in conflict, not accepted, or returned by an admin; older ones fold into a "Show N
+  older inspections" disclosure. Everything is read from the device.
 - **Inspection** (`/submissions/:id`): one control per form field, chosen by type: text input (textarea
   over 200 characters), select for enums, Yes/No radios for booleans (so "unanswered" is possible),
   numbers as text with a numeric keyboard. Required fields say "(required)" in the label.
 - **Saving.** Every edit is written to the device immediately, with no Save button. A value the server
   would refuse (wrong type, out of range) is not saved; the error shows under the field and the text
-  stays on screen. Submit checks required fields and names how many are missing.
+  stays on screen. Submit checks required fields, names how many are missing, and moves focus to the first
+  field to fix.
 - **Read only** (banner explains why): submitted, approved, or in `conflict` / `rejected`. A rejected record offers
   "Discard my changes"; a conflict has its own panel (below).
 

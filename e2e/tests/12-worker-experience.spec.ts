@@ -137,7 +137,7 @@ test("every control a worker taps is at least 44 px each way", async ({ page }) 
     await go();
     const found = await page.evaluate(() => {
       const selector =
-        'button, a[href], select, textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), label.choice';
+        'button, a[href], summary, select, textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), label.choice';
       return [...document.querySelectorAll<HTMLElement>(selector)]
         .filter((el) => !el.closest(".skip-link") && !el.classList.contains("skip-link"))
         .map((el) => ({ el, box: el.getBoundingClientRect() }))

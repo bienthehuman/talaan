@@ -342,6 +342,8 @@ describe("assignments", () => {
     renderApp("/manage/assignments");
     const user = userEvent.setup();
     const version = await screen.findByLabelText("Form version");
+    // The page loads on first visit, then fetches its lists; wait for the options, not just the select.
+    await within(version).findByRole("option", { name: "Generator inspection v2" });
     expect(
       within(version)
         .getAllByRole("option")
@@ -385,10 +387,9 @@ describe("assignments", () => {
     signInAdmin();
     renderApp("/manage/assignments");
     const user = userEvent.setup();
-    await user.selectOptions(
-      await screen.findByLabelText("Form version"),
-      "Generator inspection v1",
-    );
+    const version = await screen.findByLabelText("Form version");
+    await within(version).findByRole("option", { name: "Generator inspection v1" });
+    await user.selectOptions(version, "Generator inspection v1");
     await user.selectOptions(screen.getByLabelText("Worker", { selector: "#a-worker" }), "worker1");
     await user.type(screen.getByLabelText("Site"), "X");
     await user.click(screen.getByRole("button", { name: "Assign" }));

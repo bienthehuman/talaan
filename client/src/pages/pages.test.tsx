@@ -57,6 +57,37 @@ describe("assignments", () => {
     expect(within(section).queryByRole("link")).not.toBeInTheDocument();
   });
 
+  it("keeps the newest five in view and folds older ones away, except any needing the worker", async () => {
+    await seedReference();
+    const start = Date.now();
+    const ids: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      const row = await createSubmission(db(), { assignmentId: 1, formVersionId: 1, data: {} });
+      ids.push(row.id);
+      // Oldest first; the very oldest is in conflict, so it must stay visible.
+      await db().submissions.update(row.id, {
+        updatedAt: start + i * 1000,
+        syncState: i === 0 ? "conflict" : "synced",
+      });
+    }
+    signIn();
+    const { container } = renderApp("/");
+    const section = await screen.findByRole("region", { name: "North plant" });
+    const more = within(section).getByText("Show 2 older inspections");
+    const details = more.closest("details")!;
+    expect(details).not.toHaveAttribute("open");
+    const visibleLinks = within(section)
+      .getAllByRole("link")
+      .filter((a) => !details.contains(a));
+    expect(visibleLinks).toHaveLength(6); // newest five plus the conflict
+    expect(within(section).getByText("Needs your decision")).toBeInTheDocument();
+    expect(within(details).getAllByRole("link", { hidden: true })).toHaveLength(2);
+    // The action comes before the history.
+    const button = within(section).getByRole("button", { name: "New inspection" });
+    expect(button.compareDocumentPosition(visibleLinks[0]!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    await expectNoA11yViolations(container);
+  });
+
   it("does not offer a new inspection on a cancelled assignment", async () => {
     await seedReference();
     await db().assignments.update(1, { cancelled: true });
@@ -155,8 +186,20 @@ describe("the form", () => {
     await user.click(await screen.findByRole("button", { name: "Submit inspection" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Fix 2 fields before submitting.");
     expect(screen.getAllByText("Required.")).toHaveLength(2);
+    // Focus goes to the first field to fix, so a keyboard or screen reader user lands on it.
+    // In this form that is the Yes/No question, which comes before "Hours run".
+    expect(screen.getByRole("radio", { name: "Yes" })).toHaveFocus();
     expect((await getSubmission(db(), row.id))?.status).toBe("draft");
     expect((await outboxOps()).map(([op]) => op)).toEqual(["create"]);
+  });
+
+  it("moves focus to a text field when that is the only field to fix", async () => {
+    const row = await newRecord({ oil_level: "ok", coolant_ok: true });
+    signIn();
+    renderApp(`/submissions/${row.id}`);
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Submit inspection" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Fix 1 field before submitting.");
+    expect(screen.getByRole("textbox", { name: "Hours run (required)" })).toHaveFocus();
   });
 
   it("submits a complete inspection, queues it and locks the form", async () => {

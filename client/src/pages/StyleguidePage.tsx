@@ -14,6 +14,7 @@ const TOKENS = [
   "text",
   "text-muted",
   "border",
+  "control-border",
   "accent",
   "ok",
   "warn",

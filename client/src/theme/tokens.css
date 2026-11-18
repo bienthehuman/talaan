@@ -5,6 +5,8 @@
   --text: #14191f;
   --text-muted: #4a5563;
   --border: #c9d1da;
+  /* Boundaries that identify a control (inputs, secondary buttons): at least 3:1 on --bg and --surface. */
+  --control-border: #7d8794;
   --accent: #0b57d0;
   --accent-text: #ffffff;
   --ok: #1b6e3c;
@@ -40,6 +42,7 @@
     --text: #e8edf2;
     --text-muted: #a9b4c0;
     --border: #2f3a47;
+    --control-border: #66737f;
     --accent: #8ab4ff;
     --accent-text: #0f1419;
     --ok: #6fd39a;
@@ -55,6 +58,7 @@
   --text: #e8edf2;
   --text-muted: #a9b4c0;
   --border: #2f3a47;
+  --control-border: #66737f;
   --accent: #8ab4ff;
   --accent-text: #0f1419;
   --ok: #6fd39a;

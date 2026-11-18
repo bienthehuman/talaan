@@ -105,6 +105,8 @@ describe("Toast", () => {
       await user.click(error);
       act(() => vi.advanceTimersByTime(60000));
       expect(screen.getByText("Saved")).toBeInTheDocument();
+      // An error interrupts; other toasts are polite.
+      expect(screen.getByRole("alert")).toHaveTextContent("Saved");
       await user.click(screen.getByRole("button", { name: "Dismiss" }));
       expect(screen.queryByText("Saved")).not.toBeInTheDocument();
     } finally {
