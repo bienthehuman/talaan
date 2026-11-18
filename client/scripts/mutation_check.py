@@ -90,6 +90,7 @@ M=[
 ("sync panel hides how often it tried","src/pages/SyncStatusPage.tsx","w.attempts > 0\n                  ?","false\n                  ?"),
 ("retry now disabled when idle","src/pages/SyncStatusPage.tsx",'disabled={status.state === "syncing"}',"disabled={status.state !== \"syncing\"}"),
 ("header no longer links to the sync panel","src/components/RootLayout.tsx",'<Link to="/sync" className="tap-link">','<Link to="/" className="tap-link">'),
+("pull does not say which device asks","src/sync/transport.ts",'header: { ...header, "X-Device-Id": deviceId }',"header"),
 ]
 bad=0
 for d,f,old,new in M:

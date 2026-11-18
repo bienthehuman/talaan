@@ -1,7 +1,12 @@
 """The sync endpoints (docs/protocol.md sections 4, 7 and 8). Thin on purpose: validation, then the
 rules in sync/services.py."""
 
+import hmac
+import logging
+import uuid
+
 from django.conf import settings
+from django.http import Http404, HttpResponse
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
@@ -12,16 +17,20 @@ from rest_framework.views import APIView
 from accounts.drf import IsAdmin, IsWorker, IsWorkerOrAdmin
 from accounts.permissions import WORKER
 from assignments.models import Assignment
+from core import logs
 from forms.models import FormVersion
 from submissions.models import Submission
 
+from . import metrics
 from . import serializers as s
-from .devices import register_device
+from .devices import note_pull, register_device
 from .exceptions import BatchTooLarge, ClientSchemaMissing, ClientTooOld
 from .faults import find
 from .results import record_payload
 from .services import Mutation, apply_admin_action, apply_mutation
 
+log = logging.getLogger("talaan.sync")
+DEVICE_HEADER = "X-Device-Id"
 MAX_BATCH = 50
 DEFAULT_PULL_LIMIT = 200
 MAX_PULL_LIMIT = 500
@@ -91,23 +100,36 @@ class PushView(APIView):
         data = serializer.validated_data
 
         register_device(request.user, data["device_id"], data["app_version"])
+        logs.set_context(user_id=request.user.id, device_id=data["device_id"])
 
         results = []
         total = len(data["mutations"])
         for index, item in enumerate(data["mutations"], start=1):
-            results.append(
-                apply_mutation(
-                    request.user,
-                    data["device_id"],
-                    Mutation(
-                        mutation_id=item["mutation_id"],
-                        record_id=item["record_id"],
-                        op=item["op"],
-                        base_version=item["base_version"],
-                        fields=item["fields"],
-                        assignment_id=item["assignment_id"],
-                    ),
-                )
+            result = apply_mutation(
+                request.user,
+                data["device_id"],
+                Mutation(
+                    mutation_id=item["mutation_id"],
+                    record_id=item["record_id"],
+                    op=item["op"],
+                    base_version=item["base_version"],
+                    fields=item["fields"],
+                    assignment_id=item["assignment_id"],
+                ),
+            )
+            results.append(result)
+            # What happened, never what was typed: core/logs.py has no field for form data.
+            log.info(
+                "mutation",
+                extra={
+                    "event": "mutation",
+                    "mutation_id": item["mutation_id"],
+                    "record_id": item["record_id"],
+                    "op": item["op"],
+                    "status": result["status"],
+                    "code": result.get("code"),
+                    "kind": (result.get("conflict") or {}).get("kind"),
+                },
             )
             self._maybe_expire_token(request, applied=index, total=total)
         return Response({"results": results})
@@ -118,6 +140,17 @@ class PushView(APIView):
         fault = find(getattr(request, "faults", []), "expire-token")
         if fault and applied == (fault.arg or 1) and applied < total:
             raise NotAuthenticated("Injected fault: the access token expired mid-batch.")
+
+
+def _device_id(request) -> uuid.UUID | None:
+    """The optional X-Device-Id header. A malformed one is ignored: it only feeds /metrics."""
+    raw = request.headers.get(DEVICE_HEADER)
+    if not raw:
+        return None
+    try:
+        return uuid.UUID(raw)
+    except ValueError:
+        return None
 
 
 def _int_param(request, name: str, default: int, *, minimum: int) -> int:
@@ -143,6 +176,13 @@ class PullView(HeaderSchemaView):
                 "cursor", int, description="Last server_seq already received (0 to start)."
             ),
             OpenApiParameter("limit", int, description="Page size, default 200, at most 500."),
+            OpenApiParameter(
+                DEVICE_HEADER,
+                str,
+                OpenApiParameter.HEADER,
+                required=False,
+                description="This device's id, so the server can report how far behind it is.",
+            ),
         ],
         responses={200: s.PullResponseSerializer, 400: s.ProblemSerializer, **PROBLEMS},
         summary="Pull changes since a cursor",
@@ -158,10 +198,20 @@ class PullView(HeaderSchemaView):
 
         has_more = len(page) > limit
         page = page[:limit]
+        next_cursor = page[-1].server_seq if page else cursor
+
+        device_id = _device_id(request)
+        if device_id is not None and request.user.role == WORKER:
+            note_pull(request.user, device_id, next_cursor)
+            logs.set_context(user_id=request.user.id, device_id=device_id)
+        log.info(
+            "pull",
+            extra={"event": "pull", "cursor": cursor, "count": len(page), "has_more": has_more},
+        )
         return Response(
             {
                 "records": [record_payload(r) for r in page],
-                "next_cursor": page[-1].server_seq if page else cursor,
+                "next_cursor": next_cursor,
                 "has_more": has_more,
             }
         )
@@ -247,3 +297,29 @@ class AdminActionView(APIView):
             request.user, record_id, data["action"], reason=data["reason"], fields=data["fields"]
         )
         return Response(result)
+
+
+class MetricsView(APIView):
+    """Prometheus text metrics. Not part of the public API.
+
+    The proxy answers 404 for /metrics; a scraper inside the stack presents `METRICS_TOKEN`. With no
+    token set (and not in debug) the endpoint does not exist at all."""
+
+    authentication_classes: list = []
+    permission_classes: list = []
+
+    @extend_schema(exclude=True)
+    def get(self, request):
+        token = settings.METRICS_TOKEN
+        if not token and not settings.DEBUG:
+            raise Http404
+        if token:
+            given = request.headers.get("Authorization", "")
+            expected = f"Bearer {token}"
+            if not hmac.compare_digest(given.encode(), expected.encode()):
+                response = HttpResponse("unauthorized\n", status=401, content_type="text/plain")
+                response["WWW-Authenticate"] = "Bearer"
+                return response
+        return HttpResponse(
+            metrics.collect(), content_type="text/plain; version=0.0.4; charset=utf-8"
+        )

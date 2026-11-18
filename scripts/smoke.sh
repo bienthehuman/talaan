@@ -53,6 +53,10 @@ api="$(http -D - -o /dev/null "$base/api/health/" 2>&1 | tr -d '\r')"
 hsts_count="$(count_header "$api" "strict-transport-security")"
 if [ "$hsts_count" = "1" ]; then pass "HSTS on the API, sent once"; else fail "HSTS header count on the API: $hsts_count"; fi
 
+metrics_code="$(http -o /dev/null -w '%{http_code}' "$base/metrics" 2>&1)"
+if [ "$metrics_code" = "404" ]; then pass "metrics are not public"; else fail "/metrics status $metrics_code (must be 404 on the public site)"; fi
+if has_header "$api" "^x-request-id: "; then pass "responses carry a request id"; else fail "no X-Request-ID on the API"; fi
+
 sw_status="$(http -o /dev/null -w '%{http_code}' "$base/sw.js" 2>&1)"
 if [ "$sw_status" = "200" ]; then pass "service worker served"; else fail "sw.js status $sw_status"; fi
 

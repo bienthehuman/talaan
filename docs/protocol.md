@@ -337,3 +337,42 @@ for the admin web, not for offline clients. Each endpoint needs one permission f
 The conflict log cannot see what a worker did on their device. A worker who discards their edits leaves no
 trace on the server, so `changed_since: false` means "no later change from that worker", not "unresolved".
 
+## 12. Operability: logs and metrics
+
+None of this changes what clients send or receive, except one optional header.
+
+**Request id.** Every response carries `X-Request-ID`. A caller may supply one (8 to 64 characters of
+`A-Z a-z 0-9 . _ -`); anything else is replaced, so the header cannot forge or flood a log line.
+
+**Logs.** In production every line on stdout is one JSON object: `ts`, `level`, `logger`, `message`,
+`request_id`, and from this list only: `event`, `method`, `path` (never the query string), `status`,
+`duration_ms`, `user_id`, `device_id`, `mutation_id`, `record_id`, `op`, `code`, `kind`, `cursor`, `count`,
+`has_more`. The allowlist is in `core/logs.py`; there is no field for a token, a password or form data, so a
+log line cannot carry them. Events: `request` (one per request), `mutation` (one per pushed mutation: ids,
+op, outcome, conflict kind or rejection code), `replay` (a retry of an already applied mutation), `pull`.
+All lines written while handling a request share its `request_id`, and sync lines carry `device_id`.
+`LOG_FORMAT=plain` gives readable lines for development.
+
+**`X-Device-Id` on pull (optional).** The device's id, sent by the client on `GET /api/sync/pull`, so the
+server can remember the cursor it last handed that device (`device.last_pull_cursor`, `last_pull_at`). It
+never affects what a pull returns. A malformed value is ignored; admins have no devices and are not tracked.
+
+**`GET /metrics`** (Prometheus text, not in the OpenAPI schema). With `METRICS_TOKEN` set it needs
+`Authorization: Bearer <token>`; with no token it does not exist (404), except in debug where it is open for
+local use. The public proxy answers 404 for `/metrics`, so a scraper reads `http://server:8000/metrics` from
+inside the stack. Numbers come from the database, not process memory, because several gunicorn workers run.
+
+| Metric | Meaning |
+|---|---|
+| `talaan_mutations_total{source,status}` | Mutations processed (pushes), `source` is `device` or `admin`, `status` is applied, conflict or rejected |
+| `talaan_conflicts_total{kind}` | Conflicts by kind |
+| `talaan_rejections_total{code}` | Rejections by code |
+| `talaan_retries_total` | Times an already applied mutation was sent again (retries after a lost response) |
+| `talaan_retried_mutations_total` | Distinct mutations that were retried |
+| `talaan_pull_lag_records_max`, `_total`, `talaan_devices_behind` | Records a device can see beyond the cursor it was last given: the worst device, the sum, and how many devices are behind |
+| `talaan_pull_age_seconds_max` | Seconds since the least recently pulling device last pulled |
+| `talaan_devices`, `talaan_server_seq`, `talaan_submissions{status,deleted}` | Gauges |
+
+A retry is counted when the ledger answers a repeated mutation id from the same user (`sync_replay`, one row
+per mutation); someone else's reused id is `mutation_id_reuse`, not a retry.
+

@@ -32,6 +32,21 @@ class Device(models.Model):
     )
     last_seen_at = models.DateTimeField(default=timezone.now)
     app_version = models.CharField(max_length=64, blank=True)
+    # The cursor this device was last given by a pull, and when. Operability only (docs/protocol.md
+    # section 12): it lets /metrics say how far behind each device is. It never affects sync.
+    last_pull_cursor = models.BigIntegerField(null=True, blank=True)
+    last_pull_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.id)
+
+
+class Replay(models.Model):
+    """How many times a mutation was sent again after it was already applied: retries after a lost
+    response, in numbers. Kept apart from the ledger, whose rows never change once written."""
+
+    mutation_id = models.UUIDField(primary_key=True, editable=False)
+    count = models.PositiveIntegerField(default=1)
+
+    def __str__(self) -> str:
+        return f"{self.mutation_id} x{self.count}"

@@ -164,7 +164,7 @@ admin screens, and metrics exist before the load test that reads them.
 | 4.2 | **Admin web: review.** Admin routes, role gate, review queue, submission detail with history; approve, return (reason), restore, delete, edit through the slice 3.1 endpoint. Admin is online only. | in review |
 | 4.3 | **Admin web: forms, assignments, conflict log.** Form-version editor (JSON with a live preview built from the same schema code as the worker form, not drag and drop), assignment management, conflict log. | in review |
 | 4.4 | **Worker experience.** Installable-app prompt, sync-status panel (pending changes, last sync, retry now, what failed), storage persistence request, tap-target and label audit. | in review |
-| 4.5 | **Operability.** Structured JSON logs carrying `request_id`, `device_id`, `mutation_id`; `/metrics` with pushes, conflicts, rejections, retries and pull lag; not exposed through the public proxy. | not started |
+| 4.5 | **Operability.** Structured JSON logs carrying `request_id`, `device_id`, `mutation_id`; `/metrics` with pushes, conflicts, rejections, retries and pull lag; not exposed through the public proxy. | in review |
 | 4.6 | **Load test.** 50 simulated devices pushing and pulling together; throughput, p95 latency and where the advisory lock becomes the bottleneck; hardware, dataset and exact commands published. | not started |
 | 4.7 | **Ship.** Codespaces dev container with seeded logins, README (claim, demo clip, one-command setup, guarantees linked to tests, "try to break it", "what I'd change at scale"), scripted demo walkthrough, CI badges, `v1.0`. | not started |
 
@@ -263,5 +263,6 @@ admin screens, and metrics exist before the load test that reads them.
 | Monitoring and alerting (uptime check on `/api/health/`, metrics) | Slice 0.5 | v1 operability | `/metrics` is in the v1 plan |
 | Sign release images (cosign) and publish an SBOM | Slice 0.5 | later | |
 | Revoke refresh tokens server-side (rotation with grace for a lost refresh response, or a per-user token version) | ADR 0010 | later | |
+| Metrics from rollups instead of grouped queries over the ledger at every scrape (it scans `applied_mutation`); pull lag per device with a time series store | Slice 4.5 | when the ledger is large | what I would change at scale |
 | Clear the Dependabot `minimatch` alert (build-time only, via vite-plugin-pwa > workbox-build > glob): try an npm `overrides` entry, or dismiss as tolerable | Slice 0.5 | when convenient | `npm audit --omit=dev` is already clean |
 | Postgres major-version upgrade procedure, tested | Slice 0.5 | later | currently a manual note in DEPLOY.md |
