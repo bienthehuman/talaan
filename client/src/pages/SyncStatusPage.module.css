@@ -1,0 +1,9 @@
+/* The device's own count, set like the band's numeral. */
+.count {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: 1;
+}
+.waiting {
+  color: var(--pending);
+}

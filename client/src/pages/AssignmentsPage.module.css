@@ -1,3 +1,65 @@
+.assignment {
+  padding: 0;
+  overflow: hidden;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.head h2 {
+  margin-bottom: var(--space-1);
+}
+.form {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.cancelled {
+  background: var(--surface-2);
+}
+.cancelled .head {
+  border-bottom-color: transparent;
+}
+.none {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--text-muted);
+}
+/* One row per inspection: what and when, then where its data is. */
+.assignment :global(.list) {
+  padding-inline: var(--space-4);
+}
+.assignment :global(.list-row):first-child {
+  border-top: 0;
+}
+.row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding-block: var(--space-1) var(--space-3);
+}
+.link {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text);
+}
+.link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.link time {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.more {
+  padding: 0 var(--space-4) var(--space-2);
+  border-top: 1px solid var(--border);
+}
 .more > summary {
   display: list-item;
   min-height: var(--tap-min);

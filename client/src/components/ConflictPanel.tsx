@@ -59,7 +59,7 @@ export function ConflictPanel({ db, row, definition, onDiscard }: Props) {
             changed. Nothing was overwritten. Choose what to keep.
           </p>
           {conflict.fields.map((f) => (
-            <fieldset key={f.field} className="field field--choice">
+            <fieldset key={f.field} className={`field field--choice ${styles.pick}`}>
               <legend>{title(f.field)}</legend>
               <p className="field-hint">
                 Before either of you: {formatValue(field(f.field), f.start)}

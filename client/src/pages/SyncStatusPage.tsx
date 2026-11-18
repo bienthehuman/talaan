@@ -2,6 +2,8 @@ import { Link } from "react-router";
 import { Button } from "../components/Button";
 import { EmptyState, LoadingState } from "../components/States";
 import { SyncBadge } from "../components/SyncBadge";
+import { formatWhen } from "../lib/when";
+import styles from "./SyncStatusPage.module.css";
 import { useLive, useLocalDb } from "../db/useLive";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { readStorageState, type StorageState } from "../pwa/storage";
@@ -75,11 +77,13 @@ export function SyncStatusPage() {
         <dl className="meta">
           <div>
             <dt>Changes waiting to be sent</dt>
-            <dd>{status.pending}</dd>
+            <dd className={`${styles.count} ${status.pending > 0 ? styles.waiting : ""}`}>
+              {status.pending}
+            </dd>
           </div>
           <div>
             <dt>Last sync</dt>
-            <dd>{status.lastSyncAt ? status.lastSyncAt.toLocaleString() : "Never"}</dd>
+            <dd>{status.lastSyncAt ? formatWhen(status.lastSyncAt) : "Never"}</dd>
           </div>
           <div>
             <dt>Last problem</dt>
@@ -88,7 +92,11 @@ export function SyncStatusPage() {
         </dl>
         <p role="status">{describeState(status.state, status.pending, status.retryAt)}</p>
         <div>
-          <Button onClick={status.syncNow} disabled={status.state === "syncing"}>
+          <Button
+            variant={status.pending > 0 ? "primary" : "secondary"}
+            onClick={status.syncNow}
+            disabled={status.state === "syncing"}
+          >
             Retry now
           </Button>
         </div>
