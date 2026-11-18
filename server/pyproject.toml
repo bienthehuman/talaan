@@ -18,5 +18,8 @@ ignore = ["DJ001"]
 DJANGO_SETTINGS_MODULE = "config.settings_test"
 python_files = ["test_*.py"]
 addopts = "-ra --strict-markers"
-markers = ["phase1: the phase 1 exit scenarios (docs/failure-scenarios.md); run with -m phase1"]
+markers = [
+    "phase1: the phase 1 exit scenarios (docs/failure-scenarios.md); run with -m phase1",
+    "phase3: the phase 3 scenarios that have a server half; run with -m phase3",
+]
 filterwarnings = ["ignore:No directory at.*staticfiles:UserWarning"]

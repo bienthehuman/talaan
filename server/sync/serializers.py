@@ -93,6 +93,13 @@ class PushResponseSerializer(serializers.Serializer):
     results = MutationResultSerializer(many=True)
 
 
+class AdminActionRequestSerializer(serializers.Serializer):
+    # A plain string on purpose: an unknown action is a `rejected` result, like an unknown `op`.
+    action = serializers.CharField(max_length=32)
+    reason = serializers.CharField(required=False, allow_blank=True, default="", max_length=500)
+    fields = serializers.DictField(required=False, default=dict)
+
+
 class PullResponseSerializer(serializers.Serializer):
     records = RecordSerializer(many=True)
     next_cursor = serializers.IntegerField()

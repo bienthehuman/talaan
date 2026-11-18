@@ -192,7 +192,10 @@ with exponential backoff and jitter. 401 pauses the cycle (section 8).
 
 ### Admin actions
 
-Server-side only (REST endpoints arrive with the review UI); they run through the same core as push,
+Reached over REST by admins only, `POST /api/admin/submissions/{record_id}/actions/` with
+`{"action": "...", "reason": "...", "fields": {...}}` (the review UI in v1 uses the same endpoint). The answer is
+the same result object as a push (`applied`, `conflict` or `rejected`, always HTTP 200); a non-admin gets
+`403 forbidden`, a malformed body `400 validation_error`. The actions run through the same core as push,
 so they take the advisory lock, bump `version`, draw a `server_seq`, and leave a ledger row (device
 `00000000-0000-0000-0000-000000000000`) and an event.
 

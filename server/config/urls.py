@@ -27,6 +27,11 @@ urlpatterns = [
     path("api/me/", MeView.as_view(), name="me"),
     path("api/sync/push/", sync_views.PushView.as_view(), name="sync_push"),
     path("api/sync/pull/", sync_views.PullView.as_view(), name="sync_pull"),
+    path(
+        "api/admin/submissions/<uuid:record_id>/actions/",
+        sync_views.AdminActionView.as_view(),
+        name="admin_submission_action",
+    ),
     path("api/assignments/", sync_views.AssignmentListView.as_view(), name="assignments"),
     path("api/form-versions/", sync_views.FormVersionListView.as_view(), name="form_versions"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

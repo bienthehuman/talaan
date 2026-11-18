@@ -252,6 +252,18 @@ M = [  # (description, file, old, new)
         '        return r.rejected(mutation_id, r.ID_TAKEN, "duplicate")\n',
     ),
     (
+        "admin endpoint open to workers",
+        "sync/views.py",
+        "    permission_classes = [IsAdmin]",
+        "    permission_classes = [IsWorkerOrAdmin]",
+    ),
+    (
+        "admin endpoint ignores the action and reason",
+        "sync/views.py",
+        'request.user, record_id, data["action"], reason=data["reason"], fields=data["fields"]',
+        'request.user, record_id, data["action"], reason="reason", fields=data["fields"]',
+    ),
+    (
         "fault middleware loads outside debug",
         "sync/middleware.py",
         "if not (settings.DEBUG and settings.FAULT_INJECTION):",

@@ -9,7 +9,7 @@ land. `pytest -m phase1` runs the phase 1 scenarios.
 | 1 | Create and edit offline, reload the browser | Data and outbox survive; badge shows "Saved on device" | Playwright (`context.setOffline(true)`) | `e2e/tests/01-offline-reload.spec.ts` | 2 | done (slice 2.5) |
 | 2 | Response lost after commit, client retries | Exactly one submission on server; client ends synced | Playwright + pytest | `e2e/tests/02-lost-response.spec.ts`, `server/sync/tests/test_lost_response.py` | 1 (pytest), 2 | done (server half 1.3, Playwright half 2.5) |
 | 3 | Same batch sent twice concurrently | One ledger row per mutation; same result to both | pytest, two threads | `server/sync/tests/test_concurrent_duplicate.py` | 1 | done (slice 1.4) |
-| 4 | Two devices edit different fields | Both applied; server holds both values | pytest + Playwright, two contexts | `server/sync/tests/test_merge.py`, `e2e/tests/04-merge.spec.ts` | 3 | todo |
+| 4 | Two devices edit different fields | Both applied; server holds both values | pytest + Playwright, two contexts | `server/sync/tests/test_merge.py`, `e2e/tests/04-merge.spec.ts` | 3 | server half done (slice 3.1) |
 | 5 | Two devices edit the same field | Second gets conflict; nothing overwritten; resolution yields a new applied version | Playwright | `e2e/tests/05-conflict.spec.ts` | 3 | todo |
 | 6 | Admin deletes while worker edits offline | Worker gets `deleted_remotely`; local edits kept until worker decides | Playwright | `e2e/tests/06-deleted-remotely.spec.ts` | 3 | todo |
 | 7 | 20 concurrent updates to one record | Created at version 1, 20 updates give versions 2..21, no gaps; contradicting edits lose nothing silently | pytest, thread pool | `server/sync/tests/test_concurrent_updates.py` | 1 | done (slice 1.4) |
