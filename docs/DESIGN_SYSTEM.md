@@ -1,14 +1,23 @@
 # Design system
 
-Status: accepted. Accepted before any screens are built. Contrast values below are targets;
-the axe gate and a manual check confirm them once built.
+Status: accepted, v2 "Wayfinding Line" (2026-11-18). Replaces v1 (system fonts, one blue accent). Phase 5
+slices bring the code in line (plan and rationale: [REDESIGN_PLAN.md](REDESIGN_PLAN.md); decision:
+[ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md)). Until a slice lands, the code still shows v1
+for that part. Contrast values below were computed for every pair listed; the axe gate confirms them once
+built.
 
 ## 1. Principles
 
 - **Honest state.** "Saved on this device" and "Synced" must never look the same. State is never
-  conveyed by colour alone: every badge has an icon and a text label.
+  conveyed by colour alone: every state has an icon or mark plus a text label.
 - **Worker app is mobile first**: one-handed, gloves, sunlight. Admin app is desktop first.
-- **Boring and readable.** System fonts, high contrast, no motion that carries meaning.
+- **Familiar controls, precise details.** Standard web navigation, buttons, inputs and tables. The visual
+  world (transit wayfinding) supplies only type, palette, density and one signature move, the station line
+  (section 3). It never supplies layout, navigation or controls.
+- **One accent owns live state.** The line colour (`--accent`) marks only what is tappable or moving:
+  primary buttons, links, focus, the current page, the "Sending" stop. Never decoration.
+- **One grid.** Every size and gap is a multiple of 4 px, and layout steps are multiples of 8 px.
+- **Motion only for state.** 150 to 200 ms; nothing moves that does not mean something.
 
 ## 2. Tokens
 
@@ -16,49 +25,134 @@ CSS custom properties on `:root`, overridden for dark with `[data-theme="dark"]`
 `prefers-color-scheme` (user choice wins). No raw colours in components. Where a style lives (global
 primitive or component CSS Module) is set by [ADR 0011](adr/0011-css-modules-for-component-styles.md).
 
+### Colour
+
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--bg` | `#ffffff` | `#0f1419` | Page |
-| `--surface` | `#f4f6f8` | `#1a212b` | Cards, panels |
-| `--text` | `#14191f` | `#e8edf2` | Body (target ≥ 7:1 on `--bg`) |
-| `--text-muted` | `#4a5563` | `#a9b4c0` | Secondary (≥ 4.5:1) |
-| `--border` | `#c9d1da` | `#2f3a47` | Dividers, card and table lines (decorative) |
-| `--control-border` | `#7d8794` | `#66737f` | Edges that identify a control: inputs, secondary buttons (≥ 3:1 on `--bg` and `--surface`, WCAG 1.4.11) |
-| `--accent` | `#0b57d0` | `#8ab4ff` | Primary actions, focus ring |
-| `--ok` | `#1b6e3c` | `#6fd39a` | Synced, approved |
-| `--warn` | `#8a5300` | `#f5b84b` | Saved on device, pending |
-| `--danger` | `#b3261e` | `#ff8a80` | Conflict, rejected, destructive |
+| `--bg` | `#f6f6f2` | `#121417` | Page ground (warm signage white) |
+| `--surface` | `#ffffff` | `#1b1e23` | Cards, panels, table body, inputs |
+| `--surface-2` | `#ecece6` | `#23272d` | Second neutral layer: table header, admin rail, quiet panels |
+| `--text` | `#16181d` | `#e9ebee` | Body and headings (16.4:1 / 15.5:1 on `--bg`) |
+| `--text-muted` | `#4c5059` | `#a8aeb7` | Secondary text (≥ 6.7:1 on every surface) |
+| `--border` | `#dcdcd4` | `#2c3138` | Dividers, card and table lines (decorative) |
+| `--control-border` | `#7a7f88` | `#6b727c` | Edges that identify a control (≥ 3.4:1 on every surface, WCAG 1.4.11) |
+| `--accent` | `#0b737e` | `#4fc3cc` | The line: primary actions, links, focus ring, current page (5.1:1 / 8.8:1 on `--bg`) |
+| `--accent-hover` | `#095c65` | `#7ad3da` | Pressed and hovered accent |
+| `--accent-text` | `#ffffff` | `#0b0c0e` | Text on `--accent` (5.6:1 / 9.3:1) |
+| `--pending` | `#8a5300` | `#f5b84b` | "Saved on this device" text and icon (≥ 5.3:1) |
+| `--pending-mark` | `#c77700` | `#f5b84b` | Filled pending stop on the station line (non-text, ≥ 3:1) |
+| `--ok` | `#1d7a46` | `#6fd39a` | Synced, approved (4.9:1 on `--bg`; do not put it on `--surface-2` in light, 4.5:1 is too tight) |
+| `--danger` | `#c0352b` | `#ff8a80` | Needs your decision, not accepted, destructive (≥ 4.7:1) |
+| `--band` | `#16181d` | `#0b0c0e` | Header sign band, both schemes |
+| `--band-text` | `#f6f6f2` | `#e9ebee` | Text on the band (16.4:1) |
+| `--band-muted` | `#b9bdc4` | `#a8aeb7` | Secondary text on the band (≥ 8.7:1) |
+| `--band-edge` | `#2c3138` | `#2c3138` | Hairline under the band, so it stays distinct from a dark ground |
+| `--band-focus` | `#4fc3cc` | `#4fc3cc` | Focus ring on the band (8.5:1); the light `--accent` is too dark there |
 
-Type: system font stack; base 16 px (worker app never smaller than 16 px for inputs);
-scale 12/14/16/20/24/32; line height 1.5 body, 1.25 headings.
-Spacing: 4 px base, steps 4/8/12/16/24/32/48. Radius 8 px. Tap targets **≥ 48 × 48 px** in the worker
-app, ≥ 40 px in admin.
-Focus: 3 px visible ring in `--accent` on every interactive element; never removed.
+The band's primary button ("Sync now") is `--accent` with `--accent-text` in both schemes. Its pending
+numeral uses `#f5b84b` (10:1 on the band).
 
-## 3. Sync state badges
+### Type
 
-| State | Label | Icon | Colour |
-|---|---|---|---|
-| Pending | Saved on this device | device / cloud-off | `--warn` |
-| Syncing | Syncing… | spinner (static icon under reduced motion) | `--accent` |
-| Synced | Synced | check | `--ok` |
-| Conflict | Needs your decision | alert | `--danger` |
-| Rejected | Not accepted: *reason* | block | `--danger` |
+Barlow (body, UI, data) and Barlow Semi Condensed (headings, the pending numeral, station and table-header
+labels), self-hosted woff2, Latin subset, weights 400/500/600/700 and 600/700. `font-display: swap` with a
+metric-adjusted system fallback so text does not jump. Precached by the service worker (ADR 0012).
 
-The app header shows pending count and the time of the last successful sync.
+| Token | Size | Use |
+|---|---|---|
+| `--text-xs` | 13 px | Station labels, table meta |
+| `--text-sm` | 14 px | Hints, secondary lines |
+| `--text-md` | 16 px | Body, inputs (never smaller in the worker app) |
+| `--text-lg` | 18 px | Card titles, h3 |
+| `--text-xl` | 22 px | h2 |
+| `--text-2xl` | 28 px | h1, page title |
+| `--text-3xl` | 40 px | Login title |
+| `--text-num` | 52 px | Pending numeral in the band |
 
-**Header layout.** The first row is the brand and the account controls (user name, theme, Sign out). A worker
-gets a second row, a strip with "N pending · Last sync", "N need your decision" when there is one, and Sync
-now. So a phone header is two rows, and the tab order follows the rows. Below 600 px the theme button shows only
-its icon (half-filled circle, sun, moon); its accessible name stays "Theme: System / Light / Dark".
+Line height 1.5 body, 1.15 headings. Headings use the semi-condensed face at 700. Times, counts and versions
+use tabular figures (`font-variant-numeric: tabular-nums`). Uppercase only for station and table-header
+labels, with 0.06 em tracking.
+
+### Space, shape, depth, motion
+
+- Spacing: `--space-1` 4 px through `--space-7` 48 px (4/8/12/16/24/32/48), plus `--space-8` 64 px for page
+  ends. Layout gaps use the 8 px steps.
+- Radius: `--radius` 8 px for controls, `--radius-lg` 12 px for cards and panels, `--radius-full` for stops
+  and chips.
+- Depth: cards are flat with a `--border` edge. One shadow, `--shadow-raised`, only for things that float
+  (dialog, toast, the sticky action bar).
+- Motion: `--dur` 160 ms, `--ease` `cubic-bezier(.2,.7,.2,1)`. Under `prefers-reduced-motion` durations
+  are 0 and the "Sending" stop does not pulse.
+- Tap targets: `--tap` 48 px default, `--tap-min` 44 px minimum on worker pages (section 4); admin controls
+  ≥ 40 px.
+- Focus: 3 px ring in `--accent` (`--band-focus` on the band), 2 px offset, on every interactive element;
+  never removed.
+
+## 3. Sync state: the station line
+
+Every inspection travels one line with four stops:
+
+**On this device → Sending → Office → Reviewed**
+
+The line is the signature of the app. It replaces the look of the v1 badge but keeps its labels and
+icons, so state never relies on colour or position alone. Stops sit at the same positions on every row, so
+a list reads top to bottom.
+
+| State | Label (unchanged) | Line | Icon | Colour |
+|---|---|---|---|---|
+| Pending | Saved on this device | stop 1 filled | device | `--pending` / `--pending-mark` |
+| Syncing | Syncing… | stop 2 filled, pulses (static under reduced motion) | spinner / static arrows | `--accent` |
+| Synced | Synced | stops up to 3 filled (4 when approved) | check | `--ok` |
+| Conflict | Needs your decision | the line breaks before stop 3; red stop | alert | `--danger` |
+| Rejected | Not accepted: *reason* | the line breaks before stop 3; red stop | block | `--danger` |
+
+- **Full line** (inspection page, sync page): four stops with their names under them, and the label.
+- **Compact line** (list rows): the four stops without names, then the label. Same positions.
+- The line is drawn with CSS (no images), is `aria-hidden`, and the label carries the meaning
+  (`role="status"` where it changes live). The record status ("Draft", "Returned", "Approved") stays
+  separate text; the line shows where the data is, not the review outcome, except that "Reviewed" fills on
+  approval.
+
+**Header: the sign band.** A `--band` bar across the top in both schemes. Row 1: the brand mark (a ring
+in the line colour) and "Talaan", then the account controls (user name, theme, Sign out) as quiet buttons
+on the band. Worker row 2: the pending count as one large numeral with "pending · Last sync 08:32" beside
+it (still one link to `/sync`, accessible name unchanged), "N need your decision" as a red chip when there
+is one, and Sync now as the solid primary. So a phone header is two rows, and the tab order follows the rows.
+Below 600 px the theme button shows only its icon (half-filled circle, sun, moon); its accessible name stays
+"Theme: System / Light / Dark".
+
+**Admin navigation.** Desktop: a left rail on `--surface-2` with Review, Forms, Assignments, Conflict log;
+the current page has `aria-current="page"`, an accent bar and bold text. Below 900 px: the same links as a
+scrolling tab row under the band. Plain text links, no underline in the nav (the current-page bar and the
+hover state carry it); links in body text stay underlined.
 
 ## 4. Components
 
-Button (primary, secondary, destructive), text input, textarea, select, checkbox/radio group,
-password field with show/hide, form field (label, hint, error), card, list row, badge,
-toast, dialog (confirm-destructive), banner (offline, update required, storage not persisted),
-empty state, skeleton/loading, error state, forbidden state, 404 page, header with sync status,
-conflict row (mine / theirs / pick), table (admin review queue).
+Button (primary, secondary, quiet, destructive), text input, textarea, select, checkbox/radio group,
+Yes/No segmented choice, password field with show/hide, form field (label, hint, error), card, list row,
+station line (full and compact), status chip, toast, dialog (confirm-destructive), banner (offline,
+update required, storage not persisted), empty state, skeleton/loading, error state, forbidden state,
+404 page, sign band header, admin rail, sticky action bar, conflict row (mine / theirs / pick), table
+(admin), definition grid (answers).
+
+- **Buttons.** *Primary*: solid `--accent`, one per view (the action the screen is for). *Secondary*:
+  `--surface` with a 1.5 px `--control-border` edge. *Quiet*: no edge, accent text, for low-stakes actions
+  (Show, Cancel, Not now). *Destructive*: secondary shape with `--danger` text and edge in page flow; solid
+  `--danger` only inside the confirm dialog. Destructive actions never sit next to the primary action: they go
+  below the content or in their own group. All states (hover, active, focus, disabled, busy) are defined.
+- **Yes/No.** Two segments, each ≥ 48 px tall, still native radios underneath (unanswered stays possible).
+- **Status chip.** Record status in admin tables ("Submitted", "Returned"), with a dot plus text; tinted
+  ground, never colour alone.
+- **Empty state.** Body size, muted text, one line on what will appear here and, when there is one, the
+  action that creates it. Never larger than the section heading.
+- **Loading.** Skeleton rows in the shape of the content; no centred spinner.
+- **Dates.** One formatter: "Today 08:41", "Yesterday 16:02", "15 Nov", "15 Nov 2025" for another year; the
+  full timestamp in a `title` and in record history.
+- **Tables.** Dense (40 px rows), `--surface-2` header with uppercase semi-condensed labels, tabular numbers,
+  the whole row clickable as well as its named link. Below 600 px a table becomes a list of cards.
+
+Every control a worker taps is at least `--tap-min` (44 px; default 48), measured in CI (section 2 and
+"Worker experience" below).
 
 A style-guide page at `/styleguide` (non-production or admin only) renders every component in light
 and dark; it is the target of the axe test.
@@ -75,8 +169,11 @@ and dark; it is the target of the axe test.
 
 ## 6. Page chrome
 
-Favicon (SVG), `theme-color` per scheme, a title per route (`Page · Talaan`), app name Talaan and
-tagline "Offline-first field data sync". 404 and error pages share the empty/error state layout.
+Favicon (SVG: the line-colour ring on the band colour), `theme-color` per scheme matching the band
+(`#16181d` light, `#0b0c0e` dark), a title per route (`Page · Talaan`), app name Talaan and tagline
+"Offline-first field data sync". 404 and error pages share the empty/error state layout. The login page
+puts the band at full height above the form on a phone (brand, tagline, the station line as an
+illustration of the promise) and beside it on desktop.
 
 ## Worker pages (phase 2)
 
@@ -163,4 +260,30 @@ the proxy sends `/admin` to the Django admin.
 - **Tap targets**: every button, link, field and choice a worker uses is at least 44 by 44 CSS pixels
   (`--tap-min`; default buttons are 48). The small button variant is 44 too. A Playwright test measures
   every control on the worker pages in the real browser, so a regression fails CI.
+
+## Page layouts (phase 5)
+
+Layout changes that come with v2. Behaviour, copy and accessible names in the sections above stay as they
+are unless a line here says otherwise.
+
+- **Assignments** (worker): assignment card with the site as the title, the form and due date under it, and
+  "New inspection" as the card's primary button. Each inspection is one row: its status and short time as
+  the link text, then the compact station line with its label. Cancelled assignments are muted with a
+  "Cancelled" chip.
+- **Inspection** (worker): a title block (form, site, full station line). Under it, one line saying where
+  the edits are ("Saved on this device · 08:41"). "Submit inspection" sits in a sticky bottom action bar on a
+  phone. "Delete" moves out of that row to a destructive secondary button below the form, still behind its
+  confirmation.
+- **Sync status** (worker): the summary is the device's own line with the pending numeral. "Retry now" is
+  primary only when something is waiting, and secondary otherwise. Empty sections use the quiet empty state.
+- **Review queue** (admin): dense table, status chips, short dates, and the whole row opens the record (the
+  "Review" link stays as its named target).
+- **Submission** (admin): two columns from 900 px. On the left, the answers as a definition grid (two
+  columns) and the history as a timeline. On the right, a sticky action panel: Approve as primary, Return and
+  Edit as secondary, and Delete or Restore in a separate group below. History lists field *titles*, not keys.
+  One column on a phone, with actions first.
+- **Assignments** (admin): the "New assignment" form in a side panel from 900 px (fields share one width),
+  and the table beside it. Below 600 px the table becomes cards.
+- **Forms, form editor, conflict log** (admin): same table and panel vocabulary; the editor keeps its split
+  view (JSON | preview) with the publish action in the panel header.
 

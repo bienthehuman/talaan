@@ -13,6 +13,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 2 | Client local layer and engine: Dexie, atomic edit, outbox, push/pull, backoff, token refresh, Web Locks | Scenarios 1, 9, 12 |
 | 3 | Conflicts: detection, `deleted_remotely`, resolution screen | Scenarios 4, 5, 6: all twelve pass in CI |
 | 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
+| 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -205,6 +206,40 @@ admin screens, and metrics exist before the load test that reads them.
 - A reviewer can open the repo in Codespaces, get seeded data and the three logins, and cause a conflict from two windows by following the README.
 - Each guarantee in the README links to the test that proves it; the demo walkthrough is a Playwright script that records the lost-response and two-device conflict flows.
 - `v1.0` tagged, release published.
+
+## Phase 5 slices: UI redesign "Wayfinding Line"
+
+Exit: `v1.1.0`. The look changes, the behaviour does not. Rules in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) v2
+and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
+[REDESIGN_PLAN.md](REDESIGN_PLAN.md). No slice touches the server, `src/db/` or the sync engine.
+
+| Slice | Content | Status |
+|---|---|---|
+| 5.0 | **Docs.** Redesign plan, DESIGN_SYSTEM.md v2, ADR 0012, PRODUCT.md. | in review |
+| 5.1 | **Foundation.** `tokens.css` v2, self-hosted Barlow fonts precached, global primitives restyled, `theme-color`. No markup changes. | |
+| 5.2 | **Components.** Buttons (primary, secondary, quiet, destructive), fields, Yes/No segments, `StationLine`, status chip, banner, toast, dialog, table, quiet empty states, skeletons; `/styleguide` updated. | |
+| 5.3 | **Shell.** Sign band header (worker numeral, Sync now primary), admin rail and phone tab row with `aria-current`. | |
+| 5.4 | **Worker pages.** Assignments, inspection (sticky submit, Delete moved), sync status, conflict panel, login, 404/error. | |
+| 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | |
+| 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | |
+
+### Definition of done per slice (phase 5)
+
+Every slice: `npm run typecheck && npm run lint && npm run format:check && npm test` and `bash
+scripts/e2e.sh` green; before/after screenshots at 390 px and 1366 px, light and dark, in the PR; accessible
+names used by tests unchanged unless the PR lists the change; no inline `style=`; `modules.test.ts` green.
+
+- **5.1** Every token pair in DESIGN_SYSTEM.md section 2 is in `tokens.css`; fonts load offline (Playwright
+  offline reload shows Barlow); no request leaves the origin; axe clean in light and dark.
+- **5.2** Each component has default, hover, focus, active, disabled and busy or error states in the style
+  guide; the station line keeps every v1 label and is `aria-hidden` itself; axe clean on `/styleguide`.
+- **5.3** Phone header is at most two rows for both roles; the current admin page is announced
+  (`aria-current`); the tap-target test passes.
+- **5.4** Delete is not next to the primary action; the inspection page says where edits are; empty states
+  are body size; the tap-target test passes on every worker page.
+- **5.5** Destructive actions are separated from Approve; history shows field titles; the admin assignments
+  page has no horizontal scroll at 390 px.
+- **5.6** Impeccable audit has no open P0/P1; demo GIFs and README screenshots show v2; `v1.1.0` tagged.
 
 ## Baseline checklist (phase 0)
 
