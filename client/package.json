@@ -19,6 +19,7 @@
     "gen:api": "openapi-typescript ../server/openapi.yml -o src/lib/api-types.ts"
   },
   "dependencies": {
+    "dexie": "4.4.7",
     "openapi-fetch": "0.17.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -37,6 +38,7 @@
     "axe-core": "4.14.1",
     "eslint": "10.15.0",
     "eslint-plugin-react-hooks": "7.1.1",
+    "fake-indexeddb": "6.2.8",
     "jsdom": "31.0.1",
     "openapi-typescript": "7.13.0",
     "prettier": "3.10.1",
