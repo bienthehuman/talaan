@@ -149,6 +149,7 @@ export class SyncEngine {
 
   /** Automatic triggers do nothing while a person has to act first (sign in, update the app). */
   private onTrigger = () => {
+    if (!this.started) return; // a stopped engine (sign-out, unmount) never starts new work
     const { state } = this.status;
     if (state === "paused-auth" || state === "upgrade-required" || state === "error") return;
     void this.syncNow();

@@ -3,6 +3,10 @@ import { RequireAuth } from "./auth/RequireAuth";
 import { RequireRole } from "./auth/RequireRole";
 import { RootLayout } from "./components/RootLayout";
 import { HomePage } from "./pages/HomePage";
+import { AssignmentsAdminPage } from "./pages/admin/AssignmentsAdminPage";
+import { ConflictLogPage } from "./pages/admin/ConflictLogPage";
+import { FormEditorPage } from "./pages/admin/FormEditorPage";
+import { FormsPage } from "./pages/admin/FormsPage";
 import { ReviewDetailPage } from "./pages/admin/ReviewDetailPage";
 import { ReviewQueuePage } from "./pages/admin/ReviewQueuePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -34,6 +38,10 @@ export const routes: RouteObject[] = [
                   { index: true, element: <Navigate to="/manage/review" replace /> },
                   { path: "review", element: <ReviewQueuePage /> },
                   { path: "review/:id", element: <ReviewDetailPage /> },
+                  { path: "forms", element: <FormsPage /> },
+                  { path: "forms/:id/edit", element: <FormEditorPage /> },
+                  { path: "assignments", element: <AssignmentsAdminPage /> },
+                  { path: "conflicts", element: <ConflictLogPage /> },
                 ],
               },
               { path: "submissions/:id", element: <SubmissionPage /> },

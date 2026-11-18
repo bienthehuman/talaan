@@ -9,6 +9,9 @@ const SCREENS: { name: string; path: string; signedIn?: boolean; admin?: boolean
   { name: "sign in", path: "/login" },
   { name: "assignments", path: "/", signedIn: true },
   { name: "review queue", path: "/manage/review", signedIn: true, admin: true },
+  { name: "forms", path: "/manage/forms", signedIn: true, admin: true },
+  { name: "assignments admin", path: "/manage/assignments", signedIn: true, admin: true },
+  { name: "conflict log", path: "/manage/conflicts", signedIn: true, admin: true },
   { name: "page not found", path: "/no-such-page" },
   { name: "style guide", path: "/styleguide" },
 ];

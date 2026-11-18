@@ -70,6 +70,17 @@ M=[
 ("refused action reported as done","src/pages/admin/ReviewDetailPage.tsx",'if (result.status === "applied") {',"if (true) {"),
 ("detail not reloaded after an action","src/pages/admin/ReviewDetailPage.tsx","        setEditing(false);\n        reload();","        setEditing(false);"),
 ("network failure not explained","src/admin/api.ts","    throw new NetworkError();","    throw error;"),
+("a stopped engine starts new work","src/sync/engine.ts","    if (!this.started) return; // a stopped engine (sign-out, unmount) never starts new work\n",""),
+("editor publishes without the server's check","src/pages/admin/FormEditorPage.tsx",'const canPublish = "value" in parsed && upToDate && check.data?.valid === true;','const canPublish = "value" in parsed;'),
+("editor publishes without confirming","src/pages/admin/FormEditorPage.tsx","onClick={() => setConfirming(true)}","onClick={() => void publish()}"),
+("preview ignores the text","src/pages/admin/FormEditorPage.tsx",'const form = "value" in parsed ? parseForm(parsed.value) : null;','const form = parseForm(STARTER);'),
+("unpublished versions can be assigned","src/pages/admin/AssignmentsAdminPage.tsx",".filter((v) => v.published_at)",""),
+("assignment cancelled without confirming","src/pages/admin/AssignmentsAdminPage.tsx","onClick={() => setCancelling(a)}","onClick={() => void cancel(a)}"),
+("cancelled assignments offer cancel","src/pages/admin/AssignmentsAdminPage.tsx","{!a.cancelled && (","{true && ("),
+("assignment sent without checking the form","src/pages/admin/AssignmentsAdminPage.tsx","if (Object.keys(found).length > 0) return;",""),
+("conflict log shows changed-since inverted","src/pages/admin/ConflictLogPage.tsx",'{c.changed_since ? "Yes" : "No"}','{c.changed_since ? "No" : "Yes"}'),
+("conflict log ignores the changed-since filter","src/pages/admin/ConflictLogPage.tsx","listConflicts({ kind, changed_since: since, worker, limit: PAGE, offset })","listConflicts({ kind, changed_since: undefined, worker, limit: PAGE, offset })"),
+("new form name not trimmed","src/pages/admin/FormsPage.tsx","await createForm(name.trim());","await createForm(name);"),
 ]
 bad=0
 for d,f,old,new in M:

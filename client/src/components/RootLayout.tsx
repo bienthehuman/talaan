@@ -50,6 +50,9 @@ export function RootLayout() {
         {user?.role === "admin" && (
           <nav aria-label="Admin" className="admin-nav">
             <Link to="/manage/review">Review</Link>
+            <Link to="/manage/forms">Forms</Link>
+            <Link to="/manage/assignments">Assignments</Link>
+            <Link to="/manage/conflicts">Conflict log</Link>
           </nav>
         )}
         <div className="header-meta">

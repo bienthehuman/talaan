@@ -20,6 +20,14 @@ if (typeof HTMLDialogElement !== "undefined") {
 HTMLCanvasElement.prototype.getContext = (() =>
   null) as typeof HTMLCanvasElement.prototype.getContext;
 
+// Like the testing-library queries below, `vi.waitFor` defaults to 1 s, which a loaded machine misses.
+const waitFor = vi.waitFor.bind(vi);
+vi.waitFor = ((callback, options) =>
+  waitFor(
+    callback,
+    typeof options === "number" ? options : { timeout: 5000, ...options },
+  )) as typeof vi.waitFor;
+
 // IndexedDB work is asynchronous; a loaded CI machine needs more than the 1 s default.
 configure({ asyncUtilTimeout: 4000 });
 

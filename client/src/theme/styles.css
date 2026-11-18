@@ -221,6 +221,9 @@ a {
 }
 .table-wrap {
   overflow-x: auto;
+  /* The screen-reader-only text inside the table is absolutely positioned; without this it escapes the
+     scroll box and makes the whole page scroll sideways on a phone. */
+  position: relative;
 }
 .table {
   width: 100%;
@@ -271,6 +274,18 @@ a {
 }
 .history li + li {
   margin-top: var(--space-3);
+}
+
+.editor {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  align-items: start;
+}
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--text-sm);
+  line-height: 1.5;
 }
 
 /* Lists and form choices */
