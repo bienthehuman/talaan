@@ -1,3 +1,4 @@
+import { liveQuery, type Subscription } from "dexie";
 import {
   applyPull,
   applyResult,
@@ -28,6 +29,7 @@ export interface EngineStatus {
 }
 
 export const SYNC_INTERVAL_MS = 60_000;
+export const CHANGE_DELAY_MS = 1_500;
 const MAX_BATCHES_PER_CYCLE = 200;
 
 export interface EngineOptions {
@@ -38,6 +40,8 @@ export interface EngineOptions {
   random?: () => number;
   /** Called once per cycle on a 401. `refreshed` means try the cycle again. */
   refresh?: () => Promise<RefreshOutcome>;
+  /** How long after a local change to sync, so quick edits go out together. */
+  changeDelayMs?: number;
 }
 
 /** Engines that are running, so sign-out can stop one and wait for it before wiping its data. */
@@ -68,6 +72,10 @@ export class SyncEngine {
   private retryTimer: ReturnType<typeof setTimeout> | undefined;
   private interval: ReturnType<typeof setInterval> | undefined;
   private started = false;
+  private readonly changeDelayMs: number;
+  private outboxWatch: Subscription | undefined;
+  private changeTimer: ReturnType<typeof setTimeout> | undefined;
+  private lastOutbox: number | null = null;
 
   constructor(options: EngineOptions) {
     this.db = options.db;
@@ -75,6 +83,7 @@ export class SyncEngine {
     this.deviceId = options.deviceId;
     this.random = options.random ?? Math.random;
     this.refresh = options.refresh;
+    this.changeDelayMs = options.changeDelayMs ?? CHANGE_DELAY_MS;
   }
 
   getStatus = (): EngineStatus => this.status;
@@ -99,6 +108,18 @@ export class SyncEngine {
     void getMeta<number>(this.db, "lastSyncAt").then((at) => {
       if (at !== null && this.status.lastSyncAt === null) this.set({ lastSyncAt: at });
     });
+    // A new queued change goes out shortly after it is made, without waiting for the next tick.
+    this.outboxWatch = liveQuery(() => this.db.outbox.count()).subscribe({
+      next: (count) => {
+        const grew = this.lastOutbox !== null && count > this.lastOutbox;
+        this.lastOutbox = count;
+        if (grew && navigator.onLine) {
+          clearTimeout(this.changeTimer);
+          this.changeTimer = setTimeout(this.onTrigger, this.changeDelayMs);
+        }
+      },
+      error: () => undefined,
+    });
     this.onTrigger();
   }
 
@@ -108,6 +129,10 @@ export class SyncEngine {
     window.removeEventListener("online", this.onTrigger);
     clearInterval(this.interval);
     clearTimeout(this.retryTimer);
+    clearTimeout(this.changeTimer);
+    this.outboxWatch?.unsubscribe();
+    this.outboxWatch = undefined;
+    this.lastOutbox = null;
   }
 
   /** Automatic triggers do nothing while a person has to act first (sign in, update the app). */

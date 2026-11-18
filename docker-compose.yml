@@ -11,6 +11,9 @@ x-server-env: &server-env
   POSTGRES_PORT: "5432"
   # Throttling is covered by pytest. The e2e suite signs in many times a minute.
   THROTTLE_LOGIN: 1000/min
+  # Dev and e2e only (the server refuses it without DEBUG). scripts/e2e.sh turns it on; the production
+  # compose file never sets it.
+  FAULT_INJECTION: ${FAULT_INJECTION:-0}
 
 services:
   db:

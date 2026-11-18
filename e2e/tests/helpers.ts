@@ -31,3 +31,34 @@ export function collectBrowserErrors(page: Page): string[] {
   });
   return errors;
 }
+
+/** Open the first assignment's "New inspection" and return the new record's id. */
+export async function startInspection(page: Page): Promise<string> {
+  await page.getByRole("button", { name: "New inspection" }).first().click();
+  await expect(page).toHaveURL(/\/submissions\/[0-9a-f-]{36}$/);
+  return page.url().split("/").pop()!;
+}
+
+/** The number in the header's "N pending" text (the outbox size on this device). */
+export async function pendingCount(page: Page): Promise<number> {
+  const text = await page.getByText(/^\d+ pending · Last sync/).innerText();
+  return Number(text.split(" ")[0]);
+}
+
+interface ServerRecord {
+  id: string;
+  version: number;
+  data: Record<string, unknown>;
+  status: string;
+}
+
+/** What the server holds for this worker, read through the real pull endpoint. */
+export async function serverRecords(page: Page): Promise<ServerRecord[]> {
+  return page.evaluate(async () => {
+    const session = JSON.parse(localStorage.getItem("talaan.session")!);
+    const response = await fetch("/api/sync/pull/?cursor=0&limit=500", {
+      headers: { Authorization: `Bearer ${session.access}`, "X-Client-Schema": "1" },
+    });
+    return (await response.json()).records;
+  });
+}

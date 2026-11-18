@@ -17,6 +17,9 @@ if [ -z "${E2E_KEEP_DB:-}" ]; then
   docker compose down -v --remove-orphans
 fi
 
+# The sync scenarios ask the server to fail on purpose (X-Fault header). Dev compose only.
+export FAULT_INJECTION=1
+
 echo "== build and start the stack"
 docker compose up -d --build --wait
 

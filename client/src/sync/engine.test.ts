@@ -532,6 +532,34 @@ describe("triggers", () => {
   });
 });
 
+describe("a local change", () => {
+  it("is sent shortly afterwards without waiting for the next tick", async () => {
+    const s = server();
+    versions = new Map();
+    const sync = new SyncEngine({ db: dbFor(1), userId: 1, deviceId: "d", changeDelayMs: 20 });
+    sync.start();
+    await vi.waitFor(() => expect(s.pulls).toHaveLength(1)); // the first cycle, with nothing to send
+    expect(s.pushes).toHaveLength(0);
+
+    await createSubmission(dbFor(1), NEW);
+    await vi.waitFor(() => expect(s.pushes).toHaveLength(1));
+    sync.stop();
+  });
+
+  it("waits for the browser's online event when there is no connection", async () => {
+    const s = server();
+    vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const sync = new SyncEngine({ db: dbFor(1), userId: 1, deviceId: "d", changeDelayMs: 10 });
+    sync.start();
+    await vi.waitFor(() => expect(s.pulls).toHaveLength(1));
+
+    await createSubmission(dbFor(1), NEW);
+    await new Promise((r) => setTimeout(r, 120));
+    expect(s.pushes).toHaveLength(0);
+    sync.stop();
+  });
+});
+
 describe("backoff", () => {
   it("grows exponentially, is jittered, and is capped", () => {
     expect(backoffMs(1, 0, () => 1)).toBe(1000);

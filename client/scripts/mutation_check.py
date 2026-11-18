@@ -38,6 +38,8 @@ M=[
 ("list shows deleted inspections","src/pages/AssignmentsPage.tsx",".filter((s) => !s.deleted)",""),
 ("required fields not enforced by the validator","src/forms/validate.ts","complete && field.required ? base : base.optional()","base.optional()"),
 ("integer accepts fractions",'src/forms/validate.ts','z.number().int({ error: "Enter a whole number." })','z.number()'),
+("local changes wait for the next tick","src/sync/engine.ts","if (grew && navigator.onLine) {","if (false) {"),
+("changes trigger sync while offline","src/sync/engine.ts","if (grew && navigator.onLine) {","if (grew) {"),
 ]
 bad=0
 for d,f,old,new in M:
