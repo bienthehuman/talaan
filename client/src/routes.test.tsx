@@ -70,7 +70,7 @@ describe("layout", () => {
 
     signIn();
     renderApp("/");
-    expect(screen.getByText("0 pending · Last sync: never")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "0 pending · Last sync: never" })).toBeInTheDocument();
   });
 
   it("signs out with no unsent changes straight away", async () => {

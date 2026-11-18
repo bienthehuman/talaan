@@ -23,12 +23,13 @@ const ICON: Record<ThemeChoice, ReactNode> = {
 };
 
 /** Cycles system → light → dark. On a narrow screen only the icon shows; the name stays "Theme: …". */
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const [choice, setChoice] = useState<ThemeChoice>(getStoredTheme);
   return (
     <Button
       variant="secondary"
       small
+      className={className}
       onClick={() => {
         const next = nextTheme(choice);
         applyTheme(next);

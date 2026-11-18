@@ -47,6 +47,7 @@ primitive or component CSS Module) is set by [ADR 0011](adr/0011-css-modules-for
 | `--band-text` | `#f6f6f2` | `#e9ebee` | Text on the band (16.4:1) |
 | `--band-muted` | `#b9bdc4` | `#a8aeb7` | Secondary text on the band (≥ 8.7:1) |
 | `--band-edge` | `#2c3138` | `#2c3138` | Hairline under the band, so it stays distinct from a dark ground |
+| `--band-control` | `#6b727c` | `#6b727c` | Edge of quiet controls on the band (3.7:1) |
 | `--band-focus` | `#4fc3cc` | `#4fc3cc` | Focus ring on the band (8.5:1); the light `--accent` is too dark there |
 
 The band's primary button ("Sync now") is `--accent` with `--accent-text` in both schemes. Its pending

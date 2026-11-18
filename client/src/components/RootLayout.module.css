@@ -1,58 +1,164 @@
-.header {
+/* The sign band (docs/DESIGN_SYSTEM.md section 3): the same near-black bar in both schemes. Row 1 is the
+   brand and the account controls; a worker gets row 2 with the pending numeral and Sync now. */
+.band {
+  background: var(--band);
+  color: var(--band-text);
+  border-bottom: 1px solid var(--band-edge);
+  padding: var(--space-2) var(--space-4);
+}
+.band :focus-visible {
+  outline-color: var(--band-focus);
+}
+.bar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3) var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  gap: var(--space-3);
 }
 .brand {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-lg);
-  color: var(--text);
+  font-size: var(--text-xl);
+  letter-spacing: 0.02em;
+  color: var(--band-text);
   text-decoration: none;
   margin-right: auto;
 }
+.brand:hover {
+  color: var(--band-text);
+}
 .brand img {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
-.adminNav {
-  display: flex;
-  gap: var(--space-4);
-  margin-inline-end: auto;
-  margin-inline-start: var(--space-4);
-}
-/* Account controls share the brand's row; a worker's sync status is a strip of its own below, so on a
-   phone the header is two rows rather than three. */
 .account {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 .user {
-  color: var(--text-muted);
+  color: var(--band-muted);
   font-size: var(--text-sm);
   margin-inline-end: var(--space-1);
 }
+/* Quiet controls on the band: an edge that holds 3:1 on the band, no fill. */
+.onBand {
+  background: transparent;
+  color: var(--band-text);
+  border-color: var(--band-control);
+}
+.onBand:hover:not([disabled]) {
+  background: rgb(255 255 255 / 0.08);
+  border-color: var(--band-muted);
+}
 .sync {
-  flex-basis: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0 var(--space-4);
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
   padding-top: var(--space-2);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--band-edge);
+}
+/* One link: "N pending · Last sync: 08:32". The numeral is inline (not flex) so the text keeps its space. */
+.status {
+  display: inline-block;
+  color: var(--band-muted);
   font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+.status:hover {
+  color: var(--band-text);
+  text-decoration: underline;
+}
+.numeral {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: var(--text-num);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--band-text);
+  vertical-align: -0.08em;
+  margin-inline-end: var(--space-1);
+}
+.waiting {
+  color: var(--band-numeral);
+}
+.needsDecision {
+  display: inline-flex;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: var(--accent-text);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+.needsDecision:hover {
+  color: var(--accent-text);
+  text-decoration: underline;
 }
 .syncNow {
   margin-inline-start: auto;
 }
-.needsDecision {
-  color: var(--danger);
+
+/* Admin: a left rail on desktop, a scrolling tab row under the band below 900 px. */
+.shell {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.main {
+  min-width: 0;
+}
+.rail {
+  display: flex;
+  overflow-x: auto;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.rail a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  white-space: nowrap;
+  color: var(--text-muted);
   font-weight: 600;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.rail a:hover {
+  color: var(--text);
+}
+.rail a[aria-current="page"] {
+  color: var(--text);
+  font-weight: 700;
+  border-bottom-color: var(--accent);
+}
+@media (min-width: 900px) {
+  .shell {
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 57px);
+  }
+  .rail {
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-4) var(--space-2);
+    border-bottom: 0;
+    border-inline-end: 1px solid var(--border);
+  }
+  .rail a {
+    border-bottom: 0;
+    border-inline-start: 3px solid transparent;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .rail a[aria-current="page"] {
+    border-inline-start-color: var(--accent);
+    background: var(--surface);
+  }
 }
