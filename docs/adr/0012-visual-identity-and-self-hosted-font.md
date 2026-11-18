@@ -34,14 +34,14 @@ Option 3, **Wayfinding Line**:
 - A near-black **sign band** header, a warm signage-white ground, and one teal **line colour** that is used
   only for live and tappable things. Amber, green and red are kept for sync states.
 - **Barlow** and **Barlow Semi Condensed** (SIL Open Font License), **self-hosted**: woff2 files from the
-  `@fontsource` packages, bundled by Vite and served from our origin, Latin subset, six weight files, about
-  70 KB in total. `woff2` is added to the PWA precache `globPatterns`, so fonts work offline from the first
+  `@fontsource` packages, bundled by Vite and served from our origin, Latin subset, three files (Barlow 400
+  and 600, Barlow Semi Condensed 700), about 68 KB in total. `woff2` is added to the PWA precache `globPatterns`, so fonts work offline from the first
   install. `font-display: swap` with a metric-adjusted fallback (`size-adjust`) keeps layout shift near zero.
 
 This amends DESIGN_SYSTEM.md v1's "System fonts" principle. All other v1 rules stay.
 
 ## Consequences
-- About 70 KB more in the first download and the precache. That's acceptable for an installable app, and
+- About 68 KB more in the first download and the precache. That's acceptable for an installable app, and
   the fonts are cached once.
 - The CSP does not change, because the fonts are same-origin.
 - The `@fontsource` packages are new dependencies, pinned in the lockfile. Font files are build input, not

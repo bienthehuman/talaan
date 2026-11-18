@@ -215,8 +215,8 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 
 | Slice | Content | Status |
 |---|---|---|
-| 5.0 | **Docs.** Redesign plan, DESIGN_SYSTEM.md v2, ADR 0012, PRODUCT.md. | in review |
-| 5.1 | **Foundation.** `tokens.css` v2, self-hosted Barlow fonts precached, global primitives restyled, `theme-color`. No markup changes. | |
+| 5.0 | **Docs.** Redesign plan, DESIGN_SYSTEM.md v2, ADR 0012, PRODUCT.md. | done |
+| 5.1 | **Foundation.** `tokens.css` v2, self-hosted Barlow fonts precached, global primitives restyled. No markup changes (`theme-color`, favicon and manifest colours move to 5.3 with the band). | in review |
 | 5.2 | **Components.** Buttons (primary, secondary, quiet, destructive), fields, Yes/No segments, `StationLine`, status chip, banner, toast, dialog, table, quiet empty states, skeletons; `/styleguide` updated. | |
 | 5.3 | **Shell.** Sign band header (worker numeral, Sync now primary), admin rail and phone tab row with `aria-current`. | |
 | 5.4 | **Worker pages.** Assignments, inspection (sticky submit, Delete moved), sync status, conflict panel, login, 404/error. | |

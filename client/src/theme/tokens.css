@@ -1,25 +1,44 @@
-/* Design tokens: docs/DESIGN_SYSTEM.md section 2. No raw colours in components. */
+/* Design tokens: docs/DESIGN_SYSTEM.md section 2 (v2, "Wayfinding Line"). No raw colours in components.
+   Every colour pair here was contrast-computed; recompute when changing one. */
 :root {
-  --bg: #ffffff;
-  --surface: #f4f6f8;
-  --text: #14191f;
-  --text-muted: #4a5563;
-  --border: #c9d1da;
-  /* Boundaries that identify a control (inputs, secondary buttons): at least 3:1 on --bg and --surface. */
-  --control-border: #7d8794;
-  --accent: #0b57d0;
+  --bg: #f6f6f2;
+  --surface: #ffffff;
+  --surface-2: #ecece6;
+  --text: #16181d;
+  --text-muted: #4c5059;
+  --border: #dcdcd4;
+  /* Boundaries that identify a control (inputs, secondary buttons): at least 3:1 on every surface. */
+  --control-border: #7a7f88;
+  /* The line colour: only live and tappable things (primary actions, links, focus, current page). */
+  --accent: #0b737e;
+  --accent-hover: #095c65;
   --accent-text: #ffffff;
-  --ok: #1b6e3c;
-  --warn: #8a5300;
-  --danger: #b3261e;
+  --pending: #8a5300;
+  --pending-mark: #c77700;
+  --ok: #1d7a46;
+  --danger: #c0352b;
+  /* Header sign band: the same in both schemes. */
+  --band: #16181d;
+  --band-text: #f6f6f2;
+  --band-muted: #b9bdc4;
+  --band-edge: #2c3138;
+  --band-focus: #4fc3cc;
+  --band-numeral: #f5b84b;
 
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --text-xs: 0.75rem;
+  --font:
+    "Barlow", "Barlow Fallback", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display:
+    "Barlow Semi Condensed", "Barlow", "Barlow Fallback", system-ui, -apple-system, "Segoe UI",
+    Roboto, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 0.8125rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+  --text-num: 3.25rem;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -28,41 +47,67 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-7: 48px;
+  --space-8: 64px;
   --radius: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+  --shadow-raised: 0 1px 2px rgb(22 24 29 / 0.08), 0 8px 24px rgb(22 24 29 / 0.12);
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --tap: 48px;
-  /* The smallest a tappable control may be (docs/DESIGN_SYSTEM.md section 4). */
+  /* The smallest a tappable control may be (docs/DESIGN_SYSTEM.md sections 2 and 4). */
   --tap-min: 44px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1419;
-    --surface: #1a212b;
-    --text: #e8edf2;
-    --text-muted: #a9b4c0;
-    --border: #2f3a47;
-    --control-border: #66737f;
-    --accent: #8ab4ff;
-    --accent-text: #0f1419;
+    --bg: #121417;
+    --surface: #1b1e23;
+    --surface-2: #23272d;
+    --text: #e9ebee;
+    --text-muted: #a8aeb7;
+    --border: #2c3138;
+    --control-border: #6b727c;
+    --accent: #4fc3cc;
+    --accent-hover: #7ad3da;
+    --accent-text: #0b0c0e;
+    --pending: #f5b84b;
+    --pending-mark: #f5b84b;
     --ok: #6fd39a;
-    --warn: #f5b84b;
     --danger: #ff8a80;
+    --band: #0b0c0e;
+    --band-text: #e9ebee;
+    --band-muted: #a8aeb7;
+    --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.5);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f1419;
-  --surface: #1a212b;
-  --text: #e8edf2;
-  --text-muted: #a9b4c0;
-  --border: #2f3a47;
-  --control-border: #66737f;
-  --accent: #8ab4ff;
-  --accent-text: #0f1419;
+  --bg: #121417;
+  --surface: #1b1e23;
+  --surface-2: #23272d;
+  --text: #e9ebee;
+  --text-muted: #a8aeb7;
+  --border: #2c3138;
+  --control-border: #6b727c;
+  --accent: #4fc3cc;
+  --accent-hover: #7ad3da;
+  --accent-text: #0b0c0e;
+  --pending: #f5b84b;
+  --pending-mark: #f5b84b;
   --ok: #6fd39a;
-  --warn: #f5b84b;
   --danger: #ff8a80;
+  --band: #0b0c0e;
+  --band-text: #e9ebee;
+  --band-muted: #a8aeb7;
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.5);
   color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
 }

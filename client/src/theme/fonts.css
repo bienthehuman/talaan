@@ -1,0 +1,35 @@
+/* Self-hosted Barlow (SIL OFL), Latin subset, woff2 only, three files (ADR 0012). Bold text uses the 600
+   file (no synthesis, since a 600 face exists). Same origin, so the CSP is unchanged;
+   precached by the service worker (vite.config.ts globPatterns), so it works offline. */
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("@fontsource/barlow/files/barlow-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("@fontsource/barlow/files/barlow-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("@fontsource/barlow-semi-condensed/files/barlow-semi-condensed-latin-700-normal.woff2")
+    format("woff2");
+}
+/* Metric-adjusted fallback shown until Barlow loads, so text barely shifts on swap. Values are close
+   approximations of Barlow's metrics against Arial/Helvetica. */
+@font-face {
+  font-family: "Barlow Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica"), local("Roboto");
+  size-adjust: 97%;
+  ascent-override: 103%;
+  descent-override: 21%;
+  line-gap-override: 0%;
+}

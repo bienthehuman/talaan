@@ -8,14 +8,14 @@
   border: 2px solid currentColor;
   font-size: var(--text-sm);
   font-weight: 600;
-  background: var(--bg);
+  background: var(--surface);
 }
 .badge svg {
   width: 16px;
   height: 16px;
 }
 .pending {
-  color: var(--warn);
+  color: var(--pending);
 }
 .syncing {
   color: var(--accent);

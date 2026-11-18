@@ -42,7 +42,7 @@
   background: var(--ok);
 }
 .swWarn {
-  background: var(--warn);
+  background: var(--pending);
 }
 .swDanger {
   background: var(--danger);
