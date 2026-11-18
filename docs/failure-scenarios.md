@@ -17,7 +17,7 @@ land. `pytest -m phase1` runs the phase 1 scenarios.
 | 9 | Token expires mid-sync | Outbox intact; sync resumes after refresh or login (server half, `expire-token`, is tested in `server/sync/tests/test_fault_injection.py`) | Playwright | `e2e/tests/09-token-expiry.spec.ts` | 2 | todo |
 | 10 | Worker edits an approved submission | `rejected: locked`; clear message; no retry loop | pytest + Playwright | `server/sync/tests/test_locked.py`, `e2e/tests/10-locked.spec.ts` | 1 (pytest), 3 | pytest done (1.2 service, 1.3 HTTP); Playwright half in phase 3 |
 | 11 | Client too old | 426 returned; app shows update notice; local data kept | pytest | `server/sync/tests/test_client_schema.py` | 1 | done (slice 1.3) |
-| 12 | Tab killed during a local write | Record and outbox are both present or both absent | Vitest + fake-indexeddb | `client/src/db/submissions.test.ts` | 2 | todo |
+| 12 | Tab killed during a local write | Record and outbox are both present or both absent | Vitest + fake-indexeddb | `client/src/db/submissions.test.ts` | 2 | done (slice 2.1) |
 
 ## Guarantees mapped to scenarios
 

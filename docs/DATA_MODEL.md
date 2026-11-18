@@ -56,7 +56,24 @@ initial fields are 1), and a `create` mutation carries `base_version: 0`.
 | `meta` | key | `syncCursor`, `deviceId`, `userId`, `lastSyncAt` |
 
 Keeping both `data` and `shadow` lets a pull update `shadow` without touching unsent edits, and lets
-the conflict screen show mine, theirs and the starting value. All local data is keyed by `userId`.
+the conflict screen show mine, theirs and the starting value.
+
+Local rules (slice 2.1, `client/src/db/`):
+
+- **One IndexedDB database per user** (`talaan-user-<id>`), so data is keyed by `userId` by construction.
+  The device id is a random UUID in localStorage, shared by every user of the browser.
+- **A record and its outbox entry are written in one transaction**, so a killed tab leaves both or neither.
+- **Coalescing.** An edit joins the record's newest outbox entry only if that entry is an unsent `create`
+  or `update`. A sent entry is frozen (a retry resends it unchanged); the edit becomes a new entry. `submit`
+  and `delete` are never merged. An `update` carries only the fields that changed (`null` clears).
+- **`baseVersion`** of a new entry is the record's `serverVersion` (0 until the create is applied).
+  The engine (slice 2.2) rebases the queued entries of a record after an `applied` result, but only when
+  the applied version is exactly that entry's base + 1, i.e. nobody else wrote in between; otherwise the
+  entry keeps its base so field conflict detection still sees the other writer.
+- **Deleting a record the server has never seen** (no confirmed version, no sent entry) forgets the row and
+  its entries instead of queueing a delete.
+- Edits are refused (`NotEditableError`) when the record is submitted or approved, deleted, or in
+  `conflict` / `rejected` until the user resolves or discards.
 
 ## 3. Local sync state machine
 

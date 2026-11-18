@@ -1,4 +1,7 @@
 import "@testing-library/jest-dom/vitest";
+import "fake-indexeddb/auto";
+import { IDBFactory } from "fake-indexeddb";
+import Dexie from "dexie";
 import { clearSession } from "../auth/session";
 
 // jsdom versions differ on <dialog>; make showModal/close behave enough for tests.
@@ -16,6 +19,9 @@ HTMLCanvasElement.prototype.getContext = (() =>
   null) as typeof HTMLCanvasElement.prototype.getContext;
 
 beforeEach(() => {
+  // A fresh, empty IndexedDB for every test. Dexie keeps its own reference, so repoint it too.
+  globalThis.indexedDB = new IDBFactory();
+  Dexie.dependencies.indexedDB = globalThis.indexedDB;
   localStorage.clear();
   clearSession();
   document.documentElement.removeAttribute("data-theme");
