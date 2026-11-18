@@ -5,6 +5,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from accounts.views import LoginView, MeView
+from adminapi import views as admin_views
 from core.views import HealthView
 from sync import views as sync_views
 
@@ -32,6 +33,42 @@ urlpatterns = [
         sync_views.AdminActionView.as_view(),
         name="admin_submission_action",
     ),
+    path(
+        "api/admin/submissions/", admin_views.SubmissionListView.as_view(), name="admin_submissions"
+    ),
+    path(
+        "api/admin/submissions/<uuid:record_id>/",
+        admin_views.SubmissionDetailView.as_view(),
+        name="admin_submission",
+    ),
+    path("api/admin/workers/", admin_views.WorkerListView.as_view(), name="admin_workers"),
+    path(
+        "api/admin/assignments/",
+        admin_views.AssignmentListCreateView.as_view(),
+        name="admin_assignments",
+    ),
+    path(
+        "api/admin/assignments/<int:pk>/cancel/",
+        admin_views.AssignmentCancelView.as_view(),
+        name="admin_assignment_cancel",
+    ),
+    path("api/admin/forms/", admin_views.FormListCreateView.as_view(), name="admin_forms"),
+    path(
+        "api/admin/forms/<int:pk>/versions/",
+        admin_views.FormVersionCreateView.as_view(),
+        name="admin_form_versions",
+    ),
+    path(
+        "api/admin/forms/check-schema/",
+        admin_views.SchemaCheckView.as_view(),
+        name="admin_schema_check",
+    ),
+    path(
+        "api/admin/form-versions/<int:pk>/",
+        admin_views.FormVersionDetailView.as_view(),
+        name="admin_form_version",
+    ),
+    path("api/admin/conflicts/", admin_views.ConflictLogView.as_view(), name="admin_conflicts"),
     path("api/assignments/", sync_views.AssignmentListView.as_view(), name="assignments"),
     path("api/form-versions/", sync_views.FormVersionListView.as_view(), name="form_versions"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "assignments",
     "submissions",
     "sync",
+    "adminapi",
 ]
 
 MIDDLEWARE = [
@@ -159,6 +160,8 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
     "COMPONENT_SPLIT_REQUEST": True,
+    # Two different `status` fields (a submission's, and a push result's) would otherwise collide.
+    "ENUM_NAME_OVERRIDES": {"SubmissionStatusEnum": "submissions.models.Status"},
 }
 
 # --- Security headers and cookies ----------------------------------------------------------

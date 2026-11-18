@@ -160,7 +160,7 @@ admin screens, and metrics exist before the load test that reads them.
 
 | Slice | Content | Status |
 |---|---|---|
-| 4.1 | **Admin API.** Review queue (list and filter submissions, detail with its event history), assignment create and cancel, form-version create and publish, conflict log. Admin only, permission catalog enforced, OpenAPI and types regenerated. | not started |
+| 4.1 | **Admin API.** Review queue (list and filter submissions, detail with its event history), assignment create and cancel, form-version create and publish, conflict log. Admin only, permission catalog enforced, OpenAPI and types regenerated. | in review |
 | 4.2 | **Admin web: review.** Admin routes, role gate, review queue, submission detail with history; approve, return (reason), restore, delete, edit through the slice 3.1 endpoint. Admin is online only. | not started |
 | 4.3 | **Admin web: forms, assignments, conflict log.** Form-version editor (JSON with a live preview built from the same schema code as the worker form, not drag and drop), assignment management, conflict log. | not started |
 | 4.4 | **Worker experience.** Installable-app prompt, sync-status panel (pending changes, last sync, retry now, what failed), storage persistence request, tap-target and label audit. | not started |

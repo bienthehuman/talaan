@@ -1,0 +1,366 @@
+"""The admin API: what the admin web needs to review work, manage assignments and form versions,
+and read the conflict log. Reads go through the ORM; every change to a submission still goes through
+sync.services (see AdminActionView). Each endpoint requires one catalog permission."""
+
+from django.db import transaction
+from django.db.models import Count, Exists, F, OuterRef, Q
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import generics
+from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from accounts.drf import requires
+from accounts.models import User
+from accounts.permissions import (
+    ASSIGNMENT_MANAGE,
+    CONFLICTLOG_VIEW,
+    FORM_PUBLISH,
+    SUBMISSION_APPROVE,
+    WORKER,
+)
+from assignments.models import Assignment
+from forms.models import Form, FormVersion
+from forms.schema import validate_form_schema
+from submissions.models import EventKind, Submission, SubmissionEvent
+
+from . import serializers as s
+
+TRI = ("true", "false", "any")
+
+
+def _tri(request, name: str, default: str) -> str:
+    value = request.query_params.get(name, default)
+    if value not in TRI:
+        raise ValidationError({name: "Use true, false or any."})
+    return value
+
+
+def _int(request, name: str) -> int | None:
+    raw = request.query_params.get(name)
+    if raw is None or raw == "":
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        raise ValidationError({name: "Must be a whole number."}) from None
+
+
+# --- review queue -----------------------------------------------------------------------------
+
+
+class SubmissionListView(generics.ListAPIView):
+    """The review queue: every submission, newest change first."""
+
+    permission_classes = [requires(SUBMISSION_APPROVE)]
+    serializer_class = s.SubmissionRowSerializer
+
+    def get_queryset(self):
+        request = self.request
+        qs = Submission.objects.select_related(
+            "assignment__worker", "form_version__form", "updated_by"
+        ).order_by("-server_seq")
+        if (status := request.query_params.get("status")) is not None:
+            if status not in {c for c, _ in Submission._meta.get_field("status").choices}:
+                raise ValidationError({"status": "Unknown status."})
+            qs = qs.filter(status=status)
+        if (worker := _int(request, "worker")) is not None:
+            qs = qs.filter(assignment__worker_id=worker)
+        if (assignment := _int(request, "assignment")) is not None:
+            qs = qs.filter(assignment_id=assignment)
+        deleted = _tri(request, "deleted", "false")
+        if deleted == "true":
+            qs = qs.filter(deleted_at__isnull=False)
+        elif deleted == "false":
+            qs = qs.filter(deleted_at__isnull=True)
+        return qs
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("status", str, description="draft, submitted, approved or returned."),
+            OpenApiParameter("worker", int, description="The worker's user id."),
+            OpenApiParameter("assignment", int),
+            OpenApiParameter("deleted", str, enum=list(TRI), description="Default false."),
+        ],
+        summary="List submissions (the review queue)",
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class SubmissionDetailView(generics.RetrieveAPIView):
+    permission_classes = [requires(SUBMISSION_APPROVE)]
+    serializer_class = s.SubmissionDetailSerializer
+    lookup_url_kwarg = "record_id"
+
+    def get_queryset(self):
+        return Submission.objects.select_related(
+            "assignment__worker", "form_version__form", "updated_by"
+        ).prefetch_related("events__actor")
+
+    @extend_schema(summary="One submission with its data, form schema and event history")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+# --- assignments ------------------------------------------------------------------------------
+
+
+def _assignments():
+    return Assignment.objects.select_related("form_version__form", "worker").annotate(
+        submission_count=Count("submissions")
+    )
+
+
+class WorkerListView(generics.ListAPIView):
+    permission_classes = [requires(ASSIGNMENT_MANAGE)]
+    serializer_class = s.UserRefSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return User.objects.filter(groups__name=WORKER, is_active=True).order_by("username")
+
+    @extend_schema(summary="Workers an assignment can be given to")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class AssignmentListCreateView(generics.ListCreateAPIView):
+    permission_classes = [requires(ASSIGNMENT_MANAGE)]
+
+    def get_serializer_class(self):
+        return (
+            s.AssignmentCreateSerializer
+            if self.request.method == "POST"
+            else s.AdminAssignmentSerializer
+        )
+
+    def get_queryset(self):
+        request = self.request
+        qs = _assignments().order_by("-created_at", "-id")
+        if (worker := _int(request, "worker")) is not None:
+            qs = qs.filter(worker_id=worker)
+        cancelled = _tri(request, "cancelled", "any")
+        if cancelled == "true":
+            qs = qs.filter(cancelled_at__isnull=False)
+        elif cancelled == "false":
+            qs = qs.filter(cancelled_at__isnull=True)
+        return qs
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("worker", int),
+            OpenApiParameter("cancelled", str, enum=list(TRI), description="Default any."),
+        ],
+        summary="List assignments",
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        request=s.AssignmentCreateSerializer,
+        responses={201: s.AdminAssignmentSerializer},
+        summary="Assign a published form version to a worker",
+    )
+    def post(self, request, *args, **kwargs):
+        body = s.AssignmentCreateSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        data = body.validated_data
+        version = FormVersion.objects.filter(pk=data["form_version_id"]).first()
+        worker = User.objects.filter(pk=data["worker_id"]).first()
+        if version is None:
+            raise ValidationError({"form_version_id": "No such form version."})
+        if worker is None:
+            raise ValidationError({"worker_id": "No such user."})
+        assignment = Assignment(
+            form_version=version,
+            worker=worker,
+            site_name=data["site_name"].strip(),
+            due_date=data["due_date"],
+        )
+        if not assignment.site_name:
+            raise ValidationError({"site_name": "Enter a site name."})
+        try:
+            assignment.full_clean()
+        except Exception as exc:  # django ValidationError -> the same problem+json shape
+            raise ValidationError(getattr(exc, "message_dict", {"detail": str(exc)})) from None
+        assignment.save()
+        created = _assignments().get(pk=assignment.pk)
+        return Response(s.AdminAssignmentSerializer(created).data, status=201)
+
+
+class AssignmentCancelView(APIView):
+    permission_classes = [requires(ASSIGNMENT_MANAGE)]
+
+    @extend_schema(
+        request=None,
+        responses={200: s.AdminAssignmentSerializer},
+        summary="Cancel an assignment (existing submissions stay)",
+    )
+    def post(self, request, pk):
+        assignment = Assignment.objects.filter(pk=pk).first()
+        if assignment is None:
+            raise NotFound("No such assignment.")
+        assignment.cancel()  # a second call changes nothing
+        return Response(s.AdminAssignmentSerializer(_assignments().get(pk=pk)).data)
+
+
+# --- forms ------------------------------------------------------------------------------------
+
+
+class FormListCreateView(generics.ListCreateAPIView):
+    permission_classes = [requires(FORM_PUBLISH)]
+
+    def get_serializer_class(self):
+        return s.FormCreateSerializer if self.request.method == "POST" else s.FormSerializer
+
+    def get_queryset(self):
+        return Form.objects.prefetch_related("versions").order_by("name")
+
+    @extend_schema(summary="Forms with their versions")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        request=s.FormCreateSerializer,
+        responses={201: s.FormSerializer},
+        summary="Create a form (it has no versions yet)",
+    )
+    def post(self, request, *args, **kwargs):
+        body = s.FormCreateSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        name = body.validated_data["name"].strip()
+        if not name:
+            raise ValidationError({"name": "Enter a name."})
+        if Form.objects.filter(name=name).exists():
+            raise ValidationError({"name": "A form with this name already exists."})
+        form = Form.objects.create(name=name)
+        return Response(s.FormSerializer(form).data, status=201)
+
+
+class FormVersionCreateView(APIView):
+    """Publish a new version of a form. The schema is checked with the same rules as the Django
+    admin, and a published version can never change (ADR 0008)."""
+
+    permission_classes = [requires(FORM_PUBLISH)]
+
+    @extend_schema(
+        request=s.SchemaSerializer,
+        responses={201: s.FormVersionDetailSerializer},
+        summary="Publish a new version of a form",
+    )
+    def post(self, request, pk):
+        form = Form.objects.filter(pk=pk).first()
+        if form is None:
+            raise NotFound("No such form.")
+        body = s.SchemaSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        schema = body.validated_data["schema"]
+        if problems := validate_form_schema(schema):
+            raise ValidationError({"schema": problems})
+        with transaction.atomic():
+            version = FormVersion.objects.create(form=form, schema=schema)
+            version.publish()
+        return Response(s.FormVersionDetailSerializer(version).data, status=201)
+
+
+class FormVersionDetailView(generics.RetrieveAPIView):
+    permission_classes = [requires(FORM_PUBLISH)]
+    serializer_class = s.FormVersionDetailSerializer
+    queryset = FormVersion.objects.select_related("form")
+
+    @extend_schema(summary="One form version with its schema")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class SchemaCheckView(APIView):
+    """For the editor's live feedback: the problems a publish would report, without publishing."""
+
+    permission_classes = [requires(FORM_PUBLISH)]
+
+    @extend_schema(
+        request=s.SchemaSerializer,
+        responses={200: s.SchemaCheckSerializer},
+        summary="Check a form schema without publishing it",
+    )
+    def post(self, request):
+        body = s.SchemaSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        problems = validate_form_schema(body.validated_data["schema"])
+        return Response({"valid": not problems, "errors": problems})
+
+
+# --- conflict log -----------------------------------------------------------------------------
+
+
+class ConflictLogView(generics.ListAPIView):
+    """Every refused change from a worker's device: conflicts and rejections, newest first."""
+
+    permission_classes = [requires(CONFLICTLOG_VIEW)]
+    serializer_class = s.ConflictLogRowSerializer
+
+    def get_queryset(self):
+        request = self.request
+        later_change = SubmissionEvent.objects.filter(
+            submission_id=OuterRef("submission_id"),
+            actor_id=OuterRef("actor_id"),
+            id__gt=OuterRef("id"),
+            kind__in=[EventKind.UPDATED, EventKind.SUBMITTED, EventKind.DELETED],
+        )
+        qs = (
+            SubmissionEvent.objects.filter(kind__in=[EventKind.CONFLICT, EventKind.REJECTED])
+            # Only changes made by the record's own worker: admin refusals are not conflicts.
+            .filter(actor_id=F("submission__assignment__worker_id"))
+            .select_related("submission__assignment", "submission__form_version__form", "actor")
+            .annotate(changed_since=Exists(later_change))
+            .order_by("-id")
+        )
+        if (kind := request.query_params.get("kind")) is not None:
+            if kind not in {EventKind.CONFLICT, EventKind.REJECTED}:
+                raise ValidationError({"kind": "Use conflict or rejected."})
+            qs = qs.filter(kind=kind)
+        if (worker := _int(request, "worker")) is not None:
+            qs = qs.filter(actor_id=worker)
+        if (since := request.query_params.get("changed_since")) is not None:
+            qs = qs.filter(Q(changed_since=True) if since == "true" else Q(changed_since=False))
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
+        rows = [self._row(e) for e in page]
+        return self.get_paginated_response(s.ConflictLogRowSerializer(rows, many=True).data)
+
+    @staticmethod
+    def _row(event: SubmissionEvent) -> dict:
+        sub = event.submission
+        detail = event.detail or {}
+        return {
+            "id": event.id,
+            "created_at": event.created_at,
+            "kind": event.kind,
+            "reason": detail.get("kind") or detail.get("code") or "",
+            "fields": detail.get("fields", []),
+            "submission_id": sub.id,
+            "site_name": sub.assignment.site_name,
+            "form_name": sub.form_version.form.name,
+            "worker": {"id": event.actor_id, "username": event.actor.username},
+            "mutation_id": event.mutation_id,
+            "changed_since": event.changed_since,
+        }
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("kind", str, enum=["conflict", "rejected"]),
+            OpenApiParameter("worker", int),
+            OpenApiParameter(
+                "changed_since",
+                str,
+                enum=["true", "false"],
+                description="Whether the same worker changed the record on the server afterwards.",
+            ),
+        ],
+        summary="The conflict log",
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
