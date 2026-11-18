@@ -4,6 +4,174 @@
  */
 
 export interface paths {
+    "/api/admin/assignments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List assignments */
+        get: operations["admin_assignments_list"];
+        put?: never;
+        /** Assign a published form version to a worker */
+        post: operations["admin_assignments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/assignments/{id}/cancel/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel an assignment (existing submissions stay) */
+        post: operations["admin_assignments_cancel_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/conflicts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The conflict log
+         * @description Every refused change from a worker's device: conflicts and rejections, newest first.
+         */
+        get: operations["admin_conflicts_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/form-versions/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One form version with its schema */
+        get: operations["admin_form_versions_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/forms/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Forms with their versions */
+        get: operations["admin_forms_list"];
+        put?: never;
+        /** Create a form (it has no versions yet) */
+        post: operations["admin_forms_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/forms/{id}/versions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish a new version of a form
+         * @description Publish a new version of a form. The schema is checked with the same rules as the Django
+         *     admin, and a published version can never change (ADR 0008).
+         */
+        post: operations["admin_forms_versions_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/forms/check-schema/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check a form schema without publishing it
+         * @description For the editor's live feedback: the problems a publish would report, without publishing.
+         */
+        post: operations["admin_forms_check_schema_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/submissions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List submissions (the review queue)
+         * @description The review queue: every submission, newest change first.
+         */
+        get: operations["admin_submissions_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/submissions/{record_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One submission with its data, form schema and event history */
+        get: operations["admin_submissions_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/submissions/{record_id}/actions/": {
         parameters: {
             query?: never;
@@ -21,6 +189,23 @@ export interface paths {
          *     The answer is the service's result, so a refusal is a 200 with `rejected`.
          */
         post: operations["admin_submissions_actions_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/workers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workers an assignment can be given to */
+        get: operations["admin_workers_list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -189,6 +374,29 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        AdminAssignment: {
+            readonly id: number;
+            readonly form_version_id: number;
+            form_name: string;
+            form_version_number: number;
+            worker: components["schemas"]["UserRef"];
+            site_name: string;
+            /** Format: date */
+            due_date?: string | null;
+            cancelled: boolean;
+            /** @default 0 */
+            submissions: number;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        AdminFormVersion: {
+            readonly id: number;
+            readonly number: number;
+            /** Format: date-time */
+            readonly published_at: string | null;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
         Assignment: {
             id: number;
             form_version_id: number;
@@ -197,6 +405,13 @@ export interface components {
             /** Format: date */
             due_date: string | null;
             cancelled: boolean;
+        };
+        AssignmentCreateRequest: {
+            form_version_id: number;
+            worker_id: number;
+            site_name: string;
+            /** Format: date */
+            due_date?: string | null;
         };
         AssignmentList: {
             results: components["schemas"]["Assignment"][];
@@ -214,7 +429,7 @@ export interface components {
          */
         CodeEnum: "locked" | "not_found" | "id_taken" | "invalid" | "invalid_state" | "unknown_form_version" | "mutation_id_reuse" | "forbidden";
         Conflict: {
-            kind: components["schemas"]["KindEnum"];
+            kind: components["schemas"]["ConflictKindEnum"];
             fields: components["schemas"]["ConflictField"][];
         };
         ConflictField: {
@@ -223,10 +438,76 @@ export interface components {
             client_value?: unknown;
             server_version?: number;
         };
+        /**
+         * @description * `field_conflict` - field_conflict
+         *     * `deleted_remotely` - deleted_remotely
+         *     * `edited_since_base` - edited_since_base
+         * @enum {string}
+         */
+        ConflictKindEnum: "field_conflict" | "deleted_remotely" | "edited_since_base";
+        ConflictLogRow: {
+            id: number;
+            /** Format: date-time */
+            created_at: string;
+            kind: components["schemas"]["ConflictLogRowKindEnum"];
+            /** @description The conflict kind or the rejection code. */
+            reason: string;
+            fields: string[];
+            /** Format: uuid */
+            submission_id: string;
+            site_name: string;
+            form_name: string;
+            worker: components["schemas"]["UserRef"];
+            /** Format: uuid */
+            mutation_id: string | null;
+            /** @description The same worker has changed this record on the server since. */
+            changed_since: boolean;
+        };
+        /**
+         * @description * `conflict` - conflict
+         *     * `rejected` - rejected
+         * @enum {string}
+         */
+        ConflictLogRowKindEnum: "conflict" | "rejected";
+        Event: {
+            readonly id: number;
+            version: number;
+            kind: components["schemas"]["EventKindEnum"];
+            actor: components["schemas"]["UserRef"] | null;
+            /** Format: uuid */
+            mutation_id?: string | null;
+            detail?: unknown;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        /**
+         * @description * `created` - Created
+         *     * `updated` - Updated
+         *     * `submitted` - Submitted
+         *     * `deleted` - Deleted
+         *     * `restored` - Restored
+         *     * `approved` - Approved
+         *     * `returned` - Returned
+         *     * `admin_edited` - Admin Edited
+         *     * `conflict` - Conflict
+         *     * `rejected` - Rejected
+         * @enum {string}
+         */
+        EventKindEnum: "created" | "updated" | "submitted" | "deleted" | "restored" | "approved" | "returned" | "admin_edited" | "conflict" | "rejected";
         FieldError: {
             field: string;
             code: string;
             message: string;
+        };
+        Form: {
+            readonly id: number;
+            name: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            versions: components["schemas"]["AdminFormVersion"][];
+        };
+        FormCreateRequest: {
+            name: string;
         };
         FormVersion: {
             id: number;
@@ -239,6 +520,18 @@ export interface components {
             /** Format: date-time */
             published_at: string;
         };
+        FormVersionDetail: {
+            readonly id: number;
+            readonly number: number;
+            /** Format: date-time */
+            readonly published_at: string | null;
+            /** Format: date-time */
+            readonly created_at: string;
+            form_id: number;
+            form_name: string;
+            /** @description Form schema; see docs/DATA_MODEL.md section 5. */
+            schema: unknown;
+        };
         FormVersionList: {
             results: components["schemas"]["FormVersion"][];
         };
@@ -246,13 +539,6 @@ export interface components {
             status: string;
             database: string;
         };
-        /**
-         * @description * `field_conflict` - field_conflict
-         *     * `deleted_remotely` - deleted_remotely
-         *     * `edited_since_base` - edited_since_base
-         * @enum {string}
-         */
-        KindEnum: "field_conflict" | "deleted_remotely" | "edited_since_base";
         Me: {
             id: number;
             username: string;
@@ -276,6 +562,66 @@ export interface components {
          * @enum {string}
          */
         MutationResultStatusEnum: "applied" | "conflict" | "rejected";
+        PaginatedAdminAssignmentList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["AdminAssignment"][];
+        };
+        PaginatedConflictLogRowList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["ConflictLogRow"][];
+        };
+        PaginatedFormList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["Form"][];
+        };
+        PaginatedSubmissionRowList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["SubmissionRow"][];
+        };
         /** @description RFC 7807 problem+json, returned for every non-2xx response. */
         Problem: {
             type: string;
@@ -339,6 +685,61 @@ export interface components {
          * @enum {string}
          */
         RecordStatusEnum: "draft" | "submitted" | "approved" | "returned";
+        SchemaCheck: {
+            valid: boolean;
+            errors: string[];
+        };
+        SchemaRequest: {
+            schema: unknown;
+        };
+        SubmissionDetail: {
+            /** Format: uuid */
+            readonly id: string;
+            assignment_id: number;
+            site_name: string;
+            form_name: string;
+            form_version_id: number;
+            form_version_number: number;
+            worker: components["schemas"]["UserRef"];
+            status?: components["schemas"]["SubmissionStatusEnum"];
+            version?: number;
+            readonly deleted: boolean;
+            /** Format: int64 */
+            server_seq: number;
+            updated_by?: string;
+            /** Format: date-time */
+            updated_at?: string;
+            data: unknown;
+            field_versions: unknown;
+            schema: unknown;
+            events: components["schemas"]["Event"][];
+        };
+        SubmissionRow: {
+            /** Format: uuid */
+            readonly id: string;
+            assignment_id: number;
+            site_name: string;
+            form_name: string;
+            form_version_id: number;
+            form_version_number: number;
+            worker: components["schemas"]["UserRef"];
+            status?: components["schemas"]["SubmissionStatusEnum"];
+            version?: number;
+            readonly deleted: boolean;
+            /** Format: int64 */
+            server_seq: number;
+            updated_by?: string;
+            /** Format: date-time */
+            updated_at?: string;
+        };
+        /**
+         * @description * `draft` - Draft
+         *     * `submitted` - Submitted
+         *     * `approved` - Approved
+         *     * `returned` - Returned
+         * @enum {string}
+         */
+        SubmissionStatusEnum: "draft" | "submitted" | "approved" | "returned";
         TokenObtainPair: {
             readonly access: string;
             readonly refresh: string;
@@ -353,6 +754,10 @@ export interface components {
         TokenRefreshRequest: {
             refresh: string;
         };
+        UserRef: {
+            id: number;
+            username: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -362,6 +767,281 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    admin_assignments_list: {
+        parameters: {
+            query?: {
+                /** @description Default any. */
+                cancelled?: "any" | "false" | "true";
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+                worker?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAdminAssignmentList"];
+                };
+            };
+        };
+    };
+    admin_assignments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AssignmentCreateRequest"];
+                "multipart/form-data": components["schemas"]["AssignmentCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAssignment"];
+                };
+            };
+        };
+    };
+    admin_assignments_cancel_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAssignment"];
+                };
+            };
+        };
+    };
+    admin_conflicts_list: {
+        parameters: {
+            query?: {
+                /** @description Whether the same worker changed the record on the server afterwards. */
+                changed_since?: "false" | "true";
+                kind?: "conflict" | "rejected";
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+                worker?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedConflictLogRowList"];
+                };
+            };
+        };
+    };
+    admin_form_versions_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormVersionDetail"];
+                };
+            };
+        };
+    };
+    admin_forms_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedFormList"];
+                };
+            };
+        };
+    };
+    admin_forms_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FormCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FormCreateRequest"];
+                "multipart/form-data": components["schemas"]["FormCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Form"];
+                };
+            };
+        };
+    };
+    admin_forms_versions_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchemaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SchemaRequest"];
+                "multipart/form-data": components["schemas"]["SchemaRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormVersionDetail"];
+                };
+            };
+        };
+    };
+    admin_forms_check_schema_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchemaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SchemaRequest"];
+                "multipart/form-data": components["schemas"]["SchemaRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchemaCheck"];
+                };
+            };
+        };
+    };
+    admin_submissions_list: {
+        parameters: {
+            query?: {
+                assignment?: number;
+                /** @description Default false. */
+                deleted?: "any" | "false" | "true";
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+                /** @description draft, submitted, approved or returned. */
+                status?: string;
+                /** @description The worker's user id. */
+                worker?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedSubmissionRowList"];
+                };
+            };
+        };
+    };
+    admin_submissions_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionDetail"];
+                };
+            };
+        };
+    };
     admin_submissions_actions_create: {
         parameters: {
             query?: never;
@@ -425,6 +1105,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    admin_workers_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRef"][];
                 };
             };
         };

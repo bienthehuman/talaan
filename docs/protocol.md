@@ -311,3 +311,29 @@ Playwright test adds the header to one request with `page.route`). Only `/api/sy
 
 Combine with commas (`delay=200,drop-after-commit`). An unknown or malformed value is `400 invalid_fault`,
 so a typo in a test fails loudly instead of injecting nothing. There is no endpoint that sets rules.
+
+## 11. Admin API (online only, not part of sync)
+
+Under `/api/admin/`, JSON, problem+json errors, paged lists use the standard envelope
+(`{count, next, previous, results}`, `limit` default 50, max 200). No `X-Client-Schema`: these endpoints are
+for the admin web, not for offline clients. Each endpoint needs one permission from the catalog
+(`accounts/permissions.py`, mirrored in ROLES.md); a worker or logged-out caller gets 403 or 401.
+
+| Endpoint | Permission | What it does |
+|---|---|---|
+| `GET submissions/` | `submission.approve` | The review queue, newest change first. Filters: `status`, `worker` (user id), `assignment`, `deleted` (`true`, `false`, `any`; default `false`). A bad filter value is `400`. |
+| `GET submissions/{id}/` | `submission.approve` | The record (data, field versions, form schema) and its event history in order, each with its actor. |
+| `POST submissions/{id}/actions/` | per action | Approve, return, restore, delete, edit (section 5, "Admin actions"). |
+| `GET workers/` | `assignment.manage` | Active users with the worker role, for the assignment form. |
+| `GET assignments/` | `assignment.manage` | All assignments with their submission count. Filters: `worker`, `cancelled` (default `any`). |
+| `POST assignments/` | `assignment.manage` | `{form_version_id, worker_id, site_name, due_date?}`. The version must be published and the user a worker; problems are field errors in `errors`. |
+| `POST assignments/{id}/cancel/` | `assignment.manage` | Sets `cancelled_at` once; existing submissions stay; a second call changes nothing. |
+| `GET forms/`, `POST forms/` | `form.publish` | Forms with their versions; create a form `{name}` (unique). |
+| `POST forms/{id}/versions/` | `form.publish` | `{schema}`: validated with the same rules as publishing in the Django admin (section 5 of DATA_MODEL.md), then created and published in one step as the next version number. A refused schema is `400` with `errors.schema` (a list of sentences) and nothing is created. |
+| `POST forms/check-schema/` | `form.publish` | `{schema}` returns `{valid, errors}` without saving, for the editor's live feedback. |
+| `GET form-versions/{id}/` | `form.publish` | One version with its schema. |
+| `GET conflicts/` | `conflictlog.view` | Every `conflict` and `rejected` event caused by a worker's own change on a record assigned to them, newest first: `reason` (conflict kind or rejection code), `fields`, the record, the worker, `mutation_id`, and `changed_since` (the same worker has changed that record on the server afterwards). Filters: `kind`, `worker`, `changed_since`. |
+
+The conflict log cannot see what a worker did on their device. A worker who discards their edits leaves no
+trace on the server, so `changed_since: false` means "no later change from that worker", not "unresolved".
+

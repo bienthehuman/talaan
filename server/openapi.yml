@@ -4,6 +4,357 @@ info:
   version: 0.1.0
   description: 'Offline-first field data sync. Protocol: docs/protocol.md'
 paths:
+  /api/admin/assignments/:
+    get:
+      operationId: admin_assignments_list
+      summary: List assignments
+      parameters:
+      - in: query
+        name: cancelled
+        schema:
+          type: string
+          enum:
+          - any
+          - 'false'
+          - 'true'
+        description: Default any.
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: worker
+        schema:
+          type: integer
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminAssignmentList'
+          description: ''
+    post:
+      operationId: admin_assignments_create
+      summary: Assign a published form version to a worker
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssignmentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssignmentCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAssignment'
+          description: ''
+  /api/admin/assignments/{id}/cancel/:
+    post:
+      operationId: admin_assignments_cancel_create
+      summary: Cancel an assignment (existing submissions stay)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAssignment'
+          description: ''
+  /api/admin/conflicts/:
+    get:
+      operationId: admin_conflicts_list
+      description: 'Every refused change from a worker''s device: conflicts and rejections,
+        newest first.'
+      summary: The conflict log
+      parameters:
+      - in: query
+        name: changed_since
+        schema:
+          type: string
+          enum:
+          - 'false'
+          - 'true'
+        description: Whether the same worker changed the record on the server afterwards.
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - conflict
+          - rejected
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: worker
+        schema:
+          type: integer
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConflictLogRowList'
+          description: ''
+  /api/admin/form-versions/{id}/:
+    get:
+      operationId: admin_form_versions_retrieve
+      summary: One form version with its schema
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormVersionDetail'
+          description: ''
+  /api/admin/forms/:
+    get:
+      operationId: admin_forms_list
+      summary: Forms with their versions
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFormList'
+          description: ''
+    post:
+      operationId: admin_forms_create
+      summary: Create a form (it has no versions yet)
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FormCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Form'
+          description: ''
+  /api/admin/forms/{id}/versions/:
+    post:
+      operationId: admin_forms_versions_create
+      description: |-
+        Publish a new version of a form. The schema is checked with the same rules as the Django
+        admin, and a published version can never change (ADR 0008).
+      summary: Publish a new version of a form
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SchemaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SchemaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormVersionDetail'
+          description: ''
+  /api/admin/forms/check-schema/:
+    post:
+      operationId: admin_forms_check_schema_create
+      description: 'For the editor''s live feedback: the problems a publish would
+        report, without publishing.'
+      summary: Check a form schema without publishing it
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SchemaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SchemaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaCheck'
+          description: ''
+  /api/admin/submissions/:
+    get:
+      operationId: admin_submissions_list
+      description: 'The review queue: every submission, newest change first.'
+      summary: List submissions (the review queue)
+      parameters:
+      - in: query
+        name: assignment
+        schema:
+          type: integer
+      - in: query
+        name: deleted
+        schema:
+          type: string
+          enum:
+          - any
+          - 'false'
+          - 'true'
+        description: Default false.
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: draft, submitted, approved or returned.
+      - in: query
+        name: worker
+        schema:
+          type: integer
+        description: The worker's user id.
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubmissionRowList'
+          description: ''
+  /api/admin/submissions/{record_id}/:
+    get:
+      operationId: admin_submissions_retrieve
+      summary: One submission with its data, form schema and event history
+      parameters:
+      - in: path
+        name: record_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionDetail'
+          description: ''
   /api/admin/submissions/{record_id}/actions/:
     post:
       operationId: admin_submissions_actions_create
@@ -72,6 +423,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
+          description: ''
+  /api/admin/workers/:
+    get:
+      operationId: admin_workers_list
+      summary: Workers an assignment can be given to
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRef'
           description: ''
   /api/assignments/:
     get:
@@ -398,6 +766,69 @@ components:
           additionalProperties: {}
       required:
       - action
+    AdminAssignment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        form_version_id:
+          type: integer
+          readOnly: true
+        form_name:
+          type: string
+        form_version_number:
+          type: integer
+        worker:
+          $ref: '#/components/schemas/UserRef'
+        site_name:
+          type: string
+          maxLength: 200
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        cancelled:
+          type: boolean
+        submissions:
+          type: integer
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cancelled
+      - created_at
+      - form_name
+      - form_version_id
+      - form_version_number
+      - id
+      - site_name
+      - worker
+    AdminFormVersion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - number
+      - published_at
     Assignment:
       type: object
       properties:
@@ -422,6 +853,25 @@ components:
       - form_version_id
       - id
       - site_name
+    AssignmentCreateRequest:
+      type: object
+      properties:
+        form_version_id:
+          type: integer
+        worker_id:
+          type: integer
+        site_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        due_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - form_version_id
+      - site_name
+      - worker_id
     AssignmentList:
       type: object
       properties:
@@ -455,7 +905,7 @@ components:
       type: object
       properties:
         kind:
-          $ref: '#/components/schemas/KindEnum'
+          $ref: '#/components/schemas/ConflictKindEnum'
         fields:
           type: array
           items:
@@ -476,6 +926,122 @@ components:
           type: integer
       required:
       - field
+    ConflictKindEnum:
+      enum:
+      - field_conflict
+      - deleted_remotely
+      - edited_since_base
+      type: string
+      description: |-
+        * `field_conflict` - field_conflict
+        * `deleted_remotely` - deleted_remotely
+        * `edited_since_base` - edited_since_base
+    ConflictLogRow:
+      type: object
+      properties:
+        id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        kind:
+          $ref: '#/components/schemas/ConflictLogRowKindEnum'
+        reason:
+          type: string
+          description: The conflict kind or the rejection code.
+        fields:
+          type: array
+          items:
+            type: string
+        submission_id:
+          type: string
+          format: uuid
+        site_name:
+          type: string
+        form_name:
+          type: string
+        worker:
+          $ref: '#/components/schemas/UserRef'
+        mutation_id:
+          type: string
+          format: uuid
+          nullable: true
+        changed_since:
+          type: boolean
+          description: The same worker has changed this record on the server since.
+      required:
+      - changed_since
+      - created_at
+      - fields
+      - form_name
+      - id
+      - kind
+      - mutation_id
+      - reason
+      - site_name
+      - submission_id
+      - worker
+    ConflictLogRowKindEnum:
+      enum:
+      - conflict
+      - rejected
+      type: string
+      description: |-
+        * `conflict` - conflict
+        * `rejected` - rejected
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        kind:
+          $ref: '#/components/schemas/EventKindEnum'
+        actor:
+          allOf:
+          - $ref: '#/components/schemas/UserRef'
+          nullable: true
+        mutation_id:
+          type: string
+          format: uuid
+          nullable: true
+        detail: {}
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - actor
+      - id
+      - kind
+      - version
+    EventKindEnum:
+      enum:
+      - created
+      - updated
+      - submitted
+      - deleted
+      - restored
+      - approved
+      - returned
+      - admin_edited
+      - conflict
+      - rejected
+      type: string
+      description: |-
+        * `created` - Created
+        * `updated` - Updated
+        * `submitted` - Submitted
+        * `deleted` - Deleted
+        * `restored` - Restored
+        * `approved` - Approved
+        * `returned` - Returned
+        * `admin_edited` - Admin Edited
+        * `conflict` - Conflict
+        * `rejected` - Rejected
     FieldError:
       type: object
       properties:
@@ -489,6 +1055,37 @@ components:
       - code
       - field
       - message
+    Form:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminFormVersion'
+      required:
+      - created_at
+      - id
+      - name
+      - versions
+    FormCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+      - name
     FormVersion:
       type: object
       properties:
@@ -514,6 +1111,38 @@ components:
       - number
       - published_at
       - schema
+    FormVersionDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        form_id:
+          type: integer
+        form_name:
+          type: string
+        schema:
+          description: Form schema; see docs/DATA_MODEL.md section 5.
+      required:
+      - created_at
+      - form_id
+      - form_name
+      - id
+      - number
+      - published_at
+      - schema
     FormVersionList:
       type: object
       properties:
@@ -533,16 +1162,6 @@ components:
       required:
       - database
       - status
-    KindEnum:
-      enum:
-      - field_conflict
-      - deleted_remotely
-      - edited_since_base
-      type: string
-      description: |-
-        * `field_conflict` - field_conflict
-        * `deleted_remotely` - deleted_remotely
-        * `edited_since_base` - edited_since_base
     Me:
       type: object
       properties:
@@ -595,6 +1214,98 @@ components:
         * `applied` - applied
         * `conflict` - conflict
         * `rejected` - rejected
+    PaginatedAdminAssignmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminAssignment'
+    PaginatedConflictLogRowList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConflictLogRow'
+    PaginatedFormList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Form'
+    PaginatedSubmissionRowList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmissionRow'
     Problem:
       type: object
       description: RFC 7807 problem+json, returned for every non-2xx response.
@@ -740,6 +1451,143 @@ components:
         * `submitted` - submitted
         * `approved` - approved
         * `returned` - returned
+    SchemaCheck:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+      - errors
+      - valid
+    SchemaRequest:
+      type: object
+      properties:
+        schema: {}
+      required:
+      - schema
+    SubmissionDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment_id:
+          type: integer
+        site_name:
+          type: string
+        form_name:
+          type: string
+        form_version_id:
+          type: integer
+        form_version_number:
+          type: integer
+        worker:
+          $ref: '#/components/schemas/UserRef'
+        status:
+          $ref: '#/components/schemas/SubmissionStatusEnum'
+        version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        deleted:
+          type: boolean
+          readOnly: true
+        server_seq:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        updated_by:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        data: {}
+        field_versions: {}
+        schema: {}
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+      required:
+      - assignment_id
+      - data
+      - deleted
+      - events
+      - field_versions
+      - form_name
+      - form_version_id
+      - form_version_number
+      - id
+      - schema
+      - server_seq
+      - site_name
+      - worker
+    SubmissionRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment_id:
+          type: integer
+        site_name:
+          type: string
+        form_name:
+          type: string
+        form_version_id:
+          type: integer
+        form_version_number:
+          type: integer
+        worker:
+          $ref: '#/components/schemas/UserRef'
+        status:
+          $ref: '#/components/schemas/SubmissionStatusEnum'
+        version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        deleted:
+          type: boolean
+          readOnly: true
+        server_seq:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        updated_by:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - assignment_id
+      - deleted
+      - form_name
+      - form_version_id
+      - form_version_number
+      - id
+      - server_seq
+      - site_name
+      - worker
+    SubmissionStatusEnum:
+      enum:
+      - draft
+      - submitted
+      - approved
+      - returned
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `submitted` - Submitted
+        * `approved` - Approved
+        * `returned` - Returned
     TokenObtainPair:
       type: object
       properties:
@@ -783,6 +1631,16 @@ components:
           minLength: 1
       required:
       - refresh
+    UserRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+      required:
+      - id
+      - username
   securitySchemes:
     jwtAuth:
       type: http
