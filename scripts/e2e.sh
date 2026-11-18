@@ -36,6 +36,13 @@ else
 fi
 npx playwright test "$@"
 
+# The scripted demo (e2e/demo, recorded by scripts/demo.sh) is run unrecorded after a full suite, so a
+# change that breaks the walkthrough fails CI instead of the next person who records it.
+if [ "$#" -eq 0 ]; then
+  echo "== demo walkthrough (not recorded)"
+  DEMO_VIDEO=0 npx playwright test -c playwright.demo.config.ts
+fi
+
 # After the whole suite (not a filtered run), the server's own numbers must show what the scenarios
 # just did: pushes, a conflict, a rejection, and retries after the dropped responses. /metrics is
 # open in debug; this reads it from inside the stack, where the public proxy does not reach.

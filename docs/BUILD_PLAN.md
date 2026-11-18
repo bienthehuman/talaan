@@ -166,7 +166,7 @@ admin screens, and metrics exist before the load test that reads them.
 | 4.4 | **Worker experience.** Installable-app prompt, sync-status panel (pending changes, last sync, retry now, what failed), storage persistence request, tap-target and label audit. | in review |
 | 4.5 | **Operability.** Structured JSON logs carrying `request_id`, `device_id`, `mutation_id`; `/metrics` with pushes, conflicts, rejections, retries and pull lag; not exposed through the public proxy. | in review |
 | 4.6 | **Load test.** 50 simulated devices pushing and pulling together; throughput, p95 latency and where the advisory lock becomes the bottleneck; hardware, dataset and exact commands published. | in review |
-| 4.7 | **Ship.** Codespaces dev container with seeded logins, README (claim, demo clip, one-command setup, guarantees linked to tests, "try to break it", "what I'd change at scale"), scripted demo walkthrough, CI badges, `v1.0`. | not started |
+| 4.7 | **Ship.** Codespaces dev container with seeded logins, README (claim, demo clip, one-command setup, guarantees linked to tests, "try to break it", "what I'd change at scale"), scripted demo walkthrough, CI badges, `v1.0`. | in review |
 
 ### Definition of done per slice (phase 4)
 
@@ -227,7 +227,7 @@ admin screens, and metrics exist before the load test that reads them.
 **Backend and data**
 - [x] Health endpoint, API reference page, RFC 7807 errors with codes, list/paging contract (sort allow-list lands with the first list endpoint)
 - [x] Auth (JWT), roles and permission catalog (tested against ROLES.md), **restricted DB role** (app and tests run as it)
-- [ ] Audit trail (`submission_event`, append-only): lands with the sync core in phase 1
+- [x] Audit trail (`submission_event`, append-only): landed with the sync core in phase 1 and is shown in the admin review screen
 - [x] Security headers (incl. CSP), login rate limit, secure cookies in production, no secrets in repo, dev-only seeded logins (push rate limit in phase 1)
 - [x] Local dev: compose stack (db, migrate, server, web), seed command, and `bash scripts/e2e.sh` for a fresh DB end to end
 
@@ -236,7 +236,7 @@ admin screens, and metrics exist before the load test that reads them.
 - [x] Tag per milestone: `v0.1.0` (Release workflow ran end to end; the published images were deployed locally through `deploy.sh`'s pull path and passed the smoke checks)
 - [ ] Live demo with seeded logins and a nightly reset (backlog; needs a host and a demo mode that does not use debug)
 - [x] Prod compose file, `DEPLOY.md`, backup and restore (round trip tested in CI), smoke checks
-- [ ] Docs index, ADRs for hard-to-reverse decisions, conventions doc, backlog table
+- [x] Docs index, ADRs for hard-to-reverse decisions (0001 to 0010), conventions doc, backlog table
 
 ## Decisions already made
 
