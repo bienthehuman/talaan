@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { EmptyState } from "../components/States";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { buttonClass } from "../components/Button";
 
 export function NotFoundPage() {
   useDocumentTitle("Page not found");
@@ -10,7 +11,7 @@ export function NotFoundPage() {
       <EmptyState
         title="We couldn't find that page"
         action={
-          <Link className="btn btn--primary" to="/">
+          <Link className={buttonClass("primary")} to="/">
             Go to start
           </Link>
         }

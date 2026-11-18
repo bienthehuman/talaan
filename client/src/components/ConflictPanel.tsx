@@ -12,6 +12,7 @@ import { useLive } from "../db/useLive";
 import { formatValue } from "../forms/format";
 import type { FormDefinition } from "../forms/schema";
 import { Button } from "./Button";
+import styles from "./ConflictPanel.module.css";
 
 interface Props {
   db: TalaanDb;
@@ -48,7 +49,7 @@ export function ConflictPanel({ db, row, definition, onDiscard }: Props) {
   const undecided = conflict.fields.filter((f) => !choices[f.field]);
 
   return (
-    <section className="card stack conflict" aria-labelledby="conflict-title">
+    <section className={`card stack ${styles.conflict}`} aria-labelledby="conflict-title">
       <h2 id="conflict-title">Needs your decision</h2>
 
       {conflict.kind === "field_conflict" && (

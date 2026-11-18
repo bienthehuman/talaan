@@ -1,0 +1,21 @@
+.banner {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 2px solid currentColor;
+  background: var(--surface);
+  font-weight: 600;
+}
+.info {
+  color: var(--accent);
+}
+.warn {
+  color: var(--warn);
+}
+.danger {
+  color: var(--danger);
+}
+.banner > span {
+  color: var(--text);
+}

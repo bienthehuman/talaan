@@ -264,7 +264,7 @@ admin screens, and metrics exist before the load test that reads them.
 | Monitoring and alerting (uptime check on `/api/health/`, metrics) | Slice 0.5 | v1 operability | `/metrics` is in the v1 plan |
 | Sign release images (cosign) and publish an SBOM | Slice 0.5 | later | |
 | Revoke refresh tokens server-side (rotation with grace for a lost refresh response, or a per-user token version) | ADR 0010 | later | |
-| Migrate component styles to CSS Modules (no visual change) | ADR 0011 | next | one refactor slice; see the ADR's consequences for the class-name dependents |
+| Engine test "syncs on start, when the browser comes online, and every 60 seconds" timed out (5 s) once in five full client runs | CSS Modules slice | soon | timing under load; the SyncStatusPage races were fixed in that slice |
 | Metrics from rollups instead of grouped queries over the ledger at every scrape (it scans `applied_mutation`); pull lag per device with a time series store | Slice 4.5 | when the ledger is large | what I would change at scale |
 | Clear the Dependabot `minimatch` alert (build-time only, via vite-plugin-pwa > workbox-build > glob): try an npm `overrides` entry, or dismiss as tolerable | Slice 0.5 | when convenient | `npm audit --omit=dev` is already clean |
 | Postgres major-version upgrade procedure, tested | Slice 0.5 | later | currently a manual note in DEPLOY.md |

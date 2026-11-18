@@ -9,6 +9,7 @@ import { useStoragePersistence } from "../pwa/storage";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { InstallPrompt } from "./InstallPrompt";
 import { ReauthPrompt } from "./ReauthPrompt";
+import styles from "./RootLayout.module.css";
 import { ThemeToggle } from "./ThemeToggle";
 
 function formatLastSync(date: Date | null): string {
@@ -47,21 +48,21 @@ export function RootLayout() {
           to update.
         </Banner>
       )}
-      <header className="app-header">
-        <Link to="/" className="brand tap-link">
+      <header className={styles.header}>
+        <Link to="/" className={`${styles.brand} tap-link`}>
           <img src="/favicon.svg" alt="" />
           Talaan
         </Link>
         {user?.role === "admin" && (
-          <nav aria-label="Admin" className="admin-nav">
+          <nav aria-label="Admin" className={styles.adminNav}>
             <Link to="/manage/review">Review</Link>
             <Link to="/manage/forms">Forms</Link>
             <Link to="/manage/assignments">Assignments</Link>
             <Link to="/manage/conflicts">Conflict log</Link>
           </nav>
         )}
-        <div className="header-account">
-          {user && <span className="header-user">{user.username}</span>}
+        <div className={styles.account}>
+          {user && <span className={styles.user}>{user.username}</span>}
           <ThemeToggle />
           {user && (
             <Button variant="secondary" small onClick={requestSignOut}>
@@ -70,16 +71,22 @@ export function RootLayout() {
           )}
         </div>
         {user?.role === "worker" && (
-          <div className="header-sync">
+          <div className={styles.sync}>
             <Link to="/sync" className="tap-link">
               {pending} pending · Last sync: {formatLastSync(lastSyncAt)}
             </Link>
             {conflicts > 0 && (
-              <Link to="/" className="needs-decision tap-link">
+              <Link to="/" className={`${styles.needsDecision} tap-link`}>
                 {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
               </Link>
             )}
-            <Button variant="secondary" small onClick={syncNow} disabled={state === "syncing"}>
+            <Button
+              variant="secondary"
+              small
+              className={styles.syncNow}
+              onClick={syncNow}
+              disabled={state === "syncing"}
+            >
               {state === "syncing" ? "Syncing…" : "Sync now"}
             </Button>
           </div>

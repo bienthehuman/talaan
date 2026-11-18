@@ -49,9 +49,10 @@ describe("the sync status page", () => {
     expect(
       await screen.findByText("Everything that can be sent has been sent."),
     ).toBeInTheDocument();
-    expect(screen.getByText("Nothing is waiting")).toBeInTheDocument();
-    expect(screen.getByText("Nothing needs a decision")).toBeInTheDocument();
-    expect(screen.getByText("None")).toBeInTheDocument();
+    // Each section reads the device on its own, so wait for each rather than for the first one only.
+    expect(await screen.findByText("Nothing is waiting")).toBeInTheDocument();
+    expect(await screen.findByText("Nothing needs a decision")).toBeInTheDocument();
+    expect(await screen.findByText("None")).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -66,7 +67,7 @@ describe("the sync status page", () => {
     open({ state: "retrying", retryAt: Date.UTC(2026, 10, 18, 8, 5), lastError: "network" });
 
     const waiting = await screen.findByRole("region", { name: "Waiting to be sent" });
-    const item = within(waiting).getByRole("listitem");
+    const item = await within(waiting).findByRole("listitem");
     expect(within(item).getByRole("link", { name: "North plant" })).toHaveAttribute(
       "href",
       `/submissions/${row.id}`,
@@ -110,7 +111,9 @@ describe("the sync status page", () => {
     open();
 
     const attention = await screen.findByRole("region", { name: "Needs your attention" });
-    expect(within(attention).getByText(/Not accepted: The record is locked\./)).toBeInTheDocument();
+    expect(
+      await within(attention).findByText(/Not accepted: The record is locked\./),
+    ).toBeInTheDocument();
     expect(within(attention).getByRole("link", { name: "North plant" })).toBeInTheDocument();
   });
 

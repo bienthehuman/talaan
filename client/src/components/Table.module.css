@@ -1,0 +1,19 @@
+.wrap {
+  overflow-x: auto;
+  /* The screen-reader-only caption is absolutely positioned; without this it escapes the scroll box
+     and makes the whole page scroll sideways on a phone. */
+  position: relative;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.table th {
+  font-weight: 600;
+}

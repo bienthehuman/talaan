@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, LoadingState } from "../../components/States";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
+import { Table } from "../../components/Table";
 
 const PAGE = 25;
 
@@ -118,47 +119,44 @@ export function ConflictLogPage() {
       )}
       {results.length > 0 && (
         <>
-          <div className="table-wrap">
-            <table className="table">
-              <caption className="sr-only">Conflict log</caption>
-              <thead>
-                <tr>
-                  <th scope="col">When</th>
-                  <th scope="col">Worker</th>
-                  <th scope="col">Site</th>
-                  <th scope="col">What happened</th>
-                  <th scope="col">Fields</th>
-                  <th scope="col">Changed since</th>
-                  <th scope="col">
-                    <span className="sr-only">Open</span>
-                  </th>
+          <Table caption="Conflict log">
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col">Worker</th>
+                <th scope="col">Site</th>
+                <th scope="col">What happened</th>
+                <th scope="col">Fields</th>
+                <th scope="col">Changed since</th>
+                <th scope="col">
+                  <span className="sr-only">Open</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((c) => (
+                <tr key={c.id}>
+                  <td>{new Date(c.created_at).toLocaleString()}</td>
+                  <td>{c.worker.username}</td>
+                  <td>{c.site_name}</td>
+                  <td>
+                    {c.kind === "conflict" ? "Conflict" : "Rejected"}:{" "}
+                    {REASON[c.reason] ?? c.reason}
+                  </td>
+                  <td>{c.fields.join(", ")}</td>
+                  <td>{c.changed_since ? "Yes" : "No"}</td>
+                  <td>
+                    <Link
+                      to={`/manage/review/${c.submission_id}`}
+                      aria-label={`Open ${c.site_name} record`}
+                    >
+                      Open
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {results.map((c) => (
-                  <tr key={c.id}>
-                    <td>{new Date(c.created_at).toLocaleString()}</td>
-                    <td>{c.worker.username}</td>
-                    <td>{c.site_name}</td>
-                    <td>
-                      {c.kind === "conflict" ? "Conflict" : "Rejected"}:{" "}
-                      {REASON[c.reason] ?? c.reason}
-                    </td>
-                    <td>{c.fields.join(", ")}</td>
-                    <td>{c.changed_since ? "Yes" : "No"}</td>
-                    <td>
-                      <Link
-                        to={`/manage/review/${c.submission_id}`}
-                        aria-label={`Open ${c.site_name} record`}
-                      >
-                        Open
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </Table>
           <nav className="row" aria-label="Pages">
             <span>
               {offset + 1}–{offset + results.length} of {count}

@@ -21,6 +21,7 @@ import { loadForm } from "../forms/local";
 import type { FormField } from "../forms/schema";
 import { validateRecord, type FieldErrors } from "../forms/validate";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { bannerClass } from "../components/Banner";
 
 /** Why the record cannot be edited on this device, or null when it can. */
 function lockedReason(row: LocalSubmission): string | null {
@@ -226,7 +227,7 @@ export function SubmissionPage() {
       </div>
 
       {locked && (
-        <div className="banner banner--warn" role="status">
+        <div className={bannerClass("warn")} role="status">
           {locked}
         </div>
       )}

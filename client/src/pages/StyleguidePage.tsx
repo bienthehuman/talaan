@@ -7,6 +7,7 @@ import { EmptyState, ErrorState, ForbiddenState, LoadingState } from "../compone
 import { PasswordField, TextField } from "../components/TextField";
 import { useToast } from "../components/Toast";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import styles from "./StyleguidePage.module.css";
 
 const TOKENS = [
   "bg",
@@ -20,6 +21,10 @@ const TOKENS = [
   "warn",
   "danger",
 ] as const;
+/** "text-muted" → "swTextMuted", the swatch class for that token. */
+function swatchClass(token: string): string {
+  return "sw" + token.replace(/(^|-)(\w)/g, (_, _dash: string, c: string) => c.toUpperCase());
+}
 const STATES: SyncState[] = ["pending", "syncing", "synced", "conflict", "rejected"];
 
 /** Every component in light and dark. Target of the axe gate (docs/DESIGN_SYSTEM.md section 4).
@@ -35,10 +40,10 @@ export function StyleguidePage() {
 
       <section aria-labelledby="sg-colours" className="stack">
         <h2 id="sg-colours">Colours</h2>
-        <div className="swatches">
+        <div className={styles.swatches}>
           {TOKENS.map((t) => (
-            <div className="swatch" key={t}>
-              <i className={`sw-${t}`} />
+            <div className={styles.swatch} key={t}>
+              <i className={styles[swatchClass(t)]} />
               --{t}
             </div>
           ))}
@@ -48,7 +53,7 @@ export function StyleguidePage() {
       <section aria-labelledby="sg-type" className="stack">
         <h2 id="sg-type">Type</h2>
         <p>Body text is 16 px with a 1.5 line height.</p>
-        <p className="muted">Muted text for secondary information.</p>
+        <p className={styles.muted}>Muted text for secondary information.</p>
       </section>
 
       <section aria-labelledby="sg-buttons" className="stack">

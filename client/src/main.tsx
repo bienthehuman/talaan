@@ -1,3 +1,5 @@
+// Global styles first, so component CSS Modules come after them in the cascade (ADR 0011).
+import "./theme/styles.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
@@ -7,7 +9,6 @@ import { ToastProvider } from "./components/Toast";
 import { UpdatePrompt } from "./components/UpdatePrompt";
 import { routes } from "./routes";
 import { SyncProvider } from "./sync/SyncProvider";
-import "./theme/styles.css";
 import { applyTheme, getStoredTheme } from "./theme/theme";
 
 applyTheme(getStoredTheme());

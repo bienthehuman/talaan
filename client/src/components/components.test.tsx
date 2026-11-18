@@ -14,8 +14,10 @@ describe("SyncBadge", () => {
     expect(pending).toHaveTextContent("Saved on this device");
     expect(synced).toHaveTextContent("Synced");
     expect(pending.innerHTML).not.toBe(synced.innerHTML);
-    expect(pending.querySelector(".badge--pending")).not.toBeNull();
-    expect(synced.querySelector(".badge--synced")).not.toBeNull();
+    // Different words and a different icon (the colour comes from a CSS Module class, not checked here).
+    const icon = (c: HTMLElement) => c.querySelector("svg path")?.getAttribute("d");
+    expect(icon(pending)).toBeTruthy();
+    expect(icon(pending)).not.toBe(icon(synced));
   });
 
   it("gives every state a text label and a hidden icon, so colour is never the only signal", () => {

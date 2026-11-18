@@ -1,0 +1,52 @@
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+.swatch {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+}
+.swatch i {
+  display: block;
+  height: 28px;
+  border-radius: 4px;
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--border);
+}
+/* One class per token, not inline styles, so the strict CSP (no inline style) holds. */
+.swBg {
+  background: var(--bg);
+}
+.swSurface {
+  background: var(--surface);
+}
+.swText {
+  background: var(--text);
+}
+.swTextMuted {
+  background: var(--text-muted);
+}
+.swBorder {
+  background: var(--border);
+}
+.swControlBorder {
+  background: var(--control-border);
+}
+.swAccent {
+  background: var(--accent);
+}
+.swOk {
+  background: var(--ok);
+}
+.swWarn {
+  background: var(--warn);
+}
+.swDanger {
+  background: var(--danger);
+}
+.muted {
+  color: var(--text-muted);
+}

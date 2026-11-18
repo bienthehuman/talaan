@@ -6,6 +6,7 @@ import { createSubmission, type LocalSubmission } from "../db";
 import { useLive, useLocalDb } from "../db/useLive";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { statusLabel } from "../lib/status";
+import styles from "./AssignmentsPage.module.css";
 
 /** How many of an assignment's inspections show before the rest fold away. */
 const RECENT = 5;
@@ -89,7 +90,7 @@ export function AssignmentsPage() {
             )}
             {shown.length > 0 && <InspectionList rows={shown} />}
             {older.length > 0 && (
-              <details className="more">
+              <details className={styles.more}>
                 <summary>
                   {older.length === 1
                     ? "Show 1 older inspection"
