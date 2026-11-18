@@ -12,7 +12,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 1 | Server sync core: `apply_mutation`, ledger, pull cursor, advisory lock, fault-injection middleware, 426 | pytest scenarios 2, 3, 7, 8, 10, 11 |
 | 2 | Client local layer and engine: Dexie, atomic edit, outbox, push/pull, backoff, token refresh, Web Locks | Scenarios 1, 9, 12 |
 | 3 | Conflicts: detection, `deleted_remotely`, resolution screen | Scenarios 4, 5, 6: all twelve pass in CI |
-| 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` |
+| 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -150,7 +150,7 @@ and the proof in a real browser with two devices. Ordered so the test setup exis
 - Scenario 6: an admin deletes while a worker edits offline; the worker gets `deleted_remotely`, local edits are kept until they decide; both outcomes (discard, and restore then resync) are covered.
 - Each is shown to fail when its guarantee is broken. All twelve scenarios green; `v0.4.0` tagged.
 
-## Phase 4 slices: v1
+## Phase 4 slices: v1 (done: tagged `v1.0.0` on 2026-11-18)
 
 Exit: `v1.0`. The PoC proved the sync engine; v1 makes it something a reviewer can open, click through
 and break on purpose (source plan, "From PoC to portfolio-ready v1"). Already done in earlier phases: login
@@ -160,13 +160,13 @@ admin screens, and metrics exist before the load test that reads them.
 
 | Slice | Content | Status |
 |---|---|---|
-| 4.1 | **Admin API.** Review queue (list and filter submissions, detail with its event history), assignment create and cancel, form-version create and publish, conflict log. Admin only, permission catalog enforced, OpenAPI and types regenerated. | in review |
-| 4.2 | **Admin web: review.** Admin routes, role gate, review queue, submission detail with history; approve, return (reason), restore, delete, edit through the slice 3.1 endpoint. Admin is online only. | in review |
-| 4.3 | **Admin web: forms, assignments, conflict log.** Form-version editor (JSON with a live preview built from the same schema code as the worker form, not drag and drop), assignment management, conflict log. | in review |
-| 4.4 | **Worker experience.** Installable-app prompt, sync-status panel (pending changes, last sync, retry now, what failed), storage persistence request, tap-target and label audit. | in review |
-| 4.5 | **Operability.** Structured JSON logs carrying `request_id`, `device_id`, `mutation_id`; `/metrics` with pushes, conflicts, rejections, retries and pull lag; not exposed through the public proxy. | in review |
-| 4.6 | **Load test.** 50 simulated devices pushing and pulling together; throughput, p95 latency and where the advisory lock becomes the bottleneck; hardware, dataset and exact commands published. | in review |
-| 4.7 | **Ship.** Codespaces dev container with seeded logins, README (claim, demo clip, one-command setup, guarantees linked to tests, "try to break it", "what I'd change at scale"), scripted demo walkthrough, CI badges, `v1.0`. | in review |
+| 4.1 | **Admin API.** Review queue (list and filter submissions, detail with its event history), assignment create and cancel, form-version create and publish, conflict log. Admin only, permission catalog enforced, OpenAPI and types regenerated. | done |
+| 4.2 | **Admin web: review.** Admin routes, role gate, review queue, submission detail with history; approve, return (reason), restore, delete, edit through the slice 3.1 endpoint. Admin is online only. | done |
+| 4.3 | **Admin web: forms, assignments, conflict log.** Form-version editor (JSON with a live preview built from the same schema code as the worker form, not drag and drop), assignment management, conflict log. | done |
+| 4.4 | **Worker experience.** Installable-app prompt, sync-status panel (pending changes, last sync, retry now, what failed), storage persistence request, tap-target and label audit. | done |
+| 4.5 | **Operability.** Structured JSON logs carrying `request_id`, `device_id`, `mutation_id`; `/metrics` with pushes, conflicts, rejections, retries and pull lag; not exposed through the public proxy. | done |
+| 4.6 | **Load test.** 50 simulated devices pushing and pulling together; throughput, p95 latency and where the advisory lock becomes the bottleneck; hardware, dataset and exact commands published. | done |
+| 4.7 | **Ship.** Codespaces dev container with seeded logins, README (claim, demo clip, one-command setup, guarantees linked to tests, "try to break it", "what I'd change at scale"), scripted demo walkthrough, CI badges, `v1.0`. | done |
 
 ### Definition of done per slice (phase 4)
 
@@ -247,8 +247,9 @@ admin screens, and metrics exist before the load test that reads them.
 
 ## Open questions
 
-- Hosting target for the live demo (phase 0.5).
-- Python/Node/Postgres versions: pin current at scaffold.
+- Hosting target for a live demo (none chosen; the README offers Codespaces instead).
+- The Codespaces dev container has not been run in a real Codespace; only its pieces were tested.
+- The LICENSE (MIT, under the repository owner's handle) was flagged in PR #7 and #30 and not yet confirmed.
 
 ## Backlog
 
