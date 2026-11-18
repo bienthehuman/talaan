@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { ConflictPanel } from "../components/ConflictPanel";
 import { EmptyState, LoadingState } from "../components/States";
 import { SyncBadge } from "../components/SyncBadge";
 import {
@@ -23,7 +24,7 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 /** Why the record cannot be edited on this device, or null when it can. */
 function lockedReason(row: LocalSubmission): string | null {
   if (row.syncState === "conflict") {
-    return "Someone else changed this inspection. Your changes are kept on this device. You can discard them to see the server's version.";
+    return "Your changes to this inspection are on hold until you decide below.";
   }
   if (row.syncState === "rejected") {
     return `The server did not accept this change${row.syncDetail ? `: ${row.syncDetail}` : "."} You can discard your changes to see the server's version.`;
@@ -226,6 +227,14 @@ export function SubmissionPage() {
           {locked}
         </div>
       )}
+      {row.syncState === "conflict" && (
+        <ConflictPanel
+          db={db}
+          row={row}
+          definition={definition}
+          onDiscard={() => setConfirm("discard")}
+        />
+      )}
       {problem && (
         <div className="alert" role="alert">
           {problem}
@@ -252,7 +261,7 @@ export function SubmissionPage() {
             </Button>
           </div>
         )}
-        {(row.syncState === "conflict" || row.syncState === "rejected") && (
+        {row.syncState === "rejected" && (
           <Button variant="secondary" onClick={() => setConfirm("discard")}>
             Discard my changes
           </Button>

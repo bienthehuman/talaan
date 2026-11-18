@@ -170,6 +170,11 @@ export function applyResult(db: TalaanDb, entry: OutboxEntry, result: PushResult
       shadow,
       serverVersion: shadow ? shadow.version : row.serverVersion,
       fieldVersions: shadow ? shadow.fieldVersions : row.fieldVersions,
+      // Their own delete is on hold: show the record again so they can decide what to do with it.
+      deleted:
+        result.status === "conflict" && result.conflict.kind === "edited_since_base"
+          ? false
+          : row.deleted,
       syncState: result.status === "conflict" ? "conflict" : "rejected",
       syncDetail: result.status === "conflict" ? result.conflict.kind : result.detail,
       conflict: result.status === "conflict" ? result.conflict : undefined,

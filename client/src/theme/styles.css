@@ -242,6 +242,14 @@ a {
   font-weight: 400;
 }
 
+.needs-decision {
+  color: var(--danger);
+  font-weight: 600;
+}
+.conflict {
+  border-color: var(--danger);
+}
+
 /* Cards, banners, states */
 .card {
   background: var(--surface);

@@ -253,6 +253,11 @@ describe("deleting a record that others edited since", () => {
     return { id, original };
   }
 
+  it("shows the record again while the person decides, so the decision can be reached", async () => {
+    const { id } = await setup();
+    expect(await getSubmission(db(), id)).toMatchObject({ deleted: false, syncState: "conflict" });
+  });
+
   it("keeping the record drops the delete and shows the server's copy", async () => {
     const { id } = await setup();
     await resolveEditedSinceBase(db(), id, "keep");

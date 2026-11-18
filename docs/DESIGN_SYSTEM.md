@@ -78,6 +78,24 @@ tagline "Offline-first field data sync". 404 and error pages share the empty/err
 - **Saving.** Every edit is written to the device immediately, with no Save button. A value the server
   would refuse (wrong type, out of range) is not saved; the error shows under the field and the text
   stays on screen. Submit checks required fields and names how many are missing.
-- **Read only** (banner explains why): submitted, approved, or in `conflict` / `rejected`. In those two
-  states "Discard my changes" shows the server's version. Resolving a conflict arrives in phase 3.
+- **Read only** (banner explains why): submitted, approved, or in `conflict` / `rejected`. A rejected record offers
+  "Discard my changes"; a conflict has its own panel (below).
+
+## Conflict panel (phase 3)
+
+Shown on the inspection page instead of a banner when the server did not accept a change because someone
+else got there first (`--danger` border, heading "Needs your decision", labelled region). The form
+underneath is read only and shows the person's own values. Nothing is sent until they decide, and nothing is
+lost until they choose to discard (always behind a confirmation).
+
+- **Same field changed** (`field_conflict`): one group per clashing field, with "Before either of you: ...",
+  then two radios, "Keep mine: ..." and "Use theirs: ...". "Apply my choices" stays disabled, with a hint
+  naming what is missing, until every field has a choice. The person's other changes are listed as "will be
+  sent as well". "Discard all my changes" is the other way out.
+- **Deleted by an admin** (`deleted_remotely`): says what happened, that the edits are kept, and that asking
+  an admin to restore the inspection sends them again automatically. The one button is "Discard my changes".
+- **Own delete against newer edits** (`edited_since_base`): lists the fields others changed and offers
+  "Keep the inspection" or, in the destructive style, "Delete anyway". The record is shown again in the list
+  while this waits.
+- The header shows "N need your decision" (a link to the list) whenever any inspection is waiting.
 
