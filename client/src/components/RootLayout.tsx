@@ -60,32 +60,30 @@ export function RootLayout() {
             <Link to="/manage/conflicts">Conflict log</Link>
           </nav>
         )}
-        <div className="header-meta">
-          {user?.role === "worker" && (
+        <div className="header-account">
+          {user && <span className="header-user">{user.username}</span>}
+          <ThemeToggle />
+          {user && (
+            <Button variant="secondary" small onClick={requestSignOut}>
+              Sign out
+            </Button>
+          )}
+        </div>
+        {user?.role === "worker" && (
+          <div className="header-sync">
             <Link to="/sync" className="tap-link">
               {pending} pending · Last sync: {formatLastSync(lastSyncAt)}
             </Link>
-          )}
-          {user?.role === "worker" && conflicts > 0 && (
-            <Link to="/" className="needs-decision">
-              {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
-            </Link>
-          )}
-          <ThemeToggle />
-          {user && (
-            <>
-              {user.role === "worker" && (
-                <Button variant="secondary" small onClick={syncNow} disabled={state === "syncing"}>
-                  {state === "syncing" ? "Syncing…" : "Sync now"}
-                </Button>
-              )}
-              <span>{user.username}</span>
-              <Button variant="secondary" small onClick={requestSignOut}>
-                Sign out
-              </Button>
-            </>
-          )}
-        </div>
+            {conflicts > 0 && (
+              <Link to="/" className="needs-decision tap-link">
+                {conflicts === 1 ? "1 needs your decision" : `${conflicts} need your decision`}
+              </Link>
+            )}
+            <Button variant="secondary" small onClick={syncNow} disabled={state === "syncing"}>
+              {state === "syncing" ? "Syncing…" : "Sync now"}
+            </Button>
+          </div>
+        )}
       </header>
       <main id="main" tabIndex={-1}>
         <Outlet />

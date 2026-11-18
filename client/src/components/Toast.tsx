@@ -43,17 +43,39 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="toasts" role="status" aria-live="polite">
-        {items.map((t) => (
-          <div key={t.id} className={`toast toast--${t.kind}`}>
-            {t.message}{" "}
-            <button className="btn btn--secondary btn--small" onClick={() => dismiss(t.id)}>
-              Dismiss
-            </button>
-          </div>
-        ))}
+      <div className="toasts">
+        {/* An error is announced at once; other toasts wait for a pause. Each list keeps its own region. */}
+        <div className="toast-list">
+          {items
+            .filter((t) => t.kind === "error")
+            .map((t) => (
+              <div key={t.id} className="toast toast--error" role="alert">
+                <ToastBody item={t} onDismiss={dismiss} />
+              </div>
+            ))}
+        </div>
+        <div className="toast-list" role="status" aria-live="polite">
+          {items
+            .filter((t) => t.kind !== "error")
+            .map((t) => (
+              <div key={t.id} className={`toast toast--${t.kind}`}>
+                <ToastBody item={t} onDismiss={dismiss} />
+              </div>
+            ))}
+        </div>
       </div>
     </ToastContext.Provider>
+  );
+}
+
+function ToastBody({ item, onDismiss }: { item: ToastItem; onDismiss: (id: number) => void }) {
+  return (
+    <>
+      {item.message}{" "}
+      <button className="btn btn--secondary btn--small" onClick={() => onDismiss(item.id)}>
+        Dismiss
+      </button>
+    </>
   );
 }
 

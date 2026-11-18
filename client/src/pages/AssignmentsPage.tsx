@@ -2,9 +2,13 @@ import { Link, useNavigate } from "react-router";
 import { Button } from "../components/Button";
 import { EmptyState, LoadingState } from "../components/States";
 import { SyncBadge } from "../components/SyncBadge";
-import { createSubmission } from "../db";
+import { createSubmission, type LocalSubmission } from "../db";
 import { useLive, useLocalDb } from "../db/useLive";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { statusLabel } from "../lib/status";
+
+/** How many of an assignment's inspections show before the rest fold away. */
+const RECENT = 5;
 
 interface AssignmentRow {
   id: number;
@@ -62,6 +66,9 @@ export function AssignmentsPage() {
         const mine = submissions
           .filter((s) => s.assignmentId === assignment.id)
           .sort((a, b) => b.updatedAt - a.updatedAt);
+        // The newest few, plus anything that needs the worker, stay in view; older ones fold away.
+        const shown = mine.filter((s, i) => i < RECENT || needsWorker(s));
+        const older = mine.filter((s) => !shown.includes(s));
         const headingId = `assignment-${assignment.id}`;
         return (
           <section key={assignment.id} className="card stack" aria-labelledby={headingId}>
@@ -73,24 +80,6 @@ export function AssignmentsPage() {
                 {assignment.cancelled ? " · cancelled" : ""}
               </p>
             </div>
-            {mine.length > 0 && (
-              <ul className="list">
-                {mine.map((s) => (
-                  <li key={s.id} className="list-row">
-                    <Link className="tap-link" to={`/submissions/${s.id}`}>
-                      {s.status === "draft"
-                        ? "Draft"
-                        : s.status[0]!.toUpperCase() + s.status.slice(1)}{" "}
-                      inspection · {new Date(s.updatedAt).toLocaleDateString()}
-                    </Link>
-                    <SyncBadge
-                      state={s.syncState}
-                      reason={s.syncState === "rejected" ? s.syncDetail : undefined}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
             {!assignment.cancelled && (
               <div>
                 <Button variant="secondary" onClick={() => void start(assignment)}>
@@ -98,9 +87,43 @@ export function AssignmentsPage() {
                 </Button>
               </div>
             )}
+            {shown.length > 0 && <InspectionList rows={shown} />}
+            {older.length > 0 && (
+              <details className="more">
+                <summary>
+                  {older.length === 1
+                    ? "Show 1 older inspection"
+                    : `Show ${older.length} older inspections`}
+                </summary>
+                <InspectionList rows={older} />
+              </details>
+            )}
           </section>
         );
       })}
     </div>
+  );
+}
+
+/** A conflict, a refusal or a record returned by an admin is never folded away. */
+function needsWorker(s: LocalSubmission): boolean {
+  return s.syncState === "conflict" || s.syncState === "rejected" || s.status === "returned";
+}
+
+function InspectionList({ rows }: { rows: LocalSubmission[] }) {
+  return (
+    <ul className="list">
+      {rows.map((s) => (
+        <li key={s.id} className="list-row">
+          <Link className="tap-link" to={`/submissions/${s.id}`}>
+            {statusLabel(s.status)} inspection · {new Date(s.updatedAt).toLocaleDateString()}
+          </Link>
+          <SyncBadge
+            state={s.syncState}
+            reason={s.syncState === "rejected" ? s.syncDetail : undefined}
+          />
+        </li>
+      ))}
+    </ul>
   );
 }

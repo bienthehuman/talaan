@@ -36,7 +36,7 @@ describe("routing", () => {
 
   it("serves the style guide in dev builds and it passes the structural a11y check", async () => {
     const { container } = renderApp("/styleguide");
-    expect(screen.getByRole("heading", { name: "Style guide" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Style guide" })).toBeInTheDocument();
     for (const label of [
       "Saved on this device",
       "Synced",

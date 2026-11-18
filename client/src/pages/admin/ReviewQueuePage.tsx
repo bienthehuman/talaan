@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from "react-router";
 import { listSubmissions, listWorkers, type SubmissionStatus } from "../../admin/api";
+import { statusLabel } from "../../lib/status";
 import { Button } from "../../components/Button";
 import { EmptyState, ErrorState, LoadingState } from "../../components/States";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
@@ -63,7 +64,7 @@ export function ReviewQueuePage() {
           >
             {STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s[0]!.toUpperCase() + s.slice(1)}
+                {statusLabel(s)}
               </option>
             ))}
             <option value="all">All statuses</option>
@@ -133,7 +134,7 @@ export function ReviewQueuePage() {
                     </td>
                     <td>{r.worker.username}</td>
                     <td>
-                      {r.status}
+                      {statusLabel(r.status ?? "draft")}
                       {r.deleted ? " (deleted)" : ""}
                     </td>
                     <td>{r.updated_at ? new Date(r.updated_at).toLocaleString() : ""}</td>

@@ -140,7 +140,7 @@ describe("the review queue", () => {
       "North plant",
       "Generator inspection v1",
       "worker1",
-      "submitted",
+      "Submitted",
     ]);
     expect(within(table).getByRole("link", { name: "Review North plant" })).toHaveAttribute(
       "href",

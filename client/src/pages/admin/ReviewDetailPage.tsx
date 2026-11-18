@@ -18,6 +18,7 @@ import { FormFieldInput } from "../../forms/FormFields";
 import { formatValue } from "../../forms/format";
 import { parseForm, type FormDefinition, type FormField } from "../../forms/schema";
 import { validateRecord, type FieldErrors } from "../../forms/validate";
+import { statusLabel } from "../../lib/status";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
@@ -124,7 +125,7 @@ export function ReviewDetailPage() {
         <div>
           <dt>Status</dt>
           <dd>
-            {status}
+            {statusLabel(status)}
             {record.deleted ? " (deleted)" : ""}
           </dd>
         </div>

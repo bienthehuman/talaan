@@ -45,6 +45,7 @@ export function FormFieldInput({ field, value, error, disabled, onChange, onBlur
                 type="radio"
                 name={id}
                 checked={value === choice}
+                aria-invalid={error ? true : undefined}
                 onChange={() => onChange(choice)}
                 onBlur={onBlur}
               />

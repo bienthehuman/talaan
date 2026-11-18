@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -67,6 +67,13 @@ export function SubmissionPage() {
   const [submitErrors, setSubmitErrors] = useState<FieldErrors>({});
   const [problem, setProblem] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<"delete" | "discard" | null>(null);
+  // Bumped when Submit finds errors; after that render, focus moves to the first field to fix.
+  const formRef = useRef<HTMLFormElement>(null);
+  const [focusRequest, setFocusRequest] = useState(0);
+  useEffect(() => {
+    if (focusRequest === 0) return;
+    formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [focusRequest]);
 
   useDocumentTitle(loaded?.name ?? "Inspection");
 
@@ -178,6 +185,7 @@ export function SubmissionPage() {
     event.preventDefault();
     if (Object.values(fieldErrors).some(Boolean)) {
       setProblem("Fix the highlighted fields before submitting.");
+      setFocusRequest((n) => n + 1);
       return;
     }
     const found = validateRecord(definition, row!.data, { complete: true });
@@ -186,6 +194,7 @@ export function SubmissionPage() {
       setProblem(
         `Fix ${Object.keys(found).length === 1 ? "1 field" : `${Object.keys(found).length} fields`} before submitting.`,
       );
+      setFocusRequest((n) => n + 1);
       return;
     }
     try {
@@ -201,7 +210,7 @@ export function SubmissionPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page stack">
       <p>
         <Link className="tap-link" to="/">
           ‹ Assignments
@@ -235,7 +244,7 @@ export function SubmissionPage() {
         </div>
       )}
 
-      <form className="stack" onSubmit={submit} noValidate>
+      <form ref={formRef} className="stack" onSubmit={submit} noValidate>
         {definition.fields.map((field) => (
           <FormFieldInput
             key={field.name}
