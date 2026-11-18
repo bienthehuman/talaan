@@ -13,13 +13,15 @@ import styles from "./StyleguidePage.module.css";
 const TOKENS = [
   "bg",
   "surface",
+  "surface-2",
+  "band",
   "text",
   "text-muted",
   "border",
   "control-border",
   "accent",
   "ok",
-  "warn",
+  "pending",
   "danger",
 ] as const;
 /** "text-muted" → "swTextMuted", the swatch class for that token. */
@@ -44,7 +46,7 @@ export function StyleguidePage() {
         <div className={styles.swatches}>
           {TOKENS.map((t) => (
             <div className={styles.swatch} key={t}>
-              <i className={styles[swatchClass(t)]} />
+              <span className={styles[swatchClass(t)]} aria-hidden="true" />
               --{t}
             </div>
           ))}

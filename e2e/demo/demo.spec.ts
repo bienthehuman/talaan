@@ -28,9 +28,10 @@ async function say(page: Page, text: string, seconds = 2.5) {
         right: "0",
         bottom: "0",
         padding: "14px 20px",
-        background: "rgba(11, 30, 60, 0.93)",
+        background: "rgba(22, 24, 29, 0.94)", // the band colour (DESIGN_SYSTEM.md section 2)
+        borderTop: "3px solid #4fc3cc",
         color: "#fff",
-        font: "600 19px system-ui, sans-serif",
+        font: "600 20px Barlow, system-ui, sans-serif",
         textAlign: "center",
         zIndex: "99999",
       });

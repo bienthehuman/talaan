@@ -18,6 +18,11 @@
   border: 1.5px dashed var(--border);
   border-radius: var(--radius-lg);
 }
+/* Inside a card the card is the container; no second outline. */
+[class~="card"] .empty {
+  border: 0;
+  padding-block: var(--space-3);
+}
 /* Loading: skeleton rows in the shape of a list, no spinner. */
 .loading {
   display: grid;

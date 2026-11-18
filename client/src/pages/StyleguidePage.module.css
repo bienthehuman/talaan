@@ -9,7 +9,7 @@
   padding: var(--space-3);
   font-size: var(--text-sm);
 }
-.swatch i {
+.swatch span {
   display: block;
   height: 28px;
   border-radius: 4px;
@@ -22,6 +22,12 @@
 }
 .swSurface {
   background: var(--surface);
+}
+.swSurface2 {
+  background: var(--surface-2);
+}
+.swBand {
+  background: var(--band);
 }
 .swText {
   background: var(--text);
@@ -41,7 +47,7 @@
 .swOk {
   background: var(--ok);
 }
-.swWarn {
+.swPending {
   background: var(--pending);
 }
 .swDanger {
