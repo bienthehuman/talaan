@@ -1,0 +1,33 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  background: color-mix(in srgb, currentColor 12%, var(--surface));
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+/* Text colours are the state tokens, which hold ≥ 4.5:1 on a 12% tint of themselves over --surface. */
+.neutral {
+  color: var(--text-muted);
+}
+.info {
+  color: var(--accent);
+}
+.ok {
+  color: var(--ok);
+}
+.warn {
+  color: var(--pending);
+}
+.danger {
+  color: var(--danger);
+}

@@ -38,7 +38,7 @@ export function FormFieldInput({ field, value, error, disabled, onChange, onBlur
             {field.description}
           </span>
         )}
-        <div className="row">
+        <div className="segmented">
           {[true, false].map((choice) => (
             <label key={String(choice)} className="choice">
               <input

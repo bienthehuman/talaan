@@ -1,10 +1,53 @@
+/* Empty, error and forbidden states: quiet, body size, never louder than the section they sit in
+   (docs/DESIGN_SYSTEM.md section 4). */
 .state {
+  padding: var(--space-5) var(--space-4);
   text-align: center;
-  padding: var(--space-6) var(--space-4);
 }
 .state h2 {
-  margin-bottom: var(--space-2);
+  font-family: var(--font);
+  font-size: var(--text-md);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
 }
 .state p {
   color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+.empty {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+/* Loading: skeleton rows in the shape of a list, no spinner. */
+.loading {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+}
+.skeleton {
+  height: 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    color-mix(in srgb, var(--surface-2) 40%, var(--surface)) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+}
+.skeleton:nth-child(3) {
+  width: 80%;
+}
+.skeleton:nth-child(4) {
+  width: 55%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    animation: shimmer 1.4s linear infinite;
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
 }

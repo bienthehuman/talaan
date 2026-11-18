@@ -109,6 +109,8 @@ a list reads top to bottom.
 
 - **Full line** (inspection page, sync page): four stops with their names under them, and the label.
 - **Compact line** (list rows): the four stops without names, then the label. Same positions.
+- Built as `SyncBadge` (`full` and `reviewed` props), so every existing use picks up the line. The break before
+  the office is shown as grey track (no coloured connector) into a red stop; stops already passed turn neutral.
 - The line is drawn with CSS (no images), is `aria-hidden`, and the label carries the meaning
   (`role="status"` where it changes live). The record status ("Draft", "Returned", "Approved") stays
   separate text; the line shows where the data is, not the review outcome, except that "Reviewed" fills on
@@ -129,7 +131,7 @@ hover state carry it); links in body text stay underlined.
 
 ## 4. Components
 
-Button (primary, secondary, quiet, destructive), text input, textarea, select, checkbox/radio group,
+Button (primary, secondary, quiet, destructive, danger), text input, textarea, select, checkbox/radio group,
 Yes/No segmented choice, password field with show/hide, form field (label, hint, error), card, list row,
 station line (full and compact), status chip, toast, dialog (confirm-destructive), banner (offline,
 update required, storage not persisted), empty state, skeleton/loading, error state, forbidden state,
@@ -138,8 +140,8 @@ update required, storage not persisted), empty state, skeleton/loading, error st
 
 - **Buttons.** *Primary*: solid `--accent`, one per view (the action the screen is for). *Secondary*:
   `--surface` with a 1.5 px `--control-border` edge. *Quiet*: no edge, accent text, for low-stakes actions
-  (Show, Cancel, Not now). *Destructive*: secondary shape with `--danger` text and edge in page flow; solid
-  `--danger` only inside the confirm dialog. Destructive actions never sit next to the primary action: they go
+  (Show, Cancel, Not now). *Destructive*: secondary shape with `--danger` text and edge in page flow. *Danger*:
+  solid `--danger`, only to confirm inside a dialog. Destructive actions never sit next to the primary action: they go
   below the content or in their own group. All states (hover, active, focus, disabled, busy) are defined.
 - **Yes/No.** Two segments, each ≥ 48 px tall, still native radios underneath (unanswered stays possible).
 - **Status chip.** Record status in admin tables ("Submitted", "Returned"), with a dot plus text; tinted
