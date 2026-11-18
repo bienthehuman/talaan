@@ -203,7 +203,9 @@ export function SubmissionPage() {
   return (
     <div className="page">
       <p>
-        <Link to="/">‹ Assignments</Link>
+        <Link className="tap-link" to="/">
+          ‹ Assignments
+        </Link>
       </p>
       <h1>{loaded.name}</h1>
       <div className="row">

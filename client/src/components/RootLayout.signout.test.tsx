@@ -17,6 +17,7 @@ vi.mock("../sync/status", () => ({
     syncNow: () => {},
     resume: () => {},
     lastError: null,
+    retryAt: null,
   }),
 }));
 
@@ -98,5 +99,14 @@ describe("the header", () => {
     renderApp("/");
     await screen.findByRole("heading", { name: "Assignments" });
     expect(screen.queryByText(/need your decision|needs your decision/)).not.toBeInTheDocument();
+  });
+
+  it("links the pending count to the sync status page", async () => {
+    signIn();
+    renderApp("/");
+    expect(await screen.findByRole("link", { name: /^3 pending · Last sync/ })).toHaveAttribute(
+      "href",
+      "/sync",
+    );
   });
 });

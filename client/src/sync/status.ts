@@ -11,6 +11,8 @@ export interface SyncStatus {
   conflicts: number;
   lastSyncAt: Date | null;
   state: EngineState;
+  /** When the next automatic retry is due (epoch ms), while retrying. */
+  retryAt: number | null;
   syncNow: () => void;
   /** Why the last cycle failed (a problem code), for the banner. */
   lastError: string | null;
@@ -53,5 +55,6 @@ export function useSyncStatus(): SyncStatus {
     syncNow,
     resume,
     lastError: engineStatus.lastError,
+    retryAt: engineStatus.retryAt,
   };
 }

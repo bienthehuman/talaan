@@ -133,3 +133,21 @@ the proxy sends `/admin` to the Django admin.
   afterwards; the server cannot see a worker discarding edits on their device), and a link to the record.
   Filters: kind, changed since, worker.
 
+## Worker experience (phase 4)
+
+- **Sync status** (`/sync`, linked from the header's "N pending · Last sync" text): changes waiting to be
+  sent, last sync, the last problem in words, and one sentence about what the engine is doing ("Trying again
+  at 10:42", "Paused. Sign in again to continue."). "Retry now" starts a sync (disabled while one runs).
+  Below: inspections that need a decision, what is waiting per inspection (kinds of change, how many times it
+  was tried, why it failed), and whether the browser has promised to keep the data. Problem codes are never
+  shown raw for the common cases.
+- **Install prompt**: a banner with Install and Not now. It only appears when the browser says installing is
+  possible, never when the app already runs installed, and "Not now" is remembered so it does not ask on every
+  visit. The browser's own dialog is used for the actual install.
+- **Storage protection**: after the first successful sync the app asks the browser to protect its data from
+  being cleared when space is low, once. The sync page reports the answer ("Protected" or "Not protected"), and
+  says plainly when the browser cannot tell.
+- **Tap targets**: every button, link, field and choice a worker uses is at least 44 by 44 CSS pixels
+  (`--tap-min`; default buttons are 48). The small button variant is 44 too. A Playwright test measures
+  every control on the worker pages in the real browser, so a regression fails CI.
+

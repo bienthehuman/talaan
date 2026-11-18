@@ -28,6 +28,8 @@
   --space-7: 48px;
   --radius: 8px;
   --tap: 48px;
+  /* The smallest a tappable control may be (docs/DESIGN_SYSTEM.md section 4). */
+  --tap-min: 44px;
   color-scheme: light;
 }
 
