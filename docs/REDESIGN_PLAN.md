@@ -1,6 +1,6 @@
 # Redesign plan: Wayfinding Line
 
-Status: **accepted** (2026-11-18). Tracked as phase 5 in [BUILD_PLAN.md](BUILD_PLAN.md). The rules live in
+Status: **done** (2026-11-18, released as `v1.1.0`). Tracked as phase 5 in [BUILD_PLAN.md](BUILD_PLAN.md). The rules live in
 [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) v2 and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md);
 this file keeps the reasons.
 Product context: [PRODUCT.md](../PRODUCT.md). Sketches: `.impeccable/mocks/decision/assigned.html` (local only).

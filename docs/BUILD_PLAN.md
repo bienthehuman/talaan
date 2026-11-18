@@ -13,7 +13,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 2 | Client local layer and engine: Dexie, atomic edit, outbox, push/pull, backoff, token refresh, Web Locks | Scenarios 1, 9, 12 |
 | 3 | Conflicts: detection, `deleted_remotely`, resolution screen | Scenarios 4, 5, 6: all twelve pass in CI |
 | 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
-| 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed |
+| 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed (tagged `v1.1.0`, done) |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -207,7 +207,7 @@ admin screens, and metrics exist before the load test that reads them.
 - Each guarantee in the README links to the test that proves it; the demo walkthrough is a Playwright script that records the lost-response and two-device conflict flows.
 - `v1.0` tagged, release published.
 
-## Phase 5 slices: UI redesign "Wayfinding Line"
+## Phase 5 slices: UI redesign "Wayfinding Line" (done: tagged `v1.1.0` on 2026-11-18)
 
 Exit: `v1.1.0`. The look changes, the behaviour does not. Rules in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) v2
 and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
@@ -221,7 +221,7 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 | 5.3 | **Shell.** Sign band header (worker numeral, Sync now primary), admin rail and phone tab row with `aria-current`; favicon, PWA icons, manifest and `theme-color` in the band colour. | done |
 | 5.4 | **Worker pages.** Assignments, inspection (sticky submit, Delete moved), sync status, conflict panel, login, 404/error (via the quiet states from 5.2). | done |
 | 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | done |
-| 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | in review (tag after merge) |
+| 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | done |
 
 ### Definition of done per slice (phase 5)
 
