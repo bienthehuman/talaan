@@ -67,3 +67,17 @@ and dark; it is the target of the axe test.
 
 Favicon (SVG), `theme-color` per scheme, a title per route (`Page · Talaan`), app name Talaan and
 tagline "Offline-first field data sync". 404 and error pages share the empty/error state layout.
+
+## Worker pages (phase 2)
+
+- **Assignments** (`/`): one card per assignment with its inspections, each with a sync badge, and a
+  "New inspection" button (not shown for cancelled assignments). Everything is read from the device.
+- **Inspection** (`/submissions/:id`): one control per form field, chosen by type: text input (textarea
+  over 200 characters), select for enums, Yes/No radios for booleans (so "unanswered" is possible),
+  numbers as text with a numeric keyboard. Required fields say "(required)" in the label.
+- **Saving.** Every edit is written to the device immediately, with no Save button. A value the server
+  would refuse (wrong type, out of range) is not saved; the error shows under the field and the text
+  stays on screen. Submit checks required fields and names how many are missing.
+- **Read only** (banner explains why): submitted, approved, or in `conflict` / `rejected`. In those two
+  states "Discard my changes" shows the server's version. Resolving a conflict arrives in phase 3.
+

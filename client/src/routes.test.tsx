@@ -14,7 +14,7 @@ describe("routing", () => {
     signIn();
     const { container } = renderApp("/");
     expect(screen.getByRole("heading", { name: "Assignments" })).toBeInTheDocument();
-    expect(screen.getByText("No assignments yet")).toBeInTheDocument();
+    expect(await screen.findByText("No assignments yet")).toBeInTheDocument();
     expect(document.title).toBe("Assignments · Talaan");
     await expectNoA11yViolations(container);
   });

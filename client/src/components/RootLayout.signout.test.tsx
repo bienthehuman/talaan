@@ -2,6 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Dexie from "dexie";
 import { createSubmission, dbFor } from "../db";
+import { whenWiped } from "../auth/wipe";
 import { getSession } from "../auth/session";
 import { renderApp, signIn } from "../test/utils";
 
@@ -21,6 +22,8 @@ vi.mock("../sync/status", () => ({
 beforeEach(() => {
   status.pending = 3;
 });
+
+afterEach(() => whenWiped()); // a sign-out's data removal must not run into the next test
 
 describe("signing out with unsent changes", () => {
   it("asks first and keeps the session when cancelled", async () => {
