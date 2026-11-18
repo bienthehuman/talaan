@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-11-18T12:48:55.825Z",
         "reason": "Claude: canon card sketch deliberately depicts the generic category standard (Inter) as the rejected baseline; not shipped UI"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "client/src/components/RootLayout.module.css"
+        ],
+        "createdAt": "2026-11-18T14:49:13.074Z",
+        "reason": "Claude: current-page marker on the admin nav rail (DESIGN_SYSTEM.md section 3), a nav indicator, not a card"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "client/src/components/RootLayout.module.css"
+        ],
+        "createdAt": "2026-11-18T14:49:13.084Z",
+        "reason": "Claude: current-page tab underline on phones; the link has no radius in that mode"
       }
     ]
   }

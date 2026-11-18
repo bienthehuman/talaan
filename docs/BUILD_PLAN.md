@@ -220,8 +220,8 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 | 5.2 | **Components.** Buttons (primary, secondary, quiet, destructive), fields, Yes/No segments, station line (in `SyncBadge`), status chip, banner, toast, dialog, table, quiet empty states, skeletons; `/styleguide` updated. | done |
 | 5.3 | **Shell.** Sign band header (worker numeral, Sync now primary), admin rail and phone tab row with `aria-current`; favicon, PWA icons, manifest and `theme-color` in the band colour. | done |
 | 5.4 | **Worker pages.** Assignments, inspection (sticky submit, Delete moved), sync status, conflict panel, login, 404/error (via the quiet states from 5.2). | done |
-| 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | in review |
-| 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | |
+| 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | done |
+| 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | in review (tag after merge) |
 
 ### Definition of done per slice (phase 5)
 

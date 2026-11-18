@@ -16,6 +16,11 @@ edit the same field offline get a conflict screen instead of one of them quietly
 
 Both clips are real runs of the app (`bash scripts/demo.sh` records them), not mock-ups.
 
+<p>
+  <img src="docs/media/screen-worker.png" alt="Worker assignments on a phone: the sign band with the pending count and Sync now, and each inspection with its station line" width="260">
+  <img src="docs/media/screen-admin.png" alt="Admin review of an inspection in dark mode: answers, history timeline and the action panel" width="560">
+</p>
+
 **Work offline, reload, reconnect while the server drops its first answer: one record, no duplicate.**
 
 ![Offline work, a reload, and a dropped response](docs/media/offline-and-lost-response.gif)
