@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { GENERATOR_SCHEMA } from "../../test/fixtures";
 import { expectNoA11yViolations, json, mockFetch, renderApp, signIn } from "../../test/utils";
+import { formatDay } from "../../lib/when";
 
 const ADMIN = { id: 1, username: "admin", role: "admin", permissions: [] };
 const page = (results: unknown[], count = results.length) => ({
@@ -326,7 +327,14 @@ describe("assignments", () => {
         .getAllByRole("cell")
         .map((c) => c.textContent)
         .slice(0, 6),
-    ).toEqual(["North plant", "Generator inspection v2", "worker1", "2026-12-01", "3", "Active"]);
+    ).toEqual([
+      "North plant",
+      "Generator inspection v2",
+      "worker1",
+      formatDay("2026-12-01"),
+      "3",
+      "Active",
+    ]);
     expect(
       within(rows[1]!).getByRole("button", { name: "Cancel North plant" }),
     ).toBeInTheDocument();

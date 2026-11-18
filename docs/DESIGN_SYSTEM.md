@@ -153,7 +153,9 @@ update required, storage not persisted), empty state, skeleton/loading, error st
 - **Dates.** One formatter: "Today 08:41", "Yesterday 16:02", "15 Nov", "15 Nov 2025" for another year; the
   full timestamp in a `title` and in record history.
 - **Tables.** Dense (40 px rows), `--surface-2` header with uppercase semi-condensed labels, tabular numbers,
-  the whole row clickable as well as its named link. Below 600 px a table becomes a list of cards.
+  the whole row clickable as well as its named link (`row-link`). Below 600 px a table can become a list of
+  cards (`<Table stack>`, cells carry `data-label`; empty cells are hidden). The table roles survive, which the
+  mobile e2e project checks.
 
 Every control a worker taps is at least `--tap-min` (44 px; default 48), measured in CI (section 2 and
 "Worker experience" below).

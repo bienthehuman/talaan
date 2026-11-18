@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { listSubmissions, listWorkers, type SubmissionStatus } from "../../admin/api";
 import { statusLabel } from "../../lib/status";
 import { Button } from "../../components/Button";
@@ -7,11 +7,14 @@ import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
 import { Table } from "../../components/Table";
+import { StatusChip } from "../../components/StatusChip";
+import { formatFull, formatWhen } from "../../lib/when";
 
 const PAGE = 25;
 const STATUSES: SubmissionStatus[] = ["submitted", "approved", "returned", "draft"];
 
 export function ReviewQueuePage() {
+  const navigate = useNavigate();
   useDocumentTitle("Review");
   const [params, setParams] = useSearchParams();
   // The queue is what needs review, so it opens on submitted records.
@@ -126,17 +129,31 @@ export function ReviewQueuePage() {
             </thead>
             <tbody>
               {results.map((r) => (
-                <tr key={r.id}>
+                <tr
+                  key={r.id}
+                  className="row-link"
+                  onClick={(e) => {
+                    // The whole row opens the record; the named link stays the keyboard target.
+                    if (!(e.target as HTMLElement).closest("a, button")) {
+                      navigate(`/manage/review/${r.id}`);
+                    }
+                  }}
+                >
                   <td>{r.site_name}</td>
                   <td>
                     {r.form_name} v{r.form_version_number}
                   </td>
                   <td>{r.worker.username}</td>
                   <td>
-                    {statusLabel(r.status ?? "draft")}
-                    {r.deleted ? " (deleted)" : ""}
+                    <StatusChip status={r.status ?? "draft"} deleted={r.deleted} />
                   </td>
-                  <td>{r.updated_at ? new Date(r.updated_at).toLocaleString() : ""}</td>
+                  <td>
+                    {r.updated_at && (
+                      <time dateTime={r.updated_at} title={formatFull(r.updated_at)}>
+                        {formatWhen(r.updated_at)}
+                      </time>
+                    )}
+                  </td>
                   <td>
                     <Link to={`/manage/review/${r.id}`} aria-label={`Review ${r.site_name}`}>
                       Review

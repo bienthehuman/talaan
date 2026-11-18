@@ -1,0 +1,24 @@
+/* "New assignment" as a side panel from 900 px, the list beside it. */
+.layout {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+}
+.panel {
+  padding: var(--space-5);
+}
+.panel :global(.input) {
+  width: 100%;
+}
+.list {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+  .panel {
+    position: sticky;
+    top: var(--space-4);
+  }
+}

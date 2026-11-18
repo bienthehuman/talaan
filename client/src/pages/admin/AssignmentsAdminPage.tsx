@@ -17,6 +17,8 @@ import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { fieldErrors, messageFor } from "../../lib/problem";
 import { Table } from "../../components/Table";
+import { formatDay } from "../../lib/when";
+import styles from "./AssignmentsAdminPage.module.css";
 
 const PAGE = 25;
 
@@ -111,189 +113,195 @@ export function AssignmentsAdminPage() {
     <div className="page page--wide stack">
       <h1>Assignments</h1>
 
-      <form className="card stack" onSubmit={create} noValidate aria-label="New assignment">
-        <h2>New assignment</h2>
-        {problem && (
-          <div className="alert" role="alert">
-            {problem}
+      <div className={styles.layout}>
+        <form
+          className={`card stack ${styles.panel}`}
+          onSubmit={create}
+          noValidate
+          aria-label="New assignment"
+        >
+          <h2>New assignment</h2>
+          {problem && (
+            <div className="alert" role="alert">
+              {problem}
+            </div>
+          )}
+          <div className="stack">
+            <div className="field">
+              <label htmlFor="a-version">Form version</label>
+              <select
+                id="a-version"
+                className="input"
+                value={versionId}
+                aria-invalid={versionError ? true : undefined}
+                onChange={(e) => setVersionId(e.target.value)}
+              >
+                <option value="">Choose…</option>
+                {versions.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+              {errors.form_version_id && (
+                <span className="field-error">{errors.form_version_id}</span>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="a-worker">Worker</label>
+              <select
+                id="a-worker"
+                className="input"
+                value={workerId}
+                aria-invalid={workerError ? true : undefined}
+                onChange={(e) => setWorkerId(e.target.value)}
+              >
+                <option value="">Choose…</option>
+                {(workers.data ?? []).map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.username}
+                  </option>
+                ))}
+              </select>
+              {workerError && <span className="field-error">{workerError}</span>}
+            </div>
+            <TextField
+              label="Site"
+              value={site}
+              error={errors.site_name}
+              onChange={(e) => setSite(e.target.value)}
+            />
+            <TextField
+              label="Due date (optional)"
+              type="date"
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
+            />
           </div>
-        )}
-        <div className="row filters">
-          <div className="field">
-            <label htmlFor="a-version">Form version</label>
-            <select
-              id="a-version"
-              className="input"
-              value={versionId}
-              aria-invalid={versionError ? true : undefined}
-              onChange={(e) => setVersionId(e.target.value)}
-            >
-              <option value="">Choose…</option>
-              {versions.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-            {errors.form_version_id && (
-              <span className="field-error">{errors.form_version_id}</span>
-            )}
-          </div>
-          <div className="field">
-            <label htmlFor="a-worker">Worker</label>
-            <select
-              id="a-worker"
-              className="input"
-              value={workerId}
-              aria-invalid={workerError ? true : undefined}
-              onChange={(e) => setWorkerId(e.target.value)}
-            >
-              <option value="">Choose…</option>
-              {(workers.data ?? []).map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.username}
-                </option>
-              ))}
-            </select>
-            {workerError && <span className="field-error">{workerError}</span>}
-          </div>
-          <TextField
-            label="Site"
-            value={site}
-            error={errors.site_name}
-            onChange={(e) => setSite(e.target.value)}
-          />
-          <TextField
-            label="Due date (optional)"
-            type="date"
-            value={due}
-            onChange={(e) => setDue(e.target.value)}
-          />
-        </div>
-        <div>
           <Button type="submit">Assign</Button>
-        </div>
-      </form>
+        </form>
+        <div className={`stack ${styles.list}`}>
+          <div className="row filters">
+            <div className="field">
+              <label htmlFor="af-state">Show</label>
+              <select
+                id="af-state"
+                className="input"
+                value={cancelled}
+                onChange={(e) => set("cancelled", e.target.value === "false" ? "" : e.target.value)}
+              >
+                <option value="false">Active</option>
+                <option value="true">Cancelled</option>
+                <option value="any">All</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="af-worker">Worker</label>
+              <select
+                id="af-worker"
+                className="input"
+                value={worker ?? ""}
+                onChange={(e) => set("worker", e.target.value)}
+              >
+                <option value="">Everyone</option>
+                {(workers.data ?? []).map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.username}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-      <div className="row filters">
-        <div className="field">
-          <label htmlFor="af-state">Show</label>
-          <select
-            id="af-state"
-            className="input"
-            value={cancelled}
-            onChange={(e) => set("cancelled", e.target.value === "false" ? "" : e.target.value)}
-          >
-            <option value="false">Active</option>
-            <option value="true">Cancelled</option>
-            <option value="any">All</option>
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="af-worker">Worker</label>
-          <select
-            id="af-worker"
-            className="input"
-            value={worker ?? ""}
-            onChange={(e) => set("worker", e.target.value)}
-          >
-            <option value="">Everyone</option>
-            {(workers.data ?? []).map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.username}
-              </option>
-            ))}
-          </select>
+          {list.loading && <LoadingState />}
+          {!list.loading && list.error !== undefined && (
+            <ErrorState onRetry={list.reload}>{messageFor(list.error)}</ErrorState>
+          )}
+          {!list.loading && list.error === undefined && results.length === 0 && (
+            <EmptyState title="No assignments">Nothing matches these filters.</EmptyState>
+          )}
+          {results.length > 0 && (
+            <>
+              <Table caption="Assignments" stack>
+                <thead>
+                  <tr>
+                    <th scope="col">Site</th>
+                    <th scope="col">Form</th>
+                    <th scope="col">Worker</th>
+                    <th scope="col">Due</th>
+                    <th scope="col">Inspections</th>
+                    <th scope="col">State</th>
+                    <th scope="col">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((a) => (
+                    <tr key={a.id}>
+                      <td data-label="Site">{a.site_name}</td>
+                      <td data-label="Form">
+                        {a.form_name} v{a.form_version_number}
+                      </td>
+                      <td data-label="Worker">{a.worker.username}</td>
+                      <td data-label="Due">{a.due_date ? formatDay(a.due_date) : ""}</td>
+                      <td data-label="Inspections">{a.submissions}</td>
+                      <td data-label="State">{a.cancelled ? "Cancelled" : "Active"}</td>
+                      <td data-label="">
+                        {!a.cancelled && (
+                          <Button
+                            variant="secondary"
+                            small
+                            aria-label={`Cancel ${a.site_name}`}
+                            onClick={() => setCancelling(a)}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              <nav className="row" aria-label="Pages">
+                <span>
+                  {offset + 1}–{offset + results.length} of {count}
+                </span>
+                <Button
+                  variant="secondary"
+                  small
+                  disabled={offset === 0}
+                  onClick={() => set("offset", offset - PAGE > 0 ? String(offset - PAGE) : "")}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="secondary"
+                  small
+                  disabled={offset + PAGE >= count}
+                  onClick={() => {
+                    const next = new URLSearchParams(params);
+                    next.set("offset", String(offset + PAGE));
+                    setParams(next);
+                  }}
+                >
+                  Next
+                </Button>
+              </nav>
+            </>
+          )}
+
+          <ConfirmDialog
+            open={cancelling !== null}
+            title="Cancel this assignment?"
+            message="The worker can no longer start new inspections for it. Inspections already started stay and still sync."
+            confirmLabel="Cancel assignment"
+            destructive
+            onConfirm={() => cancelling && void cancel(cancelling)}
+            onCancel={() => setCancelling(null)}
+          />
         </div>
       </div>
-
-      {list.loading && <LoadingState />}
-      {!list.loading && list.error !== undefined && (
-        <ErrorState onRetry={list.reload}>{messageFor(list.error)}</ErrorState>
-      )}
-      {!list.loading && list.error === undefined && results.length === 0 && (
-        <EmptyState title="No assignments">Nothing matches these filters.</EmptyState>
-      )}
-      {results.length > 0 && (
-        <>
-          <Table caption="Assignments">
-            <thead>
-              <tr>
-                <th scope="col">Site</th>
-                <th scope="col">Form</th>
-                <th scope="col">Worker</th>
-                <th scope="col">Due</th>
-                <th scope="col">Inspections</th>
-                <th scope="col">State</th>
-                <th scope="col">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((a) => (
-                <tr key={a.id}>
-                  <td>{a.site_name}</td>
-                  <td>
-                    {a.form_name} v{a.form_version_number}
-                  </td>
-                  <td>{a.worker.username}</td>
-                  <td>{a.due_date ?? ""}</td>
-                  <td>{a.submissions}</td>
-                  <td>{a.cancelled ? "Cancelled" : "Active"}</td>
-                  <td>
-                    {!a.cancelled && (
-                      <Button
-                        variant="secondary"
-                        small
-                        aria-label={`Cancel ${a.site_name}`}
-                        onClick={() => setCancelling(a)}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <nav className="row" aria-label="Pages">
-            <span>
-              {offset + 1}–{offset + results.length} of {count}
-            </span>
-            <Button
-              variant="secondary"
-              small
-              disabled={offset === 0}
-              onClick={() => set("offset", offset - PAGE > 0 ? String(offset - PAGE) : "")}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="secondary"
-              small
-              disabled={offset + PAGE >= count}
-              onClick={() => {
-                const next = new URLSearchParams(params);
-                next.set("offset", String(offset + PAGE));
-                setParams(next);
-              }}
-            >
-              Next
-            </Button>
-          </nav>
-        </>
-      )}
-
-      <ConfirmDialog
-        open={cancelling !== null}
-        title="Cancel this assignment?"
-        message="The worker can no longer start new inspections for it. Inspections already started stay and still sync."
-        confirmLabel="Cancel assignment"
-        destructive
-        onConfirm={() => cancelling && void cancel(cancelling)}
-        onCancel={() => setCancelling(null)}
-      />
     </div>
   );
 }
