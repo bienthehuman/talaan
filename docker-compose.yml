@@ -11,6 +11,11 @@ x-server-env: &server-env
   POSTGRES_PORT: "5432"
   # Throttling is covered by pytest. The e2e suite signs in many times a minute.
   THROTTLE_LOGIN: 1000/min
+  # Raised only by loadtest/run.sh: one load-test device is one user, and 120 pushes a minute per user
+  # would measure the rate limiter instead of the server.
+  THROTTLE_PUSH: ${THROTTLE_PUSH:-120/min}
+  LOG_FORMAT: ${LOG_FORMAT:-plain}
+  WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
   # Dev and e2e only (the server refuses it without DEBUG). scripts/e2e.sh turns it on; the production
   # compose file never sets it.
   FAULT_INJECTION: ${FAULT_INJECTION:-0}

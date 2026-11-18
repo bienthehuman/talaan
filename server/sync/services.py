@@ -15,6 +15,7 @@ ledger row and an event, and nothing else, so `server_seq` has no gaps from refu
 """
 
 import logging
+import time
 import uuid
 from dataclasses import dataclass, field
 
@@ -24,6 +25,7 @@ from django.utils import timezone
 from accounts.models import User
 from accounts.permissions import ADMIN, WORKER
 from assignments.models import Assignment
+from core import logs
 from forms.validation import validate_data
 from submissions.guard import write_access
 from submissions.models import EventKind, Status, Submission, SubmissionEvent
@@ -109,15 +111,25 @@ def apply_admin_action(
 
 
 def _run_once(user: User, device_id: uuid.UUID, mutation_id: uuid.UUID, handler) -> dict:
+    locked_at = None
     try:
         with transaction.atomic(), write_access():
             # The ledger row first: a concurrent duplicate blocks on this unique key until we
             # commit, then fails with IntegrityError and returns our stored result (ADR 0004).
             AppliedMutation.objects.create(mutation_id=mutation_id, device_id=device_id, user=user)
+            asked_at = time.perf_counter()
             _take_sequence_lock()
+            locked_at = time.perf_counter()
             result = handler()
             AppliedMutation.objects.filter(pk=mutation_id).update(result=result)
-            return result
+        # The lock is released by the commit, so the time it was held includes the commit itself.
+        # Both numbers go on the mutation's log line (docs/loadtest/), where they show whether
+        # writers are waiting for each other or for the database.
+        logs.set_context(
+            lock_wait_ms=round((locked_at - asked_at) * 1000, 2),
+            lock_hold_ms=round((time.perf_counter() - locked_at) * 1000, 2),
+        )
+        return result
     except IntegrityError:
         prior = AppliedMutation.objects.filter(pk=mutation_id).first()
         if prior is None:

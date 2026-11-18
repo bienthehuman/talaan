@@ -1,0 +1,22 @@
+[
+ {
+  "devices": 50,
+  "http_reqs_per_s": 81.93390016751773,
+  "mutations_per_s": 90.47815700497101,
+  "push_p50": 65.5136115,
+  "push_p95": 180.4862904999999,
+  "pull_p95": 138.85979934999995,
+  "cycle_p95": 299.4499999999998,
+  "errors_pct": 0.0,
+  "conflicts": 0.0,
+  "logged_mutations": 5570,
+  "wait_p50": 6.81,
+  "wait_p95": 15.37,
+  "hold_p50": 7.63,
+  "hold_p95": 9.7,
+  "lock_utilisation": 0.7309858333333333,
+  "waiters_avg": 0.7884615384615384,
+  "waiters_max": 2,
+  "active_avg": 2.4038461538461537
+ }
+]

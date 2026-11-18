@@ -189,3 +189,19 @@ def test_no_token_no_password_and_no_form_data_reach_the_logs(
     text = json.dumps(log_lines())
     for secret in [token, "pw-for-tests-123", "PRIVATE-ANSWER", worker.username]:
         assert secret not in text
+
+
+def test_each_mutation_line_says_how_long_it_waited_for_the_write_lock_and_held_it(
+    worker_client, assignment, log_lines
+):
+    record_id = uuid.uuid4()
+    push(
+        worker_client,
+        create_mut(record_id, assignment, {"notes": "a"}),
+        mut("update", record_id, base=1, fields={"notes": "b"}),
+    )
+    mutations = [e for e in log_lines() if e.get("event") == "mutation"]
+    assert len(mutations) == 2
+    for line in mutations:
+        assert line["lock_wait_ms"] >= 0
+        assert line["lock_hold_ms"] > 0  # includes the commit

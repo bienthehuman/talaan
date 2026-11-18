@@ -19,4 +19,6 @@ RUN useradd --system --uid 10001 app && chown -R app /app
 USER app
 
 EXPOSE 8000
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# gunicorn reads WEB_CONCURRENCY for its worker count; 3 unless a deployment sets otherwise.
+ENV WEB_CONCURRENCY=3
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]

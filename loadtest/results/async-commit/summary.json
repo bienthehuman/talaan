@@ -1,0 +1,42 @@
+[
+ {
+  "devices": 10,
+  "http_reqs_per_s": 117.91251248665398,
+  "mutations_per_s": 136.8334605632422,
+  "push_p50": 96.820663,
+  "push_p95": 145.7072575,
+  "pull_p95": 104.35370649999999,
+  "cycle_p95": 223.0,
+  "errors_pct": 0.0,
+  "conflicts": 0.0,
+  "logged_mutations": 6176,
+  "wait_p50": 6.31,
+  "wait_p95": 13.23,
+  "hold_p50": 6.56,
+  "hold_p95": 8.31,
+  "lock_utilisation": 0.9269873333333334,
+  "waiters_avg": 1.0526315789473684,
+  "waiters_max": 2,
+  "active_avg": 2.3947368421052633
+ },
+ {
+  "devices": 50,
+  "http_reqs_per_s": 109.32692157949829,
+  "mutations_per_s": 121.2618870836534,
+  "push_p50": 427.851926,
+  "push_p95": 623.5356773999999,
+  "pull_p95": 592.8384971999999,
+  "cycle_p95": 932.0,
+  "errors_pct": 0.0,
+  "conflicts": 0.0,
+  "logged_mutations": 5517,
+  "wait_p50": 6.72,
+  "wait_p95": 13.28,
+  "hold_p50": 6.47,
+  "hold_p95": 8.11,
+  "lock_utilisation": 0.8138417777777777,
+  "waiters_avg": 0.6923076923076923,
+  "waiters_max": 2,
+  "active_avg": 1.9487179487179487
+ }
+]

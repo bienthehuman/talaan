@@ -87,3 +87,26 @@ def test_seed_demo_publishes_a_form_and_assigns_it_to_each_worker(settings):
     assert Assignment.objects.filter(worker__username="worker1").count() == 1
     assert Assignment.objects.filter(worker__username="worker2").count() == 1
     assert {a.site_name for a in Assignment.objects.all()} == {"North plant", "Harbour depot"}
+
+
+def test_seed_loadtest_makes_workers_with_an_assignment_each_and_is_repeatable(db, settings):
+    from django.core.management import call_command
+
+    from assignments.models import Assignment
+
+    settings.DEBUG = True
+    call_command("seed_loadtest", workers=3)
+    call_command("seed_loadtest", workers=3)  # again: nothing is duplicated
+    users = User.objects.filter(username__startswith="loadtest")
+    assert users.count() == 3
+    assert all(u.role == "worker" and u.check_password("loadtest-password-1") for u in users)
+    assert Assignment.objects.filter(worker__in=users).count() == 3
+
+
+def test_seed_loadtest_refuses_to_run_outside_debug(db, settings):
+    from django.core.management import call_command
+    from django.core.management.base import CommandError
+
+    settings.DEBUG = False
+    with pytest.raises(CommandError):
+        call_command("seed_loadtest", workers=1)

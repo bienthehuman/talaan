@@ -29,6 +29,8 @@ FIELDS = (
     "cursor",
     "count",
     "has_more",
+    "lock_wait_ms",
+    "lock_hold_ms",
 )
 
 

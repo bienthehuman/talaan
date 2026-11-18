@@ -1,0 +1,202 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /scripts/devices.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 55s max duration (incl. graceful stop):
+              * devices: 1 looping VUs for 45s (gracefulStop: 10s)
+
+
+running (01.0s), 1/1 VUs, 22 complete and 0 interrupted iterations
+devices   [   2% ] 1 VUs  01.0s/45s
+
+running (02.0s), 1/1 VUs, 50 complete and 0 interrupted iterations
+devices   [   4% ] 1 VUs  02.0s/45s
+
+running (03.0s), 1/1 VUs, 80 complete and 0 interrupted iterations
+devices   [   7% ] 1 VUs  03.0s/45s
+
+running (04.0s), 1/1 VUs, 107 complete and 0 interrupted iterations
+devices   [   9% ] 1 VUs  04.0s/45s
+
+running (05.0s), 1/1 VUs, 137 complete and 0 interrupted iterations
+devices   [  11% ] 1 VUs  05.0s/45s
+
+running (06.0s), 1/1 VUs, 162 complete and 0 interrupted iterations
+devices   [  13% ] 1 VUs  06.0s/45s
+
+running (07.0s), 1/1 VUs, 188 complete and 0 interrupted iterations
+devices   [  16% ] 1 VUs  07.0s/45s
+
+running (08.0s), 1/1 VUs, 218 complete and 0 interrupted iterations
+devices   [  18% ] 1 VUs  08.0s/45s
+
+running (09.0s), 1/1 VUs, 242 complete and 0 interrupted iterations
+devices   [  20% ] 1 VUs  09.0s/45s
+
+running (10.0s), 1/1 VUs, 270 complete and 0 interrupted iterations
+devices   [  22% ] 1 VUs  10.0s/45s
+
+running (11.0s), 1/1 VUs, 299 complete and 0 interrupted iterations
+devices   [  24% ] 1 VUs  11.0s/45s
+
+running (12.0s), 1/1 VUs, 326 complete and 0 interrupted iterations
+devices   [  27% ] 1 VUs  12.0s/45s
+
+running (13.0s), 1/1 VUs, 355 complete and 0 interrupted iterations
+devices   [  29% ] 1 VUs  13.0s/45s
+
+running (14.0s), 1/1 VUs, 383 complete and 0 interrupted iterations
+devices   [  31% ] 1 VUs  14.0s/45s
+
+running (15.0s), 1/1 VUs, 412 complete and 0 interrupted iterations
+devices   [  33% ] 1 VUs  15.0s/45s
+
+running (16.0s), 1/1 VUs, 438 complete and 0 interrupted iterations
+devices   [  36% ] 1 VUs  16.0s/45s
+
+running (17.0s), 1/1 VUs, 464 complete and 0 interrupted iterations
+devices   [  38% ] 1 VUs  17.0s/45s
+
+running (18.0s), 1/1 VUs, 495 complete and 0 interrupted iterations
+devices   [  40% ] 1 VUs  18.0s/45s
+
+running (19.0s), 1/1 VUs, 522 complete and 0 interrupted iterations
+devices   [  42% ] 1 VUs  19.0s/45s
+
+running (20.0s), 1/1 VUs, 551 complete and 0 interrupted iterations
+devices   [  44% ] 1 VUs  20.0s/45s
+
+running (21.0s), 1/1 VUs, 581 complete and 0 interrupted iterations
+devices   [  47% ] 1 VUs  21.0s/45s
+
+running (22.0s), 1/1 VUs, 605 complete and 0 interrupted iterations
+devices   [  49% ] 1 VUs  22.0s/45s
+
+running (23.0s), 1/1 VUs, 629 complete and 0 interrupted iterations
+devices   [  51% ] 1 VUs  23.0s/45s
+
+running (24.0s), 1/1 VUs, 657 complete and 0 interrupted iterations
+devices   [  53% ] 1 VUs  24.0s/45s
+
+running (25.0s), 1/1 VUs, 684 complete and 0 interrupted iterations
+devices   [  56% ] 1 VUs  25.0s/45s
+
+running (26.0s), 1/1 VUs, 713 complete and 0 interrupted iterations
+devices   [  58% ] 1 VUs  26.0s/45s
+
+running (27.0s), 1/1 VUs, 740 complete and 0 interrupted iterations
+devices   [  60% ] 1 VUs  27.0s/45s
+
+running (28.0s), 1/1 VUs, 767 complete and 0 interrupted iterations
+devices   [  62% ] 1 VUs  28.0s/45s
+
+running (29.0s), 1/1 VUs, 793 complete and 0 interrupted iterations
+devices   [  64% ] 1 VUs  29.0s/45s
+
+running (30.0s), 1/1 VUs, 821 complete and 0 interrupted iterations
+devices   [  67% ] 1 VUs  30.0s/45s
+
+running (31.0s), 1/1 VUs, 848 complete and 0 interrupted iterations
+devices   [  69% ] 1 VUs  31.0s/45s
+
+running (32.0s), 1/1 VUs, 876 complete and 0 interrupted iterations
+devices   [  71% ] 1 VUs  32.0s/45s
+
+running (33.0s), 1/1 VUs, 904 complete and 0 interrupted iterations
+devices   [  73% ] 1 VUs  33.0s/45s
+
+running (34.0s), 1/1 VUs, 934 complete and 0 interrupted iterations
+devices   [  76% ] 1 VUs  34.0s/45s
+
+running (35.0s), 1/1 VUs, 962 complete and 0 interrupted iterations
+devices   [  78% ] 1 VUs  35.0s/45s
+
+running (36.0s), 1/1 VUs, 990 complete and 0 interrupted iterations
+devices   [  80% ] 1 VUs  36.0s/45s
+
+running (37.0s), 1/1 VUs, 1016 complete and 0 interrupted iterations
+devices   [  82% ] 1 VUs  37.0s/45s
+
+running (38.0s), 1/1 VUs, 1042 complete and 0 interrupted iterations
+devices   [  84% ] 1 VUs  38.0s/45s
+
+running (39.0s), 1/1 VUs, 1068 complete and 0 interrupted iterations
+devices   [  87% ] 1 VUs  39.0s/45s
+
+running (40.0s), 1/1 VUs, 1095 complete and 0 interrupted iterations
+devices   [  89% ] 1 VUs  40.0s/45s
+
+running (41.0s), 1/1 VUs, 1121 complete and 0 interrupted iterations
+devices   [  91% ] 1 VUs  41.0s/45s
+
+running (42.0s), 1/1 VUs, 1148 complete and 0 interrupted iterations
+devices   [  93% ] 1 VUs  42.0s/45s
+
+running (43.0s), 1/1 VUs, 1174 complete and 0 interrupted iterations
+devices   [  96% ] 1 VUs  43.0s/45s
+
+running (44.0s), 1/1 VUs, 1204 complete and 0 interrupted iterations
+devices   [  98% ] 1 VUs  44.0s/45s
+
+running (45.0s), 1/1 VUs, 1232 complete and 0 interrupted iterations
+devices   [ 100% ] 1 VUs  45s
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:pull}
+    ✓ 'max>=0' max=25.11ms
+
+    http_req_duration{name:push}
+    ✓ 'max>=0' max=74.25ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 2467    54.799997/s
+    checks_succeeded...: 100.00% 2467 out of 2467
+    checks_failed......: 0.00%   0 out of 2467
+
+    ✓ login works
+    ✓ push 200
+    ✓ pull 200
+
+    CUSTOM
+    mutations_applied..............: 2927   65.018074/s
+    mutations_sent.................: 2927   65.018074/s
+    sync_cycle_ms..................: avg=36.28ms min=22ms    med=36ms    p(90)=47.79ms p(95)=51ms    p(99)=59ms    max=87ms    
+
+    HTTP
+    http_req_duration..............: avg=17.91ms min=5.78ms  med=13.78ms p(90)=33.43ms p(95)=37.13ms p(99)=43.66ms max=229.54ms
+      { expected_response:true }...: avg=17.91ms min=5.78ms  med=13.78ms p(90)=33.43ms p(95)=37.13ms p(99)=43.66ms max=229.54ms
+      { name:pull }................: avg=9.62ms  min=8.3ms   med=9.39ms  p(90)=10.62ms p(95)=11.17ms p(99)=13.75ms max=25.11ms 
+      { name:push }................: avg=26.03ms min=13.57ms med=25.43ms p(90)=37.12ms p(95)=40.16ms p(99)=45.75ms max=74.25ms 
+    http_req_failed................: 0.00%  0 out of 2468
+    http_reqs......................: 2468   54.82221/s
+
+    EXECUTION
+    iteration_duration.............: avg=36.49ms min=22.7ms  med=36.32ms p(90)=47.62ms p(95)=51.2ms  p(99)=59.2ms  max=261.61ms
+    iterations.....................: 1233   27.388892/s
+    vus............................: 1      min=1         max=1
+    vus_max........................: 1      min=1         max=1
+
+    NETWORK
+    data_received..................: 3.6 MB 79 kB/s
+    data_sent......................: 1.8 MB 40 kB/s
+
+
+
+
+running (45.0s), 0/1 VUs, 1233 complete and 0 interrupted iterations
+devices ✓ [ 100% ] 1 VUs  45s

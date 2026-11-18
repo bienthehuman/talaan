@@ -1,0 +1,22 @@
+[
+ {
+  "devices": 50,
+  "http_reqs_per_s": 8.714172654119936,
+  "mutations_per_s": 6.585628841884083,
+  "push_p50": 23.859737,
+  "push_p95": 39.98453989999999,
+  "pull_p95": 13.4515041,
+  "cycle_p95": 51.29999999999998,
+  "errors_pct": 0.0,
+  "conflicts": 0.0,
+  "logged_mutations": 461,
+  "wait_p50": 0.24,
+  "wait_p95": 6.0,
+  "hold_p50": 6.88,
+  "hold_p95": 8.15,
+  "lock_utilisation": 0.05323599999999999,
+  "waiters_avg": 0,
+  "waiters_max": 0,
+  "active_avg": 1
+ }
+]
