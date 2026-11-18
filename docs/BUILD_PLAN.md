@@ -110,7 +110,7 @@ resume, then the thinnest UI that lets Playwright drive it all.
 - Scenarios 1, 2 (client half) and 9 are green in `e2e`, and each is shown to fail when its guarantee is broken.
 - `v0.3.0` tagged.
 
-## Phase 3 slices: conflicts
+## Phase 3 slices: conflicts (done: tagged `v0.4.0` on 2026-11-18)
 
 Exit: scenarios 4, 5 and 6 pass in CI, so all twelve do; tagged `v0.4.0`. The server already detects and
 reports every conflict kind (phase 1) and the client already stores the report and stops syncing the
@@ -119,10 +119,10 @@ and the proof in a real browser with two devices. Ordered so the test setup exis
 
 | Slice | Content | Status |
 |---|---|---|
-| 3.1 | **Admin action endpoint.** One REST endpoint over `apply_admin_action` (approve, return, restore, delete, edit), admin only, so there is a way to delete a record while a worker is offline and to restore it. Scenario 4 server half (`test_merge.py`). OpenAPI and client types regenerated. | in review |
-| 3.2 | **Resolution logic** (`client/src/db/resolve.ts`, engine). Turn the person's choices into a new mutation; keep the starting value for the screen; pull clears a `deleted_remotely` conflict when the admin restores; any new queued entry triggers a sync. No UI. | in review |
-| 3.3 | **Resolution screen** on the inspection page: starting value, mine and theirs per field, with a choice for each; the two other conflict kinds; header shows how many records need a decision. | not started |
-| 3.4 | **Playwright scenarios 4, 5, 6** with two browser contexts as two devices, then `v0.4.0`. | in review |
+| 3.1 | **Admin action endpoint.** One REST endpoint over `apply_admin_action` (approve, return, restore, delete, edit), admin only, so there is a way to delete a record while a worker is offline and to restore it. Scenario 4 server half (`test_merge.py`). OpenAPI and client types regenerated. | done |
+| 3.2 | **Resolution logic** (`client/src/db/resolve.ts`, engine). Turn the person's choices into a new mutation; keep the starting value for the screen; pull clears a `deleted_remotely` conflict when the admin restores; any new queued entry triggers a sync. No UI. | done |
+| 3.3 | **Resolution screen** on the inspection page: starting value, mine and theirs per field, with a choice for each; the two other conflict kinds; header shows how many records need a decision. | done |
+| 3.4 | **Playwright scenarios 4, 5, 6** with two browser contexts as two devices, then `v0.4.0`. | done |
 
 ### Definition of done per slice (phase 3)
 
@@ -149,6 +149,62 @@ and the proof in a real browser with two devices. Ordered so the test setup exis
 - Scenario 5: two devices edit the same field offline; the second sees the conflict, nothing is overwritten; after resolving, a new version is applied and the other device sees it.
 - Scenario 6: an admin deletes while a worker edits offline; the worker gets `deleted_remotely`, local edits are kept until they decide; both outcomes (discard, and restore then resync) are covered.
 - Each is shown to fail when its guarantee is broken. All twelve scenarios green; `v0.4.0` tagged.
+
+## Phase 4 slices: v1
+
+Exit: `v1.0`. The PoC proved the sync engine; v1 makes it something a reviewer can open, click through
+and break on purpose (source plan, "From PoC to portfolio-ready v1"). Already done in earlier phases: login
+and push rate limits, sign-out wipes local data after confirmation, the production compose file and deploy
+scripts, the protocol spec, the ADRs, the failure-scenario table. Ordered so the admin API exists before the
+admin screens, and metrics exist before the load test that reads them.
+
+| Slice | Content | Status |
+|---|---|---|
+| 4.1 | **Admin API.** Review queue (list and filter submissions, detail with its event history), assignment create and cancel, form-version create and publish, conflict log. Admin only, permission catalog enforced, OpenAPI and types regenerated. | not started |
+| 4.2 | **Admin web: review.** Admin routes, role gate, review queue, submission detail with history; approve, return (reason), restore, delete, edit through the slice 3.1 endpoint. Admin is online only. | not started |
+| 4.3 | **Admin web: forms, assignments, conflict log.** Form-version editor (JSON with a live preview built from the same schema code as the worker form, not drag and drop), assignment management, conflict log. | not started |
+| 4.4 | **Worker experience.** Installable-app prompt, sync-status panel (pending changes, last sync, retry now, what failed), storage persistence request, tap-target and label audit. | not started |
+| 4.5 | **Operability.** Structured JSON logs carrying `request_id`, `device_id`, `mutation_id`; `/metrics` with pushes, conflicts, rejections, retries and pull lag; not exposed through the public proxy. | not started |
+| 4.6 | **Load test.** 50 simulated devices pushing and pulling together; throughput, p95 latency and where the advisory lock becomes the bottleneck; hardware, dataset and exact commands published. | not started |
+| 4.7 | **Ship.** Codespaces dev container with seeded logins, README (claim, demo clip, one-command setup, guarantees linked to tests, "try to break it", "what I'd change at scale"), scripted demo walkthrough, CI badges, `v1.0`. | not started |
+
+### Definition of done per slice (phase 4)
+
+**4.1**
+- Non-admins get 403 on every endpoint; each needs its catalog permission (`assignment.manage`, `form.publish`, `conflictlog.view`).
+- Listing filters by status, worker, assignment and deleted; paged; a record's history lists every event in order with its actor.
+- Publishing a form version uses the existing schema validation and immutability; assigning pins the version; cancelling keeps existing submissions.
+- The conflict log lists every `conflict` and `rejected` event with the record, worker, kind, fields and time, and says whether the worker has since changed that record.
+- Planted bugs fail a test (missing permission check, publishing an invalid schema, unpaged list).
+
+**4.2**
+- An admin can find a submitted record, read it with its history, and approve or return it (reason required); a worker's device sees the change after a sync.
+- Workers cannot reach admin routes; axe passes in light and dark; keyboard only works.
+- Playwright: review flow end to end across two browser contexts (worker submits offline, admin approves).
+
+**4.3**
+- The editor refuses a schema the server would refuse, with the same messages; the preview renders the form a worker would see; publishing makes a new immutable version.
+- An admin can assign a published form to a worker, cancel it, and see conflicts with their outcome.
+- Playwright: publish, assign, worker syncs and fills it in.
+
+**4.4**
+- The app can be installed from the prompt on a supported browser and the prompt never appears when already installed; the sync panel shows pending count, last sync, next retry and per-record problems, and "retry now" works.
+- Storage persistence is requested after the first successful sync and its result is shown.
+- Every interactive control is at least 44 px; axe and the keyboard pass on every worker screen.
+
+**4.5**
+- Every request log line is JSON with `request_id`; sync lines also carry `device_id` and `mutation_id`; the id is returned in a response header.
+- `/metrics` exposes counters for pushes, results by status, rejections by code, retries (repeated mutation ids) and pull lag; only reachable from inside the stack or with a token; tests read the numbers after known traffic.
+- No secrets, tokens or form data in logs (a test checks).
+
+**4.6**
+- One command runs the test against the compose stack and prints throughput, p95 and error rate for 50 devices; results are in the repo with hardware, dataset size and the exact commands.
+- The write-up shows how throughput changes as devices grow and names the first bottleneck with evidence (lock wait time against query time), stated as honest conditions rather than a headline number.
+
+**4.7**
+- A reviewer can open the repo in Codespaces, get seeded data and the three logins, and cause a conflict from two windows by following the README.
+- Each guarantee in the README links to the test that proves it; the demo walkthrough is a Playwright script that records the lost-response and two-device conflict flows.
+- `v1.0` tagged, release published.
 
 ## Baseline checklist (phase 0)
 
