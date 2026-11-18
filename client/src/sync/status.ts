@@ -10,6 +10,10 @@ export interface SyncStatus {
   lastSyncAt: Date | null;
   state: EngineState;
   syncNow: () => void;
+  /** Why the last cycle failed (a problem code), for the banner. */
+  lastError: string | null;
+  /** Carry on after the person has signed in again. */
+  resume: () => void;
 }
 
 const NONE = { subscribe: () => () => {}, getStatus: () => IDLE };
@@ -31,10 +35,13 @@ export function useSyncStatus(): SyncStatus {
   }, [sync]);
 
   const syncNow = useCallback(() => void sync?.syncNow(), [sync]);
+  const resume = useCallback(() => void sync?.resume(), [sync]);
   return {
     pending: sync ? pending : 0,
     lastSyncAt: engineStatus.lastSyncAt === null ? null : new Date(engineStatus.lastSyncAt),
     state: engineStatus.state,
     syncNow,
+    resume,
+    lastError: engineStatus.lastError,
   };
 }

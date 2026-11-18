@@ -4,13 +4,15 @@ import {
   closeAll,
   createSubmission,
   dbFor,
+  deleteDbFor,
   deleteSubmission,
   editSubmission,
   getSubmission,
   type PushResult,
   type ServerRecord,
 } from "../db";
-import { json, mockFetch } from "../test/utils";
+import { refreshSession } from "../auth/refresh";
+import { json, mockFetch, signIn } from "../test/utils";
 import { backoffMs } from "./backoff";
 import { SyncEngine } from "./engine";
 
@@ -567,5 +569,137 @@ describe("a deleted record", () => {
     await engine().syncNow();
     expect(s.pushes[0]!.mutations[0]).toMatchObject({ op: "delete", base_version: 1 });
     expect(await getSubmission(db, row.id)).toMatchObject({ deleted: true, syncState: "synced" });
+  });
+});
+
+describe("an expired access token (scenario 9, engine half)", () => {
+  /** A server that remembers what it applied, like the ledger: a repeated mutation id gets the
+   *  stored answer and changes nothing. `expireAfterApplying` answers 401 after the first push has
+   *  been committed, so the response is lost. */
+  function ledgerServer(opts: { expireFirstPush?: boolean; rejectRefresh?: boolean } = {}) {
+    const applied = new Map<string, PushResult>();
+    let expire = opts.expireFirstPush ?? false;
+    let tokenOk = !opts.expireFirstPush;
+    const calls = { push: 0, refresh: 0 };
+    mockFetch((request) => {
+      const path = new URL(request.url).pathname;
+      if (path === "/api/auth/token/refresh/") {
+        calls.refresh++;
+        if (opts.rejectRefresh) return json({ code: "unauthenticated" }, 401);
+        tokenOk = true;
+        return json({ access: "fresh" });
+      }
+      if (path === "/api/sync/push/") {
+        return request.json().then((body: PushBody) => {
+          calls.push++;
+          if (!tokenOk && !expire) return json({ code: "unauthenticated" }, 401);
+          const results = body.mutations.map((m) => {
+            const known = applied.get(m.mutation_id);
+            if (known) return known;
+            const result: PushResult = {
+              mutation_id: m.mutation_id,
+              status: "applied",
+              record: record(m.record_id, applied.size + 1, m.fields as never),
+            };
+            applied.set(m.mutation_id, result);
+            return result;
+          });
+          if (expire) {
+            expire = false;
+            tokenOk = false;
+            return json({ code: "unauthenticated" }, 401); // committed, but the answer is lost
+          }
+          return json({ results });
+        }) as unknown as Response;
+      }
+      if (!tokenOk) return json({ code: "unauthenticated" }, 401);
+      if (path === "/api/sync/pull/") return json({ records: [], next_cursor: 0, has_more: false });
+      return json({ results: [] });
+    });
+    return { applied, calls };
+  }
+
+  it("refreshes the token and finishes the cycle without applying anything twice", async () => {
+    signIn();
+    const db = dbFor(1);
+    for (let i = 0; i < 3; i++) await createSubmission(db, NEW);
+    const ids = await outboxIds();
+    const s = ledgerServer({ expireFirstPush: true });
+    const sync = new SyncEngine({ db, userId: 1, deviceId: "d", refresh: refreshSession });
+
+    expect(await sync.syncNow()).toBe("ok");
+
+    expect(s.calls.refresh).toBe(1);
+    expect(s.calls.push).toBe(2);
+    expect([...s.applied.keys()].sort()).toEqual([...ids].sort()); // each applied exactly once
+    expect(await db.outbox.count()).toBe(0);
+    expect(sync.getStatus().state).toBe("idle");
+  });
+
+  it("with no usable session: pauses, leaves the outbox untouched, and resumes after sign-in", async () => {
+    signIn();
+    const db = dbFor(1);
+    await createSubmission(db, NEW);
+    const ids = await outboxIds();
+    ledgerServer({ expireFirstPush: true, rejectRefresh: true });
+    const sync = new SyncEngine({ db, userId: 1, deviceId: "d", refresh: refreshSession });
+
+    expect(await sync.syncNow()).toBe("auth");
+    expect(sync.getStatus()).toMatchObject({ state: "paused-auth", lastError: "session_expired" });
+    expect(await outboxIds()).toEqual(ids);
+
+    // The person signs in again; the same mutation is sent and answered from the ledger.
+    const s = server();
+    expect(await sync.resume()).toBe("ok");
+    expect(s.pushes[0]!.mutations[0]!.mutation_id).toBe(ids[0]);
+    expect(await db.outbox.count()).toBe(0);
+  });
+
+  it("cannot reach the server to refresh: retries later instead of asking for a login", async () => {
+    signIn();
+    await createSubmission(dbFor(1), NEW);
+    mockFetch((request) => {
+      if (new URL(request.url).pathname.includes("refresh")) throw new TypeError("offline");
+      return json({ code: "unauthenticated" }, 401);
+    });
+    const sync = new SyncEngine({
+      db: dbFor(1),
+      userId: 1,
+      deviceId: "d",
+      refresh: refreshSession,
+    });
+    expect(await sync.syncNow()).toBe("transient");
+    expect(sync.getStatus().state).toBe("retrying");
+    sync.stop();
+  });
+
+  it("refreshes at most once per cycle: a 401 right after a refresh pauses", async () => {
+    signIn();
+    await createSubmission(dbFor(1), NEW);
+    const fetch = mockFetch((request) =>
+      new URL(request.url).pathname.includes("refresh")
+        ? json({ access: "fresh" })
+        : json({ code: "unauthenticated" }, 401),
+    );
+    const sync = new SyncEngine({
+      db: dbFor(1),
+      userId: 1,
+      deviceId: "d",
+      refresh: refreshSession,
+    });
+    expect(await sync.syncNow()).toBe("auth");
+    expect(fetch.mock.calls.filter(([r]) => r.url.includes("refresh"))).toHaveLength(1);
+    expect(sync.getStatus().state).toBe("paused-auth");
+  });
+});
+
+describe("a database that disappears under a running cycle", () => {
+  it("is not an unhandled error", async () => {
+    await createSubmission(dbFor(1), NEW);
+    mockFetch(() => json({ results: [], records: [], next_cursor: 0, has_more: false }));
+    const sync = engine();
+    const run = sync.syncNow();
+    await deleteDbFor(1);
+    await expect(run).resolves.toMatch(/busy|ok/);
   });
 });

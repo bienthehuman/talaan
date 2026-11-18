@@ -267,9 +267,12 @@ replication) are in ADR 0005. Test scenario 8 fails without the lock.
 
 ## 8. Auth expiry
 
-A 401 during sync stops the cycle and leaves the outbox untouched. The client refreshes the token or
-asks the user to log in again, then resumes from the start of a cycle. Logging out with unsent
-changes needs explicit confirmation. Local data is keyed by `userId`.
+A 401 during sync stops the cycle and leaves the outbox untouched. The client refreshes the access token
+once (`POST /api/auth/token/refresh/`) and repeats the cycle from the start; repeating is safe because the
+ledger returns the stored result for every mutation the server already applied. If the refresh token is
+refused, the client asks the person to sign in again (same account) and resumes; if the server cannot be
+reached it retries with backoff and does not treat that as a logout. Signing out removes that user's local
+data from the device and needs explicit confirmation while changes are unsent. See ADR 0010.
 
 ## 9. Error format
 

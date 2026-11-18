@@ -14,3 +14,4 @@ Status values: proposed, accepted, superseded by NNNN.
 | [0007](0007-indexeddb-via-dexie.md) | IndexedDB via Dexie instead of SQLite (WASM) | accepted |
 | [0008](0008-submissions-pinned-to-immutable-form-version.md) | Submissions pinned to an immutable form version | accepted |
 | [0009](0009-no-background-sync-dependency.md) | No Background Sync API dependency | accepted |
+| [0010](0010-token-storage-and-session-resume.md) | Token storage in localStorage, refresh once on 401, sign-out wipes local data | accepted |

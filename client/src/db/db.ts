@@ -43,6 +43,14 @@ export function dbFor(userId: number): TalaanDb {
   return db;
 }
 
+/** Remove one user's local database from this device (sign-out). */
+export async function deleteDbFor(userId: number): Promise<void> {
+  const db = open.get(userId);
+  open.delete(userId);
+  if (db) db.close();
+  await Dexie.delete(`talaan-user-${userId}`);
+}
+
 /** Test and sign-out helper: close and forget the cached instances. */
 export function closeAll(): void {
   for (const db of open.values()) db.close();

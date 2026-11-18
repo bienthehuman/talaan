@@ -1,6 +1,6 @@
 """Plants deliberate bugs in the local layer and sync engine and requires a test to fail for each.
 
-    cd client && python3 scripts/mutation_check.py        (about 1 minute)
+    cd client && python3 scripts/mutation_check.py        (a few minutes)
 
 Exit 1 if a bug survives, 2 if a pattern went stale after a refactor (update the entry). Run it after
 changing src/db/apply.ts or src/sync/. Restores every file, including on failure.
@@ -23,6 +23,13 @@ M=[
 ("push before nothing: pull skipped on cursor","src/sync/engine.ts","if (!page.has_more) return;","return;"),
 ("cursor not saved","src/db/apply.ts",'await db.meta.put({ key: "syncCursor", value: nextCursor });',''),
 ("retry resends with new ids (stamp resets)","src/db/apply.ts","      if (entry.sentAt === null) {\n        entry.sentAt = now;\n        await db.outbox.update(entry.seq!, { sentAt: now });\n      }","      entry.mutationId = crypto.randomUUID();\n      await db.outbox.update(entry.seq!, { sentAt: now, mutationId: entry.mutationId });"),
+("unreachable refresh treated as logged out","src/sync/engine.ts",'if (outcome === "unreachable") {','if (false) {'),
+("a 503 on refresh treated as logged out","src/auth/refresh.ts",'if (!response.ok || !access) return "unreachable";','if (!response.ok || !access) return "login-required";'),
+("refresh requests not shared","src/auth/refresh.ts","inFlight ??= run().finally","inFlight = run().finally"),
+("refresh forgets the refresh token","src/auth/refresh.ts","saveSession({ ...session, access });",'saveSession({ ...session, access, refresh: "" });'),
+("re-login accepts a different person","src/auth/AuthContext.tsx","if (me.id !== current.id) throw new WrongUserError();",""),
+("sign-out keeps the data","src/auth/AuthContext.tsx","void stopEngineFor(leaving).then(() => deleteDbFor(leaving));","void stopEngineFor(leaving);"),
+("401 after refresh does not pause","src/sync/engine.ts",'return this.fail({ kind: "auth", reason: "session_expired" });','return this.fail({ kind: "transient", reason: "x", retryAfterMs: 0 });'),
 ]
 bad=0
 for d,f,old,new in M:
@@ -30,7 +37,7 @@ for d,f,old,new in M:
     if old not in s: print("STALE",d); bad+=2; continue
     open(f,'w').write(s.replace(old,new,1))
     try:
-        out=subprocess.run(["npx","vitest","run","src/db","src/sync"],capture_output=True,text=True).stdout
+        out=subprocess.run(["npx","vitest","run","--bail=1"],capture_output=True,text=True).stdout
     finally:
         open(f,'w').write(s)
     ok="failed" in out

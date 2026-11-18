@@ -1,5 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import Dexie from "dexie";
+import { createSubmission, dbFor } from "../db";
 import { getSession } from "../auth/session";
 import { renderApp, signIn } from "../test/utils";
 
@@ -11,6 +13,8 @@ vi.mock("../sync/status", () => ({
     lastSyncAt: null,
     state: "idle",
     syncNow: () => {},
+    resume: () => {},
+    lastError: null,
   }),
 }));
 
@@ -52,5 +56,23 @@ describe("signing out with unsent changes", () => {
     expect(screen.getByRole("dialog")).toHaveTextContent(
       "1 change is saved only on this device. Signing out will delete it.",
     );
+  });
+});
+
+describe("signing out removes the person's data from the device", () => {
+  it("deletes only their local database, and only after they confirm", async () => {
+    signIn(); // user id 2
+    await createSubmission(dbFor(2), { assignmentId: 1, formVersionId: 1 });
+    await createSubmission(dbFor(3), { assignmentId: 1, formVersionId: 1 });
+    renderApp("/");
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
+    expect(await Dexie.exists("talaan-user-2")).toBe(true); // asked first; nothing deleted yet
+    await user.click(screen.getByRole("button", { name: "Sign out and delete" }));
+
+    await vi.waitFor(async () => expect(await Dexie.exists("talaan-user-2")).toBe(false));
+    expect(await Dexie.exists("talaan-user-3")).toBe(true);
+    expect(getSession()).toBeNull();
   });
 });
