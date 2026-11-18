@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Browser, type Page } from "@playwright/test";
 
 /** Seeded by `python manage.py seed_demo` (scripts/e2e.sh does this). */
 export const WORKER = { username: "worker1", password: "demo-password-1" };
@@ -48,6 +48,7 @@ export async function pendingCount(page: Page): Promise<number> {
 interface ServerRecord {
   id: string;
   version: number;
+  deleted: boolean;
   data: Record<string, unknown>;
   status: string;
 }
@@ -61,4 +62,56 @@ export async function serverRecords(page: Page): Promise<ServerRecord[]> {
     });
     return (await response.json()).records;
   });
+}
+
+/** The header shows a time (not "never") once a sync cycle has completed on this device. */
+export async function waitForFirstSync(page: Page) {
+  await expect(page.getByText(/^\d+ pending · Last sync: \d/)).toBeVisible({ timeout: 20_000 });
+}
+
+export async function waitSynced(page: Page) {
+  await expect(page.getByText("Synced", { exact: true })).toBeVisible({ timeout: 30_000 });
+}
+
+/** Open an inspection by its id and wait for its form. The device must already have it. */
+export async function openInspection(page: Page, id: string) {
+  await page.goto(`/submissions/${id}`);
+  await expect(page.getByRole("heading", { name: "Generator inspection" })).toBeVisible();
+}
+
+/** A second browser profile for the same worker: its own storage, its own device id. */
+export async function secondDevice(browser: Browser, baseURL: string | undefined) {
+  const context = await browser.newContext({ baseURL, serviceWorkers: "block" });
+  const page = await context.newPage();
+  await signIn(page);
+  await waitForFirstSync(page);
+  return { context, page };
+}
+
+/** Act as an admin over the API (there is no admin screen yet). */
+export async function adminAction(
+  request: APIRequestContext,
+  recordId: string,
+  action: "delete" | "restore" | "approve" | "return" | "edit",
+  body: Record<string, unknown> = {},
+) {
+  const login = await request.post("/api/auth/token/", {
+    data: { username: "admin", password: "demo-password-1" },
+  });
+  const { access } = await login.json();
+  const response = await request.post(`/api/admin/submissions/${recordId}/actions/`, {
+    headers: { Authorization: `Bearer ${access}` },
+    data: { action, ...body },
+  });
+  const result = await response.json();
+  expect(result.status, JSON.stringify(result)).toBe("applied");
+  return result;
+}
+
+/** Worker1 starts an inspection on this page, saves it with these notes and waits until synced. */
+export async function createSyncedInspection(page: Page, notes: string): Promise<string> {
+  const id = await startInspection(page);
+  await page.getByLabel("Notes").fill(notes);
+  await waitSynced(page);
+  return id;
 }
