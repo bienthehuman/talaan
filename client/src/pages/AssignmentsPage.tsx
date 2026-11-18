@@ -77,7 +77,7 @@ export function AssignmentsPage() {
               <ul className="list">
                 {mine.map((s) => (
                   <li key={s.id} className="list-row">
-                    <Link to={`/submissions/${s.id}`}>
+                    <Link className="tap-link" to={`/submissions/${s.id}`}>
                       {s.status === "draft"
                         ? "Draft"
                         : s.status[0]!.toUpperCase() + s.status.slice(1)}{" "}

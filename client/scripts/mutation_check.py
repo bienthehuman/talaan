@@ -81,6 +81,15 @@ M=[
 ("conflict log shows changed-since inverted","src/pages/admin/ConflictLogPage.tsx",'{c.changed_since ? "Yes" : "No"}','{c.changed_since ? "No" : "Yes"}'),
 ("conflict log ignores the changed-since filter","src/pages/admin/ConflictLogPage.tsx","listConflicts({ kind, changed_since: since, worker, limit: PAGE, offset })","listConflicts({ kind, changed_since: undefined, worker, limit: PAGE, offset })"),
 ("new form name not trimmed","src/pages/admin/FormsPage.tsx","await createForm(name.trim());","await createForm(name);"),
+("install prompt forgets 'Not now'","src/pwa/install.ts","useState(() => isInstalled() || wasDismissed())","useState(() => isInstalled())"),
+("install prompt shows when already installed","src/pwa/install.ts","useState(() => isInstalled() || wasDismissed())","useState(() => wasDismissed())"),
+("install prompt lets the browser's banner through","src/pwa/install.ts","      e.preventDefault(); // keep it for our own button\n",""),
+("storage requested before the first sync","src/pwa/storage.ts","    if (!ready) return;\n",""),
+("storage requested again when already protected",'src/pwa/storage.ts','if (result === "not-protected" && navigator.storage.persist) {','if (navigator.storage.persist) {'),
+("sync panel shows raw problem codes","src/sync/describe.ts",'      return "The server could not be reached.";','      return code;'),
+("sync panel hides how often it tried","src/pages/SyncStatusPage.tsx","w.attempts > 0\n                  ?","false\n                  ?"),
+("retry now disabled when idle","src/pages/SyncStatusPage.tsx",'disabled={status.state === "syncing"}',"disabled={status.state !== \"syncing\"}"),
+("header no longer links to the sync panel","src/components/RootLayout.tsx",'<Link to="/sync" className="tap-link">','<Link to="/" className="tap-link">'),
 ]
 bad=0
 for d,f,old,new in M:

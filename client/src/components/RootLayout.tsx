@@ -5,7 +5,9 @@ import { useOnline } from "../hooks/useOnline";
 import { useSyncStatus } from "../sync/status";
 import { Banner } from "./Banner";
 import { Button } from "./Button";
+import { useStoragePersistence } from "../pwa/storage";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { InstallPrompt } from "./InstallPrompt";
 import { ReauthPrompt } from "./ReauthPrompt";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -18,6 +20,8 @@ export function RootLayout() {
   const online = useOnline();
   const { pending, conflicts, lastSyncAt, state, syncNow, resume } = useSyncStatus();
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  // Ask the browser to protect local data once this device has synced successfully.
+  useStoragePersistence(user?.role === "worker" && lastSyncAt !== null);
 
   function requestSignOut() {
     // Unsent changes need an explicit confirmation (docs/protocol.md section 8).
@@ -35,6 +39,7 @@ export function RootLayout() {
           You're offline. Changes are saved on this device and will sync when you're back online.
         </Banner>
       )}
+      {user?.role === "worker" && <InstallPrompt />}
       {user?.role === "worker" && state === "paused-auth" && <ReauthPrompt onSignedIn={resume} />}
       {state === "upgrade-required" && (
         <Banner kind="danger">
@@ -43,7 +48,7 @@ export function RootLayout() {
         </Banner>
       )}
       <header className="app-header">
-        <Link to="/" className="brand">
+        <Link to="/" className="brand tap-link">
           <img src="/favicon.svg" alt="" />
           Talaan
         </Link>
@@ -57,9 +62,9 @@ export function RootLayout() {
         )}
         <div className="header-meta">
           {user?.role === "worker" && (
-            <span>
+            <Link to="/sync" className="tap-link">
               {pending} pending · Last sync: {formatLastSync(lastSyncAt)}
-            </span>
+            </Link>
           )}
           {user?.role === "worker" && conflicts > 0 && (
             <Link to="/" className="needs-decision">

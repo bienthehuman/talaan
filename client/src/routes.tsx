@@ -11,6 +11,7 @@ import { ReviewDetailPage } from "./pages/admin/ReviewDetailPage";
 import { ReviewQueuePage } from "./pages/admin/ReviewQueuePage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { SyncStatusPage } from "./pages/SyncStatusPage";
 import { RouteError } from "./pages/RouteError";
 import { SubmissionPage } from "./pages/SubmissionPage";
 import { StyleguidePage } from "./pages/StyleguidePage";
@@ -31,6 +32,7 @@ export const routes: RouteObject[] = [
             element: <RequireAuth />,
             children: [
               { index: true, element: <HomePage /> },
+              { path: "sync", element: <SyncStatusPage /> },
               {
                 path: "manage",
                 element: <RequireRole role="admin" />,
