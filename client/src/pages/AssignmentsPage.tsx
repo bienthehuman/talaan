@@ -6,6 +6,7 @@ import { createSubmission, type LocalSubmission } from "../db";
 import { useLive, useLocalDb } from "../db/useLive";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { statusLabel } from "../lib/status";
+import { formatDay, formatFull, formatWhen } from "../lib/when";
 import styles from "./AssignmentsPage.module.css";
 
 /** How many of an assignment's inspections show before the rest fold away. */
@@ -72,21 +73,26 @@ export function AssignmentsPage() {
         const older = mine.filter((s) => !shown.includes(s));
         const headingId = `assignment-${assignment.id}`;
         return (
-          <section key={assignment.id} className="card stack" aria-labelledby={headingId}>
-            <div>
-              <h2 id={headingId}>{assignment.site_name ?? `Assignment ${assignment.id}`}</h2>
-              <p>
-                {assignment.form_name}
-                {assignment.due_date ? ` · due ${assignment.due_date}` : ""}
-                {assignment.cancelled ? " · cancelled" : ""}
-              </p>
-            </div>
-            {!assignment.cancelled && (
+          <section
+            key={assignment.id}
+            className={`card ${styles.assignment} ${assignment.cancelled ? styles.cancelled : ""}`}
+            aria-labelledby={headingId}
+          >
+            <div className={styles.head}>
               <div>
-                <Button variant="secondary" onClick={() => void start(assignment)}>
-                  New inspection
-                </Button>
+                <h2 id={headingId}>{assignment.site_name ?? `Assignment ${assignment.id}`}</h2>
+                <p className={styles.form}>
+                  {assignment.form_name}
+                  {assignment.due_date ? ` · due ${formatDay(assignment.due_date)}` : ""}
+                  {assignment.cancelled ? " · cancelled" : ""}
+                </p>
               </div>
+              {!assignment.cancelled && (
+                <Button onClick={() => void start(assignment)}>New inspection</Button>
+              )}
+            </div>
+            {shown.length === 0 && older.length === 0 && !assignment.cancelled && (
+              <p className={styles.none}>No inspections yet. Start one when you're on site.</p>
             )}
             {shown.length > 0 && <InspectionList rows={shown} />}
             {older.length > 0 && (
@@ -115,13 +121,17 @@ function InspectionList({ rows }: { rows: LocalSubmission[] }) {
   return (
     <ul className="list">
       {rows.map((s) => (
-        <li key={s.id} className="list-row">
-          <Link className="tap-link" to={`/submissions/${s.id}`}>
-            {statusLabel(s.status)} inspection · {new Date(s.updatedAt).toLocaleDateString()}
+        <li key={s.id} className={`list-row ${styles.row}`}>
+          <Link className={`tap-link ${styles.link}`} to={`/submissions/${s.id}`}>
+            {statusLabel(s.status)} inspection ·{" "}
+            <time dateTime={new Date(s.updatedAt).toISOString()} title={formatFull(s.updatedAt)}>
+              {formatWhen(s.updatedAt)}
+            </time>
           </Link>
           <SyncBadge
             state={s.syncState}
             reason={s.syncState === "rejected" ? s.syncDetail : undefined}
+            reviewed={s.status === "approved"}
           />
         </li>
       ))}

@@ -1,3 +1,28 @@
+/* "Needs your decision": a red edge and a heavier top, so it reads as the thing to deal with first. */
 .conflict {
-  border-color: var(--danger);
+  border: 2px solid var(--danger);
+  border-top-width: 6px;
+}
+.conflict > h2 {
+  color: var(--danger);
+}
+/* Mine / theirs as two option tiles; the checked one takes the line colour. */
+.pick {
+  display: grid;
+  gap: var(--space-2);
+}
+.pick :global(.choice) {
+  padding: var(--space-2) var(--space-3);
+  border: 1.5px solid var(--control-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+.pick :global(.choice):hover {
+  background: var(--surface-2);
+}
+.pick :global(.choice):has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  font-weight: 600;
 }

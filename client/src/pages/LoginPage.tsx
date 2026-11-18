@@ -5,6 +5,7 @@ import { Button } from "../components/Button";
 import { PasswordField, TextField } from "../components/TextField";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { messageFor } from "../lib/problem";
+import styles from "./LoginPage.module.css";
 
 export function LoginPage() {
   useDocumentTitle("Sign in");
@@ -38,10 +39,23 @@ export function LoginPage() {
   }
 
   return (
-    <div className="page">
-      <h1>Sign in</h1>
-      <p>You need to sign in once with a connection. After that the app works offline.</p>
-      <form className="stack" onSubmit={onSubmit} noValidate aria-busy={busy}>
+    <div className={`page ${styles.login}`}>
+      <div className={styles.intro}>
+        <p className={styles.tagline}>Offline-first field data sync</p>
+        <ol className={styles.line} aria-hidden="true">
+          <li>On this device</li>
+          <li>Sending</li>
+          <li>Office</li>
+          <li>Reviewed</li>
+        </ol>
+        <p className={styles.promise}>
+          Work without signal. Every change reaches the office once, and nothing is overwritten
+          without asking you.
+        </p>
+      </div>
+      <form className={`card stack ${styles.form}`} onSubmit={onSubmit} noValidate aria-busy={busy}>
+        <h1>Sign in</h1>
+        <p>You need to sign in once with a connection. After that the app works offline.</p>
         {error && (
           <div className="alert" role="alert">
             {error}
@@ -63,7 +77,7 @@ export function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" disabled={busy} className={styles.submit}>
           {busy ? "Signing in…" : "Sign in"}
         </Button>
       </form>

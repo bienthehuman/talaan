@@ -22,6 +22,9 @@ import type { FormField } from "../forms/schema";
 import { validateRecord, type FieldErrors } from "../forms/validate";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { bannerClass } from "../components/Banner";
+import { statusLabel } from "../lib/status";
+import { formatFull, formatWhen } from "../lib/when";
+import styles from "./SubmissionPage.module.css";
 
 /** Why the record cannot be edited on this device, or null when it can. */
 function lockedReason(row: LocalSubmission): string | null {
@@ -217,13 +220,21 @@ export function SubmissionPage() {
           ‹ Assignments
         </Link>
       </p>
-      <h1>{loaded.name}</h1>
-      <div className="row">
-        {assignment && <span>{String(assignment.site_name ?? "")}</span>}
+      <div className={styles.title}>
+        <h1>{loaded.name}</h1>
+        {assignment && <p className={styles.site}>{String(assignment.site_name ?? "")}</p>}
         <SyncBadge
           state={row.syncState}
           reason={row.syncState === "rejected" ? row.syncDetail : undefined}
+          reviewed={row.status === "approved"}
+          full
         />
+        <p className={styles.edited}>
+          {statusLabel(row.status)} · last changed{" "}
+          <time dateTime={new Date(row.updatedAt).toISOString()} title={formatFull(row.updatedAt)}>
+            {formatWhen(row.updatedAt)}
+          </time>
+        </p>
       </div>
 
       {locked && (
@@ -258,11 +269,9 @@ export function SubmissionPage() {
           />
         ))}
         {!locked && (
-          <div className="row">
+          <div className={styles.actions}>
             <Button type="submit">Submit inspection</Button>
-            <Button variant="destructive" onClick={() => setConfirm("delete")}>
-              Delete
-            </Button>
+            <span className={styles.saved}>Every change is saved on this device as you type.</span>
           </div>
         )}
         {row.syncState === "rejected" && (
@@ -271,6 +280,13 @@ export function SubmissionPage() {
           </Button>
         )}
       </form>
+      {!locked && (
+        <div className={styles.danger}>
+          <Button variant="destructive" onClick={() => setConfirm("delete")}>
+            Delete
+          </Button>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirm === "delete"}
