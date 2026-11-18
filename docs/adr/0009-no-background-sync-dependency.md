@@ -23,3 +23,7 @@ every 60 seconds while online, and via a manual "Sync now" button. A Web Locks l
   and last-sync time in the header, and "Saved on this device" never looks like "Synced".
 - Web Locks are widely supported. Where missing, fall back to a single-tab warning (backlog).
 - If Background Sync is added later it must call the same `syncNow()` and change no protocol rules.
+
+## Amendment (2026-11-18, slice 2.5)
+A fifth trigger was missing: **shortly after a local change** (1.5 s, only while the browser says it is online). Without it a worker who edits while connected waits up to a minute to be synced; the end-to-end scenarios found this. The guarantee is unchanged: it still rests on foreground sync and every trigger calls the same `syncNow()`.
+
