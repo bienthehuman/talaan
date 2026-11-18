@@ -26,4 +26,5 @@ every 60 seconds while online, and via a manual "Sync now" button. A Web Locks l
 
 ## Amendment (2026-11-18, slice 2.5)
 A fifth trigger was missing: **shortly after a local change** (1.5 s, only while the browser says it is online). Without it a worker who edits while connected waits up to a minute to be synced; the end-to-end scenarios found this. The guarantee is unchanged: it still rests on foreground sync and every trigger calls the same `syncNow()`.
+Slice 3.2 widens that trigger: any *new or re-issued* queued entry (for example a conflict resolution, or edits re-queued after an admin restore) counts, and work that arrives while a cycle is running gets one more cycle straight after it.
 

@@ -55,6 +55,9 @@ export interface OutboxEntry {
   recordId: string;
   op: OutboxOp;
   fields: Record<string, FieldValue>;
+  /** For an update: what each changed field held before this entry's first edit (`null` = not set).
+   *  Only used to show the starting value on the conflict screen; never sent. */
+  before?: Record<string, FieldValue>;
   baseVersion: number;
   assignmentId?: number;
   /** Set when the entry is first sent. From then on it is frozen: a retry resends it unchanged. */

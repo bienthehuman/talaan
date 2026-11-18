@@ -75,7 +75,8 @@ export class SyncEngine {
   private readonly changeDelayMs: number;
   private outboxWatch: Subscription | undefined;
   private changeTimer: ReturnType<typeof setTimeout> | undefined;
-  private lastOutbox: number | null = null;
+  private knownEntries: Set<string> | null = null;
+  private again = false;
 
   constructor(options: EngineOptions) {
     this.db = options.db;
@@ -108,14 +109,19 @@ export class SyncEngine {
     void getMeta<number>(this.db, "lastSyncAt").then((at) => {
       if (at !== null && this.status.lastSyncAt === null) this.set({ lastSyncAt: at });
     });
-    // A new queued change goes out shortly after it is made, without waiting for the next tick.
-    this.outboxWatch = liveQuery(() => this.db.outbox.count()).subscribe({
-      next: (count) => {
-        const grew = this.lastOutbox !== null && count > this.lastOutbox;
-        this.lastOutbox = count;
+    // A new or re-issued queued change goes out shortly after it is made, without waiting for the
+    // next tick. Entries are identified by position and mutation id: a resolution re-issues an
+    // entry under a new id, which counts as new work.
+    this.outboxWatch = liveQuery(async () =>
+      (await this.db.outbox.toArray()).map((e) => `${e.seq}:${e.mutationId}`),
+    ).subscribe({
+      next: (keys) => {
+        const before = this.knownEntries;
+        this.knownEntries = new Set(keys);
+        const grew = before !== null && keys.some((key) => !before.has(key));
         if (grew && navigator.onLine) {
           clearTimeout(this.changeTimer);
-          this.changeTimer = setTimeout(this.onTrigger, this.changeDelayMs);
+          this.changeTimer = setTimeout(this.onChange, this.changeDelayMs);
         }
       },
       error: () => undefined,
@@ -132,8 +138,14 @@ export class SyncEngine {
     clearTimeout(this.changeTimer);
     this.outboxWatch?.unsubscribe();
     this.outboxWatch = undefined;
-    this.lastOutbox = null;
+    this.knownEntries = null;
   }
+
+  /** New work arrived. If a cycle is running it may have missed it, so run once more afterwards. */
+  private onChange = () => {
+    if (this.running) this.again = true;
+    else this.onTrigger();
+  };
 
   /** Automatic triggers do nothing while a person has to act first (sign in, update the app). */
   private onTrigger = () => {
@@ -157,6 +169,10 @@ export class SyncEngine {
   syncNow(): Promise<CycleOutcome> {
     this.running ??= this.guarded().finally(() => {
       this.running = null;
+      if (this.again) {
+        this.again = false;
+        this.onTrigger();
+      }
     });
     return this.running;
   }

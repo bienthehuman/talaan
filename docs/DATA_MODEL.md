@@ -80,6 +80,16 @@ Local rules (slice 2.1, `client/src/db/`):
   stop that record syncing until the user decides. A pull never overwrites what the user sees: `data` is
   always the shadow with the still-queued entries laid on top. The cursor is saved in the same transaction
   as the page it covers.
+- **Resolving conflicts** (slice 3.2, `client/src/db/resolve.ts`). A resolution is a new mutation: the
+  conflicted entry keeps its place in the queue but gets a new mutation id (the old id's stored answer is the
+  conflict) and `baseVersion` = the server's current version. `field_conflict`: for each clashing field the
+  person keeps *mine* or takes *theirs*; fields given up are removed from every queued entry of the record,
+  the rest go out unchanged, and an entry left empty is dropped. A decision with a missing choice is refused.
+  `deleted_remotely`: discard (`discardLocalChanges`), or wait; when a pull brings the record back
+  undeleted, the edits are re-queued under a new id on the **old** base, so edits others made before the
+  delete still conflict. `edited_since_base` (this device deleted): keep the record (drop the delete) or
+  delete anyway (a new delete on the current version). Update entries remember `before`, what each field
+  held before the first unsent edit, for the screen's starting value.
 - Edits are refused (`NotEditableError`) when the record is submitted or approved, deleted, or in
   `conflict` / `rejected` until the user resolves or discards.
 

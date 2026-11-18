@@ -18,7 +18,7 @@ M=[
 ("401 treated as transient","src/sync/classify.ts",'if (response.status === 401) return { kind: "auth", reason };','if (response.status === 401) return { kind: "transient", reason, retryAfterMs: 0 };'),
 ("Retry-After ignored","src/sync/classify.ts","retryAfterMs: Math.max(0, seconds) * 1000","retryAfterMs: 0"),
 ("backoff uncapped","src/sync/backoff.ts","Math.min(CAP_MS, BASE_MS * 2 ** Math.max(0, attempt - 1))","BASE_MS * 2 ** Math.max(0, attempt - 1)"),
-("pull drops unsent edits","src/db/apply.ts","      const view = overlay(shadow, queued);\n      await db.submissions.put({\n        ...row,\n        ...view,\n        // Deleted","      const view = overlay(shadow, []);\n      await db.submissions.put({\n        ...row,\n        ...view,\n        // Deleted"),
+("pull drops unsent edits","src/db/apply.ts","      const view = overlay(shadow, queued);\n      await db.submissions.put({\n        ...row,\n        ...view,\n        ...(restored","      const view = overlay(shadow, []);\n      await db.submissions.put({\n        ...row,\n        ...view,\n        ...(restored"),
 ("failed attempt not counted","src/db/apply.ts","attempts: current.attempts + 1","attempts: current.attempts"),
 ("push before nothing: pull skipped on cursor","src/sync/engine.ts","if (!page.has_more) return;","return;"),
 ("cursor not saved","src/db/apply.ts",'await db.meta.put({ key: "syncCursor", value: nextCursor });',''),
@@ -40,6 +40,18 @@ M=[
 ("integer accepts fractions",'src/forms/validate.ts','z.number().int({ error: "Enter a whole number." })','z.number()'),
 ("local changes wait for the next tick","src/sync/engine.ts","if (grew && navigator.onLine) {","if (false) {"),
 ("changes trigger sync while offline","src/sync/engine.ts","if (grew && navigator.onLine) {","if (grew) {"),
+("resolution keeps the old base version","src/db/resolve.ts","const rebase = { fields, baseVersion: shadow.version };","const rebase = { fields, baseVersion: entry.baseVersion };"),
+("resolution reuses the conflicted mutation id","src/db/resolve.ts","if (entry.seq === blocked.seq) await reissue(db, entry, rebase);","if (entry.seq === blocked.seq) await db.outbox.update(entry.seq!, rebase);"),
+("a field given up is still sent","src/db/resolve.ts",".filter(([name]) => !giveUp.has(name)),",""),
+("given-up fields only dropped from the first entry","src/db/resolve.ts","const emptied = entry.op === \"update\" && Object.keys(fields).length === 0;","const emptied = false;"),
+("incomplete decisions accepted","src/db/resolve.ts","if (clashing.some((name) => choices[name] !== \"mine\" && choices[name] !== \"theirs\")) {","if (false) {"),
+("restore does not re-queue the edits","src/db/apply.ts","        await reissue(db, queued[0]!);\n",""),
+("restore re-queues under the old id","src/db/apply.ts","await reissue(db, queued[0]!);","await db.outbox.update(queued[0]!.seq!, { sentAt: null });"),
+("keep-the-record leaves the delete queued","src/db/resolve.ts","      await db.outbox.delete(blocked.seq!);","      await db.outbox.update(blocked.seq!, { sentAt: null });"),
+("delete anyway keeps the old base","src/db/resolve.ts","await reissue(db, blocked, { baseVersion: shadow.version });","await reissue(db, blocked);"),
+("starting value forgotten after the first edit","src/db/submissions.ts","before: { ...prior, ...last.before }","before: { ...last.before, ...prior }"),
+("a re-issued entry is not treated as new work","src/sync/engine.ts","`${e.seq}:${e.mutationId}`","`${e.seq}`"),
+("work during a cycle waits for the next tick","src/sync/engine.ts","if (this.running) this.again = true;","if (this.running) return;"),
 ]
 bad=0
 for d,f,old,new in M:

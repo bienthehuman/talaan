@@ -54,7 +54,7 @@ function toShadow(record: ServerRecord): Shadow {
 }
 
 /** The server's copy with the queued entries applied on top: what the user should see. */
-function overlay(shadow: Shadow, queued: OutboxEntry[]) {
+export function overlay(shadow: Shadow, queued: OutboxEntry[]) {
   const data: RecordData = { ...shadow.data };
   let status = shadow.status;
   let deleted = shadow.deleted;
@@ -69,7 +69,7 @@ function overlay(shadow: Shadow, queued: OutboxEntry[]) {
   return { data, status, deleted };
 }
 
-async function queuedFor(db: TalaanDb, recordId: string): Promise<OutboxEntry[]> {
+export async function queuedFor(db: TalaanDb, recordId: string): Promise<OutboxEntry[]> {
   return db.outbox.where("recordId").equals(recordId).sortBy("seq");
 }
 
@@ -100,6 +100,18 @@ export function takeBatch(db: TalaanDb, now: number = Date.now()): Promise<Outbo
       }
     }
     return batch;
+  });
+}
+
+/** The same change as a brand new mutation: new id, not sent yet. It keeps its place in the queue,
+ *  so a record's changes still go out in the order they were made. */
+export function reissue(db: TalaanDb, entry: OutboxEntry, changes: Partial<OutboxEntry> = {}) {
+  return db.outbox.update(entry.seq!, {
+    mutationId: crypto.randomUUID(),
+    sentAt: null,
+    attempts: 0,
+    lastError: null,
+    ...changes,
   });
 }
 
@@ -196,13 +208,29 @@ export function applyPull(
       }
       if (record.version <= row.serverVersion) continue;
       const queued = await queuedFor(db, record.id);
+
+      // The admin restored a record this person was waiting on (`deleted_remotely`): their edits go
+      // out again. The old mutation id's stored answer is the conflict, so the entry gets a new id.
+      // It keeps its base version, so edits others made before the delete still conflict.
+      const restored =
+        row.syncState === "conflict" &&
+        row.conflict?.kind === "deleted_remotely" &&
+        !record.deleted &&
+        queued.length > 0;
+      if (restored) {
+        await reissue(db, queued[0]!);
+      }
+
       const view = overlay(shadow, queued);
       await db.submissions.put({
         ...row,
         ...view,
+        ...(restored
+          ? { syncState: "pending" as const, syncDetail: undefined, conflict: undefined }
+          : {}),
         // Deleted remotely while edits are queued: keep showing the record; the next push reports
         // `deleted_remotely` and the user decides (phase 3).
-        deleted: queued.length > 0 ? row.deleted : view.deleted,
+        deleted: restored ? false : queued.length > 0 ? row.deleted : view.deleted,
         shadow,
         serverVersion: record.version,
         fieldVersions: shadow.fieldVersions,
