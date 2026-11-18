@@ -116,3 +116,20 @@ the proxy sends `/admin` to the Django admin.
   (a cleared field as `null`); a submitted or approved record must stay complete.
 - A worker who opens an admin route sees "You don't have access to this page" and no admin request is made.
 
+### Forms, assignments and the conflict log (admin)
+
+- **Forms** (`/manage/forms`): each form with its versions and a "New version" link; "New form" asks for a
+  name (unique) and opens the editor.
+- **Form editor** (`/manage/forms/:id/edit`): the latest version's JSON (or a starter for a new form) beside a
+  live preview built from the same schema code the worker form uses. The page says at once when the text is
+  not JSON, and, after a short pause, what the server would refuse, in the server's words. "Publish version N"
+  is enabled only when the server has accepted the current text, and asks first: a published version never
+  changes, and inspections already started keep the version they began on. Nothing is saved until publish.
+- **Assignments** (`/manage/assignments`): a form (published versions only, workers, site, optional due date)
+  and a table with each assignment's inspection count and state. Cancel asks first; existing inspections stay
+  and still sync, the worker just cannot start new ones.
+- **Conflict log** (`/manage/conflicts`): when, worker, site, what happened in words ("Same field changed on
+  two devices"), the fields, "Changed since" (yes only if the same worker changed the record on the server
+  afterwards; the server cannot see a worker discarding edits on their device), and a link to the record.
+  Filters: kind, changed since, worker.
+

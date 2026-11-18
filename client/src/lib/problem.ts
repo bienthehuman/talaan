@@ -55,3 +55,15 @@ export function messageFor(error: unknown, context: MessageContext = "general"):
   }
   return "Something went wrong. Try again.";
 }
+
+/** Field errors from a 400 `validation_error`: `{field: ["sentence", ...]}`, or null. */
+export function fieldErrors(error: unknown): Record<string, string[]> | null {
+  if (!(error instanceof ApiError)) return null;
+  const errors = error.problem.errors;
+  if (!errors || typeof errors !== "object" || Array.isArray(errors)) return null;
+  const out: Record<string, string[]> = {};
+  for (const [name, value] of Object.entries(errors)) {
+    out[name] = Array.isArray(value) ? value.map(String) : [String(value)];
+  }
+  return out;
+}

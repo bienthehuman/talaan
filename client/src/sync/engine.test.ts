@@ -19,6 +19,12 @@ import { json, mockFetch, signIn } from "../test/utils";
 import { backoffMs } from "./backoff";
 import { SyncEngine } from "./engine";
 
+/** Stop an engine and wait for any cycle it is still running, so it cannot hold the lock into the next test. */
+async function halt(engine: SyncEngine) {
+  engine.stop();
+  await engine.settled();
+}
+
 afterEach(() => {
   closeAll();
   vi.useRealTimers();
@@ -321,14 +327,14 @@ describe("failures", () => {
       const status = sync.getStatus();
       expect(status.state).toBe("retrying");
       expect(status.retryAt! - Date.now()).toBeGreaterThanOrEqual(minWait - 50);
-      sync.stop();
+      await halt(sync);
 
       // The server did commit it last time, and the answer was lost. The retry is the same mutation.
       const s = server();
       expect(await sync.syncNow()).toBe("ok");
       expect(s.pushes[0]!.mutations[0]!.mutation_id).toBe(before!.mutationId);
       expect(await db.outbox.count()).toBe(0);
-      sync.stop();
+      await halt(sync);
     },
   );
 
@@ -352,7 +358,7 @@ describe("failures", () => {
     const s = server();
     expect(await sync.resume()).toBe("ok");
     expect(s.pushes).toHaveLength(1);
-    sync.stop();
+    await halt(sync);
   });
 
   it("426 stops syncing and keeps local data", async () => {
@@ -416,7 +422,7 @@ describe("pull", () => {
     expect(await sync.syncNow()).toBe("transient");
     expect((await db.meta.get("syncCursor"))?.value).toBe(5);
     expect(await db.submissions.count()).toBe(1);
-    sync.stop();
+    await halt(sync);
   });
 
   it("ignores a record at or below the version already held (at-least-once)", async () => {
@@ -531,7 +537,7 @@ describe("triggers", () => {
 
     vi.advanceTimersByTime(60_000);
     await vi.waitFor(() => expect(s.pulls).toHaveLength(3));
-    sync.stop();
+    await halt(sync);
   });
 });
 
@@ -546,7 +552,7 @@ describe("a local change", () => {
 
     await createSubmission(dbFor(1), NEW);
     await vi.waitFor(() => expect(s.pushes).toHaveLength(1));
-    sync.stop();
+    await halt(sync);
   });
 
   it("waits for the browser's online event when there is no connection", async () => {
@@ -559,7 +565,7 @@ describe("a local change", () => {
     await createSubmission(dbFor(1), NEW);
     await new Promise((r) => setTimeout(r, 120));
     expect(s.pushes).toHaveLength(0);
-    sync.stop();
+    await halt(sync);
   });
 });
 
@@ -605,7 +611,7 @@ describe("work that arrives in other ways", () => {
       fields: { notes: "mine" },
     });
     expect(s.pushes[0]!.mutations[0]!.mutation_id).not.toBe(sent!.mutationId);
-    sync.stop();
+    await halt(sync);
   });
 
   it("work that arrives while a cycle is running gets another cycle straight after", async () => {
@@ -627,7 +633,33 @@ describe("work that arrives in other ways", () => {
     await new Promise((r) => setTimeout(r, 60)); // the change timer fires into a running cycle
     release();
     await vi.waitFor(() => expect(s.pushes).toHaveLength(2));
-    sync.stop();
+    await halt(sync);
+  });
+});
+
+describe("a stopped engine", () => {
+  it("does not start another cycle for work that arrived before it stopped", async () => {
+    const db = dbFor(1);
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const s = server();
+    const base = s.fetch.getMockImplementation()!;
+    s.fetch.mockImplementation(async (request: Request) => {
+      if (new URL(request.url).pathname === "/api/sync/pull/") await gate;
+      return base(request);
+    });
+    const sync = new SyncEngine({ db, userId: 1, deviceId: "d", changeDelayMs: 10 });
+    sync.start();
+    await vi.waitFor(() => expect(s.fetch.mock.calls.length).toBeGreaterThan(0));
+    await createSubmission(db, NEW); // marks the running cycle as needing another one
+    await new Promise((r) => setTimeout(r, 60));
+
+    sync.stop(); // signed out, or the page went away
+    release();
+    await sync.settled();
+    await new Promise((r) => setTimeout(r, 100));
+    expect(s.pushes).toHaveLength(0);
+    expect(s.pulls).toHaveLength(1);
   });
 });
 
@@ -769,7 +801,7 @@ describe("an expired access token (scenario 9, engine half)", () => {
     });
     expect(await sync.syncNow()).toBe("transient");
     expect(sync.getStatus().state).toBe("retrying");
-    sync.stop();
+    await halt(sync);
   });
 
   it("refreshes at most once per cycle: a 401 right after a refresh pauses", async () => {
