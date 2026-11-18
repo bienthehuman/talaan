@@ -32,7 +32,19 @@ export interface LocalSubmission {
   syncState: SyncState;
   /** Why the record is in `conflict` or `rejected` (filled by the engine). */
   syncDetail?: string;
+  /** The server's conflict report, kept for the resolution screen (phase 3). */
+  conflict?: ConflictInfo;
   updatedAt: number;
+}
+
+export interface ConflictInfo {
+  kind: "field_conflict" | "deleted_remotely" | "edited_since_base";
+  fields: {
+    field: string;
+    server_value?: FieldValue;
+    client_value?: FieldValue;
+    server_version?: number;
+  }[];
 }
 
 export type OutboxOp = "create" | "update" | "submit" | "delete";

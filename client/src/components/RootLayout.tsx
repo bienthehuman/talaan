@@ -15,7 +15,7 @@ function formatLastSync(date: Date | null): string {
 export function RootLayout() {
   const { user, logout } = useAuth();
   const online = useOnline();
-  const { pending, lastSyncAt } = useSyncStatus();
+  const { pending, lastSyncAt, state, syncNow } = useSyncStatus();
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
 
   function requestSignOut() {
@@ -34,6 +34,12 @@ export function RootLayout() {
           You're offline. Changes are saved on this device and will sync when you're back online.
         </Banner>
       )}
+      {state === "upgrade-required" && (
+        <Banner kind="danger">
+          This version of the app is too old to sync. Your changes are safe on this device. Reload
+          to update.
+        </Banner>
+      )}
       <header className="app-header">
         <Link to="/" className="brand">
           <img src="/favicon.svg" alt="" />
@@ -48,6 +54,9 @@ export function RootLayout() {
           <ThemeToggle />
           {user && (
             <>
+              <Button variant="secondary" small onClick={syncNow} disabled={state === "syncing"}>
+                {state === "syncing" ? "Syncing…" : "Sync now"}
+              </Button>
               <span>{user.username}</span>
               <Button variant="secondary" small onClick={requestSignOut}>
                 Sign out

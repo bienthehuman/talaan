@@ -72,6 +72,14 @@ Local rules (slice 2.1, `client/src/db/`):
   entry keeps its base so field conflict detection still sees the other writer.
 - **Deleting a record the server has never seen** (no confirmed version, no sent entry) forgets the row and
   its entries instead of queueing a delete.
+- **Engine rules** (slice 2.2, `client/src/sync/`, `client/src/db/apply.ts`): a batch holds the oldest
+  queued entry of each record (at most 50, never two for one record) and skips records in `conflict` /
+  `rejected`. Entries are stamped `sentAt` when first chosen and a retry resends them unchanged, so the
+  same mutation ids reach the server until one is answered. `conflict` and `rejected` results keep the
+  user's data and entries, store the server's copy as `shadow` (and the conflict report on the row), and
+  stop that record syncing until the user decides. A pull never overwrites what the user sees: `data` is
+  always the shadow with the still-queued entries laid on top. The cursor is saved in the same transaction
+  as the page it covers.
 - Edits are refused (`NotEditableError`) when the record is submitted or approved, deleted, or in
   `conflict` / `rejected` until the user resolves or discards.
 

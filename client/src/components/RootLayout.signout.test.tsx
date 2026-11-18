@@ -3,10 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { getSession } from "../auth/session";
 import { renderApp, signIn } from "../test/utils";
 
-// Stub the sync status so there are unsent changes (the real engine arrives in phase 2).
+// Stub the sync status so there are unsent changes .
 const status = vi.hoisted(() => ({ pending: 3 }));
 vi.mock("../sync/status", () => ({
-  useSyncStatus: () => ({ pending: status.pending, lastSyncAt: null }),
+  useSyncStatus: () => ({
+    pending: status.pending,
+    lastSyncAt: null,
+    state: "idle",
+    syncNow: () => {},
+  }),
 }));
 
 beforeEach(() => {
