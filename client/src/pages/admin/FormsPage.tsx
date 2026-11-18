@@ -7,6 +7,7 @@ import { TextField } from "../../components/TextField";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { fieldErrors, messageFor } from "../../lib/problem";
+import { formatWhen } from "../../lib/when";
 
 export function FormsPage() {
   useDocumentTitle("Forms");
@@ -68,7 +69,7 @@ export function FormsPage() {
                     <span>
                       Version {v.number}
                       {v.published_at
-                        ? ` · published ${new Date(v.published_at).toLocaleDateString()}`
+                        ? ` · published ${formatWhen(v.published_at)}`
                         : " · draft (publish it in the Django admin)"}
                     </span>
                   </li>

@@ -18,11 +18,12 @@ import { FormFieldInput } from "../../forms/FormFields";
 import { formatValue } from "../../forms/format";
 import { parseForm, type FormDefinition, type FormField } from "../../forms/schema";
 import { validateRecord, type FieldErrors } from "../../forms/validate";
-import { statusLabel } from "../../lib/status";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
 import styles from "./ReviewDetailPage.module.css";
+import { StatusChip } from "../../components/StatusChip";
+import { formatFull } from "../../lib/when";
 
 const KIND_LABEL: Record<string, string> = {
   created: "Created",
@@ -37,13 +38,13 @@ const KIND_LABEL: Record<string, string> = {
   rejected: "Change refused",
 };
 
-function describe(event: AdminEvent): string {
+function describe(event: AdminEvent, titleOf: (name: string) => string): string {
   const detail = (event.detail ?? {}) as Record<string, unknown>;
   if (typeof detail.reason === "string") return detail.reason;
   if (typeof detail.code === "string") return `Reason: ${detail.code}`;
   if (typeof detail.kind === "string") return `Kind: ${detail.kind}`;
   if (Array.isArray(detail.fields) && detail.fields.length > 0) {
-    return `Fields: ${detail.fields.join(", ")}`;
+    return `Fields: ${detail.fields.map((f) => titleOf(String(f))).join(", ")}`;
   }
   return "";
 }
@@ -109,6 +110,7 @@ export function ReviewDetailPage() {
   const status = record.status ?? "draft";
   const canApprove = !record.deleted && status === "submitted";
   const canReturn = !record.deleted && (status === "submitted" || status === "approved");
+  const titleOf = (name: string) => form?.fields.find((f) => f.name === name)?.title ?? name;
 
   return (
     <div className="page page--wide stack">
@@ -126,8 +128,7 @@ export function ReviewDetailPage() {
         <div>
           <dt>Status</dt>
           <dd>
-            {statusLabel(status)}
-            {record.deleted ? " (deleted)" : ""}
+            <StatusChip status={status} deleted={record.deleted} />
           </dd>
         </div>
         <div>
@@ -146,70 +147,77 @@ export function ReviewDetailPage() {
         </div>
       )}
 
-      <div className="row" role="group" aria-label="Actions">
-        {record.deleted ? (
-          <Button onClick={() => void run("restore")}>Restore</Button>
-        ) : (
-          <>
-            {canApprove && <Button onClick={() => void run("approve")}>Approve</Button>}
-            {canReturn && (
-              <Button variant="secondary" onClick={() => setDialog("return")}>
-                Return to worker…
-              </Button>
+      <div className={styles.layout}>
+        <div className={`card ${styles.panel}`} role="group" aria-label="Actions">
+          {record.deleted ? (
+            <Button onClick={() => void run("restore")}>Restore</Button>
+          ) : (
+            <>
+              {canApprove && <Button onClick={() => void run("approve")}>Approve</Button>}
+              {canReturn && (
+                <Button variant="secondary" onClick={() => setDialog("return")}>
+                  Return to worker…
+                </Button>
+              )}
+              {form && !editing && (
+                <Button variant="secondary" onClick={() => setEditing(true)}>
+                  Edit answers
+                </Button>
+              )}
+              <div className={styles.danger}>
+                <Button variant="destructive" onClick={() => setDialog("delete")}>
+                  Delete
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+        <div className={`stack ${styles.content}`}>
+          <section aria-labelledby="answers" className="card stack">
+            <h2 id="answers">Answers</h2>
+            {!form && <p>This form's schema cannot be shown.</p>}
+            {form && editing && (
+              <AnswerEditor
+                form={form}
+                data={(record.data ?? {}) as Record<string, string | number | boolean>}
+                complete={status === "submitted" || status === "approved"}
+                onSave={(fields) => run("edit", { fields })}
+                onCancel={() => setEditing(false)}
+              />
             )}
             {form && !editing && (
-              <Button variant="secondary" onClick={() => setEditing(true)}>
-                Edit answers
-              </Button>
+              <dl className={styles.answers}>
+                {form.fields.map((f) => (
+                  <div key={f.name}>
+                    <dt>{f.title}</dt>
+                    <dd>{formatValue(f, (record.data as Record<string, never>)?.[f.name])}</dd>
+                  </div>
+                ))}
+              </dl>
             )}
-            <Button variant="destructive" onClick={() => setDialog("delete")}>
-              Delete
-            </Button>
-          </>
-        )}
+          </section>
+
+          <section aria-labelledby="history" className="card stack">
+            <h2 id="history">History</h2>
+            {record.events.length === 0 ? (
+              <EmptyState title="No history yet" />
+            ) : (
+              <ol className={styles.history}>
+                {record.events.map((e) => (
+                  <li key={e.id}>
+                    <strong>{KIND_LABEL[e.kind] ?? e.kind}</strong> · version {e.version}
+                    {e.actor ? ` · ${e.actor.username}` : ""}
+                    {e.created_at ? ` · ${formatFull(e.created_at)}` : ""}
+                    {describe(e, titleOf) && (
+                      <div className="field-hint">{describe(e, titleOf)}</div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </div>
       </div>
-
-      <section aria-labelledby="answers" className="card stack">
-        <h2 id="answers">Answers</h2>
-        {!form && <p>This form's schema cannot be shown.</p>}
-        {form && editing && (
-          <AnswerEditor
-            form={form}
-            data={(record.data ?? {}) as Record<string, string | number | boolean>}
-            complete={status === "submitted" || status === "approved"}
-            onSave={(fields) => run("edit", { fields })}
-            onCancel={() => setEditing(false)}
-          />
-        )}
-        {form && !editing && (
-          <dl className={styles.answers}>
-            {form.fields.map((f) => (
-              <div key={f.name}>
-                <dt>{f.title}</dt>
-                <dd>{formatValue(f, (record.data as Record<string, never>)?.[f.name])}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </section>
-
-      <section aria-labelledby="history" className="card stack">
-        <h2 id="history">History</h2>
-        {record.events.length === 0 ? (
-          <EmptyState title="No history yet" />
-        ) : (
-          <ol className={styles.history}>
-            {record.events.map((e) => (
-              <li key={e.id}>
-                <strong>{KIND_LABEL[e.kind] ?? e.kind}</strong> · version {e.version}
-                {e.actor ? ` · ${e.actor.username}` : ""}
-                {e.created_at ? ` · ${new Date(e.created_at).toLocaleString()}` : ""}
-                {describe(e) && <div className="field-hint">{describe(e)}</div>}
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
 
       <ReasonDialog
         open={dialog === "return"}

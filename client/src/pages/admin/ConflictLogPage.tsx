@@ -6,6 +6,7 @@ import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { messageFor } from "../../lib/problem";
 import { Table } from "../../components/Table";
+import { formatFull, formatWhen } from "../../lib/when";
 
 const PAGE = 25;
 
@@ -136,7 +137,11 @@ export function ConflictLogPage() {
             <tbody>
               {results.map((c) => (
                 <tr key={c.id}>
-                  <td>{new Date(c.created_at).toLocaleString()}</td>
+                  <td>
+                    <time dateTime={c.created_at} title={formatFull(c.created_at)}>
+                      {formatWhen(c.created_at)}
+                    </time>
+                  </td>
                   <td>{c.worker.username}</td>
                   <td>{c.site_name}</td>
                   <td>

@@ -308,3 +308,8 @@ fieldset:disabled .segmented .choice {
   color: var(--text);
   background: var(--surface);
 }
+
+/* A table row that opens its record on click; its named link stays the keyboard target. */
+tr.row-link {
+  cursor: pointer;
+}
