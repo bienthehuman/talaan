@@ -39,7 +39,7 @@ export function FormsPage() {
           error={error ?? undefined}
           onChange={(e) => setName(e.target.value)}
         />
-        <div>
+        <div className="actions">
           <Button type="submit" disabled={!name.trim()}>
             Create form
           </Button>

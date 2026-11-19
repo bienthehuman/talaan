@@ -1,13 +1,31 @@
-/* Shared by ConfirmDialog and ReasonDialog. */
+/* Shared by ConfirmDialog and ReasonDialog: centred on the screen both ways, with its buttons on the right
+   (the confirming one last). */
 .dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: min(480px, calc(100vw - 2 * var(--space-4)));
+  max-height: calc(100dvh - 2 * var(--space-4));
+  overflow: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--text);
   padding: var(--space-5);
-  max-width: min(480px, calc(100vw - 2 * var(--space-4)));
   box-shadow: var(--shadow-raised);
 }
 .dialog::backdrop {
   background: rgb(11 12 14 / 0.6);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dialog[open] {
+    animation: pop var(--dur) var(--ease);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
 }

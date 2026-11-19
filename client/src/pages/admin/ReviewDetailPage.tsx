@@ -320,7 +320,7 @@ function AnswerEditor({
           onChange={(v) => setText((t) => ({ ...t, [field.name]: v }))}
         />
       ))}
-      <div className="row">
+      <div className="actions">
         <Button type="submit">Save answers</Button>
         <Button variant="secondary" onClick={onCancel}>
           Cancel

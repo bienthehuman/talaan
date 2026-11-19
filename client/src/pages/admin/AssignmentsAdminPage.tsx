@@ -178,7 +178,9 @@ export function AssignmentsAdminPage() {
               onChange={(e) => setDue(e.target.value)}
             />
           </div>
-          <Button type="submit">Assign</Button>
+          <div className="actions">
+            <Button type="submit">Assign</Button>
+          </div>
         </form>
         <div className={`stack ${styles.list}`}>
           <div className="row filters">
@@ -263,7 +265,7 @@ export function AssignmentsAdminPage() {
                   ))}
                 </tbody>
               </Table>
-              <nav className="row" aria-label="Pages">
+              <nav className="actions" aria-label="Pages">
                 <span>
                   {offset + 1}–{offset + results.length} of {count}
                 </span>

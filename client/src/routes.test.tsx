@@ -76,17 +76,21 @@ describe("layout", () => {
   it("signs out with no unsent changes straight away", async () => {
     signIn();
     renderApp("/");
-    await userEvent.setup().click(screen.getByRole("button", { name: "Sign out" }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /^Account/ }));
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
     expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
     expect(getSession()).toBeNull();
   });
 
-  it("cycles the theme and remembers it", async () => {
+  it("offers the theme as three plain choices and remembers it", async () => {
     renderApp("/login");
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Theme: System" }));
+    await user.click(screen.getByRole("button", { name: "Display settings" }));
+    expect(screen.getByRole("radio", { name: "System" })).toBeChecked();
+    await user.click(screen.getByRole("radio", { name: "Light" }));
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-    await user.click(screen.getByRole("button", { name: "Theme: Light" }));
+    await user.click(screen.getByRole("radio", { name: "Dark" }));
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(localStorage.getItem("talaan.theme")).toBe("dark");
   });

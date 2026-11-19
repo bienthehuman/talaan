@@ -33,26 +33,6 @@
   width: 32px;
   height: 32px;
 }
-.account {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.user {
-  color: var(--band-muted);
-  font-size: var(--text-sm);
-  margin-inline-end: var(--space-1);
-}
-/* Quiet controls on the band: an edge that holds 3:1 on the band, no fill. */
-.onBand {
-  background: transparent;
-  color: var(--band-text);
-  border-color: var(--band-control);
-}
-.onBand:hover:not([disabled]) {
-  background: rgb(255 255 255 / 0.08);
-  border-color: var(--band-muted);
-}
 .sync {
   display: flex;
   flex-wrap: wrap;

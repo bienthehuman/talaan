@@ -35,7 +35,7 @@ export function ConfirmDialog({
     <dialog ref={ref} className={styles.dialog} aria-labelledby="confirm-title" onCancel={onCancel}>
       <h2 id="confirm-title">{title}</h2>
       <p>{message}</p>
-      <div className="row">
+      <div className="actions">
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>

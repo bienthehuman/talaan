@@ -7,6 +7,7 @@ test("a worker signs in, sees their name and signs out", async ({ page }) => {
   await expect(page.getByText(WORKER.username)).toBeVisible();
   await expect(page.getByText(/^0 pending · Last sync: /)).toBeVisible();
 
+  await page.getByRole("button", { name: /^Account/ }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem("talaan.session"))).toBeNull();
