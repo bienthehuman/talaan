@@ -13,6 +13,10 @@
   --accent: #0b737e;
   --accent-hover: #095c65;
   --accent-text: #ffffff;
+  /* The second line: emphasis for key details (place names, labels, highlights). Never tappable, never a state. */
+  --emphasis: #6b3fd1;
+  --emphasis-soft: #f0ecfa;
+  --emphasis-text: #ffffff;
   --pending: #8a5300;
   --pending-mark: #c77700;
   --ok: #1d7a46;
@@ -24,6 +28,7 @@
   --band-edge: #2c3138;
   --band-focus: #4fc3cc;
   --band-numeral: #f5b84b;
+  --band-emphasis: #b49cff;
   --band-control: #6b727c;
   --icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234c5059' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   --icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234c5059' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4m8-4v4'/%3E%3C/svg%3E");
@@ -75,6 +80,9 @@
     --accent: #4fc3cc;
     --accent-hover: #7ad3da;
     --accent-text: #0b0c0e;
+    --emphasis: #b49cff;
+    --emphasis-soft: #2a2b39;
+    --emphasis-text: #0b0c0e;
     --pending: #f5b84b;
     --pending-mark: #f5b84b;
     --ok: #6fd39a;
@@ -100,6 +108,9 @@
   --accent: #4fc3cc;
   --accent-hover: #7ad3da;
   --accent-text: #0b0c0e;
+  --emphasis: #b49cff;
+  --emphasis-soft: #2a2b39;
+  --emphasis-text: #0b0c0e;
   --pending: #f5b84b;
   --pending-mark: #f5b84b;
   --ok: #6fd39a;

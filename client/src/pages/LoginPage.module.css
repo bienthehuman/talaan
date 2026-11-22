@@ -16,6 +16,7 @@
   font-size: var(--text-2xl);
   line-height: 1.1;
   margin-bottom: var(--space-5);
+  color: var(--band-emphasis);
 }
 .promise {
   color: var(--band-muted);
