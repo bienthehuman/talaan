@@ -44,6 +44,9 @@
 .swAccent {
   background: var(--accent);
 }
+.swEmphasis {
+  background: var(--emphasis);
+}
 .swOk {
   background: var(--ok);
 }

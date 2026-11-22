@@ -38,14 +38,14 @@ test("every interactive element shows a visible focus ring", async ({ page }) =>
     const outline = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
       const cs = getComputedStyle(el);
-      // Buttons and links get a 3 px outline; text fields a highlight (accent edge and halo) instead.
+      // Buttons and links get a 3 px outline; text fields a highlighted 2 px border instead.
       return {
         width: parseFloat(cs.outlineWidth),
         style: cs.outlineStyle,
-        halo: cs.boxShadow !== "none" && el.matches(".input"),
+        field: el.matches(".input") && parseFloat(cs.borderTopWidth) >= 2,
       };
     });
-    if (!outline.halo) {
+    if (!outline.field) {
       expect(outline.style, `stop ${i + 1}`).not.toBe("none");
       expect(outline.width, `stop ${i + 1}`).toBeGreaterThanOrEqual(2);
     }

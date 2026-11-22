@@ -16,6 +16,10 @@ built.
   (section 3). It never supplies layout, navigation or controls.
 - **One accent owns live state.** The line colour (`--accent`) marks only what is tappable or moving:
   primary buttons, links, focus, the current page, the "Sending" stop. Never decoration.
+- **One emphasis colour for key details.** Violet (`--emphasis`), the second line on the map, marks what
+  the eye should find first: the site an inspection belongs to, the assignment header, data labels
+  (table headers, record field labels) and the login tagline. It fills roughly 10 to 15 % of a screen. It is
+  never tappable, never a sync state, and never the only carrier of meaning.
 - **One grid.** Every size and gap is a multiple of 4 px, and layout steps are multiples of 8 px.
 - **Motion only for state.** 150 to 200 ms; nothing moves that does not mean something.
 
@@ -39,6 +43,9 @@ primitive or component CSS Module) is set by [ADR 0011](adr/0011-css-modules-for
 | `--accent` | `#0b737e` | `#4fc3cc` | The line: primary actions, links, focus ring, current page (5.1:1 / 8.8:1 on `--bg`) |
 | `--accent-hover` | `#095c65` | `#7ad3da` | Pressed and hovered accent |
 | `--accent-text` | `#ffffff` | `#0b0c0e` | Text on `--accent` (5.6:1 / 9.3:1) |
+| `--emphasis` | `#6b3fd1` | `#b49cff` | Key details: site names, data labels, assignment header edge (≥ 5.4:1 / ≥ 6.5:1 on every surface, ≥ 5.5:1 / 6.1:1 on `--emphasis-soft`) |
+| `--emphasis-soft` | `#f0ecfa` | `#2a2b39` | Tinted header band (10 % `--emphasis` over `--surface`); `--text` 15.3:1 / 11.7:1, `--text-muted` 7.0:1 / 6.3:1, `--accent` 4.8:1 / 6.7:1 on it |
+| `--emphasis-text` | `#ffffff` | `#0b0c0e` | Text on an `--emphasis` fill (6.5:1 / 8.5:1) |
 | `--pending` | `#8a5300` | `#f5b84b` | "Saved on this device" text and icon (≥ 5.3:1) |
 | `--pending-mark` | `#c77700` | `#f5b84b` | Filled pending stop on the station line (non-text, ≥ 3:1) |
 | `--ok` | `#1d7a46` | `#6fd39a` | Synced, approved (4.9:1 on `--bg`; do not put it on `--surface-2` in light, 4.5:1 is too tight) |
@@ -49,6 +56,7 @@ primitive or component CSS Module) is set by [ADR 0011](adr/0011-css-modules-for
 | `--band-edge` | `#2c3138` | `#2c3138` | Hairline under the band, so it stays distinct from a dark ground |
 | `--band-control` | `#6b727c` | `#6b727c` | Edge of quiet controls on the band (3.7:1) |
 | `--band-focus` | `#4fc3cc` | `#4fc3cc` | Focus ring on the band (8.5:1); the light `--accent` is too dark there |
+| `--band-emphasis` | `#b49cff` | `#b49cff` | Emphasis on the band and band panels, such as the login tagline (7.7:1) |
 
 The band's primary button ("Sync now") is `--accent` with `--accent-text` in both schemes. Its pending
 numeral uses `#f5b84b` (10:1 on the band).
@@ -88,8 +96,8 @@ labels, with 0.06 em tracking.
 - Tap targets: `--tap` 48 px default, `--tap-min` 44 px minimum on worker pages (section 4); admin controls
   ≥ 40 px.
 - Focus: 3 px ring in `--accent` (`--band-focus` on the band), 2 px offset, on buttons, links and choices;
-  never removed. Text fields, selects and the Yes/No group show focus as a highlight instead: an `--accent`
-  edge and a 4 px halo (the edge change alone is ≥ 3:1).
+  never removed. Text fields, selects and the Yes/No group show focus as a highlighted border instead: a
+  2 px `--accent` edge, no shadow (the edge change is ≥ 3:1).
 
 ## 3. Sync state: the station line
 

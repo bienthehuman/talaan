@@ -20,6 +20,7 @@ const TOKENS = [
   "border",
   "control-border",
   "accent",
+  "emphasis",
   "ok",
   "pending",
   "danger",

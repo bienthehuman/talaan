@@ -10,6 +10,8 @@
   gap: var(--space-3);
   padding: var(--space-4);
   border-bottom: 1px solid var(--border);
+  border-inline-start: 4px solid var(--emphasis);
+  background: var(--emphasis-soft);
 }
 .head h2 {
   margin-bottom: var(--space-1);
@@ -24,6 +26,8 @@
 }
 .cancelled .head {
   border-bottom-color: transparent;
+  border-inline-start-color: var(--control-border);
+  background: transparent;
 }
 .none {
   margin: 0;
