@@ -277,6 +277,9 @@ refused, the client asks the person to sign in again (same account) and resumes;
 reached it retries with backoff and does not treat that as a logout. Signing out removes that user's local
 data from the device and needs explicit confirmation while changes are unsent. See ADR 0010.
 
+Online-only requests (the admin API) follow the same rule per request: on a 401 the client refreshes
+once and repeats the request; a refused refresh token is reported as an expired session.
+
 ## 9. Error format
 
 Non-2xx responses (other than per-mutation results) use RFC 7807 (`application/problem+json`) with a

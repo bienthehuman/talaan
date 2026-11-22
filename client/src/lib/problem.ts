@@ -45,6 +45,9 @@ export function messageFor(error: unknown, context: MessageContext = "general"):
       const wait = retry_after ?? 60;
       return `Too many attempts. Try again in ${wait} ${wait === 1 ? "second" : "seconds"}.`;
     }
+    if (code === "session_expired") {
+      return "Your session has expired. Sign out and sign in again.";
+    }
     if (context === "login") {
       if (code === "unauthenticated") return "Wrong username or password.";
       if (code === "validation_error") return "Enter your username and password.";

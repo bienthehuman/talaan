@@ -1,3 +1,4 @@
+import { refreshSession } from "../auth/refresh";
 import { api, unwrap } from "../lib/api";
 import { ApiError, NetworkError } from "../lib/problem";
 import type { components } from "../lib/api-types";
@@ -22,14 +23,35 @@ export interface QueueQuery {
   offset: number;
 }
 
-/** A request that never reached the server is a NetworkError, so pages can say so plainly. */
+/** A request that never reached the server is a NetworkError, so pages can say so plainly.
+ *
+ *  The access token lives 5 minutes and admins have no sync engine to renew it, so a 401 trades the
+ *  refresh token for a new access token once and repeats the request. Repeating is safe: the server
+ *  checks the token before the view runs, so the first attempt changed nothing. If the refresh token
+ *  is refused too, the error becomes `session_expired`. */
 async function call<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await attempt(run);
+  } catch (error) {
+    if (!isUnauthenticated(error)) throw error;
+    const outcome = await refreshSession();
+    if (outcome === "login-required") throw new ApiError({ status: 401, code: "session_expired" });
+    if (outcome === "unreachable") throw new NetworkError();
+    return attempt(run);
+  }
+}
+
+async function attempt<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await run();
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new NetworkError();
   }
+}
+
+function isUnauthenticated(error: unknown): boolean {
+  return error instanceof ApiError && error.problem.status === 401;
 }
 
 export async function listSubmissions(query: QueueQuery) {
