@@ -216,6 +216,117 @@ paths:
               schema:
                 $ref: '#/components/schemas/Form'
           description: ''
+  /api/admin/forms/{id}/draft/:
+    get:
+      operationId: api_admin_forms_draft_retrieve
+      description: |-
+        The one draft of a form (ADR 0013). Only admins with form.publish see drafts; workers never
+        do. Saves carry the revision last read, and a stale one is refused, never merged.
+      summary: The form's draft
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDraft'
+          description: ''
+    put:
+      operationId: api_admin_forms_draft_update
+      description: |-
+        The one draft of a form (ADR 0013). Only admins with form.publish see drafts; workers never
+        do. Saves carry the revision last read, and a stale one is refused, never merged.
+      summary: Save the form's draft (revision 0 starts one)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormDraftSaveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormDraftSaveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FormDraftSaveRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDraft'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDraft'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaleDraft'
+          description: ''
+  /api/admin/forms/{id}/draft/publish/:
+    post:
+      operationId: api_admin_forms_draft_publish_create
+      description: Publish the draft as the next version and delete it, in one transaction.
+      summary: Publish the form's draft as its next version
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormDraftPublishRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormDraftPublishRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FormDraftPublishRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormVersionDetail'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaleDraft'
+          description: ''
   /api/admin/forms/{id}/versions/:
     post:
       operationId: api_admin_forms_versions_create
@@ -1092,6 +1203,50 @@ components:
           maxLength: 200
       required:
       - name
+    FormDraft:
+      type: object
+      properties:
+        schema:
+          description: Work in progress; may be incomplete or invalid.
+        revision:
+          type: integer
+          description: Send this back when saving or publishing.
+        based_on_version:
+          type: integer
+          nullable: true
+          description: The number of the latest published version when the draft was
+            started.
+        updated_by:
+          type: string
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - based_on_version
+      - revision
+      - schema
+      - updated_at
+      - updated_by
+    FormDraftPublishRequest:
+      type: object
+      properties:
+        revision:
+          type: integer
+          minimum: 1
+      required:
+      - revision
+    FormDraftSaveRequest:
+      type: object
+      properties:
+        schema: {}
+        revision:
+          type: integer
+          minimum: 0
+          description: The revision last read; 0 to start a draft.
+      required:
+      - revision
+      - schema
     FormVersion:
       type: object
       properties:
@@ -1514,6 +1669,26 @@ components:
         schema: {}
       required:
       - schema
+    StaleDraft:
+      type: object
+      description: 'The 409 problem body: the draft as it is now (null when it was
+        published or removed).'
+      properties:
+        status:
+          type: integer
+        code:
+          type: string
+        detail:
+          type: string
+        draft:
+          allOf:
+          - $ref: '#/components/schemas/FormDraft'
+          nullable: true
+      required:
+      - code
+      - detail
+      - draft
+      - status
     SubmissionDetail:
       type: object
       properties:

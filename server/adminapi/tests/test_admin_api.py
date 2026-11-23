@@ -42,6 +42,9 @@ def endpoints(record_id, assignment_id, form_id, version_id):
         ("post", "/forms/"),
         ("post", f"/forms/{form_id}/versions/"),
         ("post", "/forms/check-schema/"),
+        ("get", f"/forms/{form_id}/draft/"),
+        ("put", f"/forms/{form_id}/draft/"),
+        ("post", f"/forms/{form_id}/draft/publish/"),
         ("get", f"/form-versions/{version_id}/"),
         ("get", "/conflicts/"),
     ]
