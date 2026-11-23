@@ -1,0 +1,1848 @@
+[
+  {
+    "name": "generator inspection",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Generator inspection",
+      "properties": {
+        "site_contact": {
+          "type": "string",
+          "title": "Site contact",
+          "maxLength": 120
+        },
+        "oil_level": {
+          "type": "string",
+          "title": "Oil level",
+          "enum": [
+            "ok",
+            "low",
+            "empty"
+          ]
+        },
+        "oil_pressure_psi": {
+          "type": "number",
+          "title": "Oil pressure (psi)",
+          "minimum": 0,
+          "maximum": 200
+        },
+        "coolant_level_is_correct": {
+          "type": "boolean",
+          "title": "Coolant level is correct"
+        },
+        "hours_run": {
+          "type": "integer",
+          "title": "Hours run",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string",
+          "title": "Notes",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "oil_level",
+        "coolant_level_is_correct",
+        "hours_run"
+      ],
+      "additionalProperties": false,
+      "x-order": [
+        "site_contact",
+        "oil_level",
+        "oil_pressure_psi",
+        "coolant_level_is_correct",
+        "hours_run",
+        "notes"
+      ]
+    }
+  },
+  {
+    "name": "short text",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "site_name": {
+          "type": "string",
+          "title": "Site name",
+          "maxLength": 200
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "site_name"
+      ]
+    }
+  },
+  {
+    "name": "long text",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "remarks": {
+          "type": "string",
+          "title": "Remarks",
+          "maxLength": 2000
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "remarks"
+      ]
+    }
+  },
+  {
+    "name": "choice",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "title": "Condition",
+          "enum": [
+            "Option 1",
+            "Option 2"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "condition"
+      ]
+    }
+  },
+  {
+    "name": "yes/no",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "guard_fitted": {
+          "type": "boolean",
+          "title": "Guard fitted"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "guard_fitted"
+      ]
+    }
+  },
+  {
+    "name": "whole number",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "title": "Count"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "count"
+      ]
+    }
+  },
+  {
+    "name": "number",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "reading": {
+          "type": "number",
+          "title": "Reading",
+          "minimum": -2.5,
+          "maximum": 7.25
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "reading"
+      ]
+    }
+  },
+  {
+    "name": "unicode label and help",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "temperature": {
+          "type": "string",
+          "title": "Température 🔧",
+          "description": "Prüfen — 温度",
+          "maxLength": 200
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "temperature"
+      ]
+    }
+  },
+  {
+    "name": "kind switched twice",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "level": {
+          "type": "string",
+          "title": "Level",
+          "maxLength": 200
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "level"
+      ]
+    }
+  },
+  {
+    "name": "equal bounds",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "exactly_three": {
+          "type": "integer",
+          "title": "Exactly three",
+          "minimum": 3,
+          "maximum": 3
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "exactly_three"
+      ]
+    }
+  },
+  {
+    "name": "at the field limit",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Many fields",
+      "properties": {
+        "check_1": {
+          "type": "boolean",
+          "title": "Check 1"
+        },
+        "check_2": {
+          "type": "boolean",
+          "title": "Check 2"
+        },
+        "check_3": {
+          "type": "boolean",
+          "title": "Check 3"
+        },
+        "check_4": {
+          "type": "boolean",
+          "title": "Check 4"
+        },
+        "check_5": {
+          "type": "boolean",
+          "title": "Check 5"
+        },
+        "check_6": {
+          "type": "boolean",
+          "title": "Check 6"
+        },
+        "check_7": {
+          "type": "boolean",
+          "title": "Check 7"
+        },
+        "check_8": {
+          "type": "boolean",
+          "title": "Check 8"
+        },
+        "check_9": {
+          "type": "boolean",
+          "title": "Check 9"
+        },
+        "check_10": {
+          "type": "boolean",
+          "title": "Check 10"
+        },
+        "check_11": {
+          "type": "boolean",
+          "title": "Check 11"
+        },
+        "check_12": {
+          "type": "boolean",
+          "title": "Check 12"
+        },
+        "check_13": {
+          "type": "boolean",
+          "title": "Check 13"
+        },
+        "check_14": {
+          "type": "boolean",
+          "title": "Check 14"
+        },
+        "check_15": {
+          "type": "boolean",
+          "title": "Check 15"
+        },
+        "check_16": {
+          "type": "boolean",
+          "title": "Check 16"
+        },
+        "check_17": {
+          "type": "boolean",
+          "title": "Check 17"
+        },
+        "check_18": {
+          "type": "boolean",
+          "title": "Check 18"
+        },
+        "check_19": {
+          "type": "boolean",
+          "title": "Check 19"
+        },
+        "check_20": {
+          "type": "boolean",
+          "title": "Check 20"
+        },
+        "check_21": {
+          "type": "boolean",
+          "title": "Check 21"
+        },
+        "check_22": {
+          "type": "boolean",
+          "title": "Check 22"
+        },
+        "check_23": {
+          "type": "boolean",
+          "title": "Check 23"
+        },
+        "check_24": {
+          "type": "boolean",
+          "title": "Check 24"
+        },
+        "check_25": {
+          "type": "boolean",
+          "title": "Check 25"
+        },
+        "check_26": {
+          "type": "boolean",
+          "title": "Check 26"
+        },
+        "check_27": {
+          "type": "boolean",
+          "title": "Check 27"
+        },
+        "check_28": {
+          "type": "boolean",
+          "title": "Check 28"
+        },
+        "check_29": {
+          "type": "boolean",
+          "title": "Check 29"
+        },
+        "check_30": {
+          "type": "boolean",
+          "title": "Check 30"
+        },
+        "check_31": {
+          "type": "boolean",
+          "title": "Check 31"
+        },
+        "check_32": {
+          "type": "boolean",
+          "title": "Check 32"
+        },
+        "check_33": {
+          "type": "boolean",
+          "title": "Check 33"
+        },
+        "check_34": {
+          "type": "boolean",
+          "title": "Check 34"
+        },
+        "check_35": {
+          "type": "boolean",
+          "title": "Check 35"
+        },
+        "check_36": {
+          "type": "boolean",
+          "title": "Check 36"
+        },
+        "check_37": {
+          "type": "boolean",
+          "title": "Check 37"
+        },
+        "check_38": {
+          "type": "boolean",
+          "title": "Check 38"
+        },
+        "check_39": {
+          "type": "boolean",
+          "title": "Check 39"
+        },
+        "check_40": {
+          "type": "boolean",
+          "title": "Check 40"
+        },
+        "check_41": {
+          "type": "boolean",
+          "title": "Check 41"
+        },
+        "check_42": {
+          "type": "boolean",
+          "title": "Check 42"
+        },
+        "check_43": {
+          "type": "boolean",
+          "title": "Check 43"
+        },
+        "check_44": {
+          "type": "boolean",
+          "title": "Check 44"
+        },
+        "check_45": {
+          "type": "boolean",
+          "title": "Check 45"
+        },
+        "check_46": {
+          "type": "boolean",
+          "title": "Check 46"
+        },
+        "check_47": {
+          "type": "boolean",
+          "title": "Check 47"
+        },
+        "check_48": {
+          "type": "boolean",
+          "title": "Check 48"
+        },
+        "check_49": {
+          "type": "boolean",
+          "title": "Check 49"
+        },
+        "check_50": {
+          "type": "boolean",
+          "title": "Check 50"
+        },
+        "check_51": {
+          "type": "boolean",
+          "title": "Check 51"
+        },
+        "check_52": {
+          "type": "boolean",
+          "title": "Check 52"
+        },
+        "check_53": {
+          "type": "boolean",
+          "title": "Check 53"
+        },
+        "check_54": {
+          "type": "boolean",
+          "title": "Check 54"
+        },
+        "check_55": {
+          "type": "boolean",
+          "title": "Check 55"
+        },
+        "check_56": {
+          "type": "boolean",
+          "title": "Check 56"
+        },
+        "check_57": {
+          "type": "boolean",
+          "title": "Check 57"
+        },
+        "check_58": {
+          "type": "boolean",
+          "title": "Check 58"
+        },
+        "check_59": {
+          "type": "boolean",
+          "title": "Check 59"
+        },
+        "check_60": {
+          "type": "boolean",
+          "title": "Check 60"
+        },
+        "check_61": {
+          "type": "boolean",
+          "title": "Check 61"
+        },
+        "check_62": {
+          "type": "boolean",
+          "title": "Check 62"
+        },
+        "check_63": {
+          "type": "boolean",
+          "title": "Check 63"
+        },
+        "check_64": {
+          "type": "boolean",
+          "title": "Check 64"
+        },
+        "check_65": {
+          "type": "boolean",
+          "title": "Check 65"
+        },
+        "check_66": {
+          "type": "boolean",
+          "title": "Check 66"
+        },
+        "check_67": {
+          "type": "boolean",
+          "title": "Check 67"
+        },
+        "check_68": {
+          "type": "boolean",
+          "title": "Check 68"
+        },
+        "check_69": {
+          "type": "boolean",
+          "title": "Check 69"
+        },
+        "check_70": {
+          "type": "boolean",
+          "title": "Check 70"
+        },
+        "check_71": {
+          "type": "boolean",
+          "title": "Check 71"
+        },
+        "check_72": {
+          "type": "boolean",
+          "title": "Check 72"
+        },
+        "check_73": {
+          "type": "boolean",
+          "title": "Check 73"
+        },
+        "check_74": {
+          "type": "boolean",
+          "title": "Check 74"
+        },
+        "check_75": {
+          "type": "boolean",
+          "title": "Check 75"
+        },
+        "check_76": {
+          "type": "boolean",
+          "title": "Check 76"
+        },
+        "check_77": {
+          "type": "boolean",
+          "title": "Check 77"
+        },
+        "check_78": {
+          "type": "boolean",
+          "title": "Check 78"
+        },
+        "check_79": {
+          "type": "boolean",
+          "title": "Check 79"
+        },
+        "check_80": {
+          "type": "boolean",
+          "title": "Check 80"
+        },
+        "check_81": {
+          "type": "boolean",
+          "title": "Check 81"
+        },
+        "check_82": {
+          "type": "boolean",
+          "title": "Check 82"
+        },
+        "check_83": {
+          "type": "boolean",
+          "title": "Check 83"
+        },
+        "check_84": {
+          "type": "boolean",
+          "title": "Check 84"
+        },
+        "check_85": {
+          "type": "boolean",
+          "title": "Check 85"
+        },
+        "check_86": {
+          "type": "boolean",
+          "title": "Check 86"
+        },
+        "check_87": {
+          "type": "boolean",
+          "title": "Check 87"
+        },
+        "check_88": {
+          "type": "boolean",
+          "title": "Check 88"
+        },
+        "check_89": {
+          "type": "boolean",
+          "title": "Check 89"
+        },
+        "check_90": {
+          "type": "boolean",
+          "title": "Check 90"
+        },
+        "check_91": {
+          "type": "boolean",
+          "title": "Check 91"
+        },
+        "check_92": {
+          "type": "boolean",
+          "title": "Check 92"
+        },
+        "check_93": {
+          "type": "boolean",
+          "title": "Check 93"
+        },
+        "check_94": {
+          "type": "boolean",
+          "title": "Check 94"
+        },
+        "check_95": {
+          "type": "boolean",
+          "title": "Check 95"
+        },
+        "check_96": {
+          "type": "boolean",
+          "title": "Check 96"
+        },
+        "check_97": {
+          "type": "boolean",
+          "title": "Check 97"
+        },
+        "check_98": {
+          "type": "boolean",
+          "title": "Check 98"
+        },
+        "check_99": {
+          "type": "boolean",
+          "title": "Check 99"
+        },
+        "check_100": {
+          "type": "boolean",
+          "title": "Check 100"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "check_1",
+        "check_2",
+        "check_3",
+        "check_4",
+        "check_5",
+        "check_6",
+        "check_7",
+        "check_8",
+        "check_9",
+        "check_10",
+        "check_11",
+        "check_12",
+        "check_13",
+        "check_14",
+        "check_15",
+        "check_16",
+        "check_17",
+        "check_18",
+        "check_19",
+        "check_20",
+        "check_21",
+        "check_22",
+        "check_23",
+        "check_24",
+        "check_25",
+        "check_26",
+        "check_27",
+        "check_28",
+        "check_29",
+        "check_30",
+        "check_31",
+        "check_32",
+        "check_33",
+        "check_34",
+        "check_35",
+        "check_36",
+        "check_37",
+        "check_38",
+        "check_39",
+        "check_40",
+        "check_41",
+        "check_42",
+        "check_43",
+        "check_44",
+        "check_45",
+        "check_46",
+        "check_47",
+        "check_48",
+        "check_49",
+        "check_50",
+        "check_51",
+        "check_52",
+        "check_53",
+        "check_54",
+        "check_55",
+        "check_56",
+        "check_57",
+        "check_58",
+        "check_59",
+        "check_60",
+        "check_61",
+        "check_62",
+        "check_63",
+        "check_64",
+        "check_65",
+        "check_66",
+        "check_67",
+        "check_68",
+        "check_69",
+        "check_70",
+        "check_71",
+        "check_72",
+        "check_73",
+        "check_74",
+        "check_75",
+        "check_76",
+        "check_77",
+        "check_78",
+        "check_79",
+        "check_80",
+        "check_81",
+        "check_82",
+        "check_83",
+        "check_84",
+        "check_85",
+        "check_86",
+        "check_87",
+        "check_88",
+        "check_89",
+        "check_90",
+        "check_91",
+        "check_92",
+        "check_93",
+        "check_94",
+        "check_95",
+        "check_96",
+        "check_97",
+        "check_98",
+        "check_99",
+        "check_100"
+      ]
+    }
+  },
+  {
+    "name": "title at its limit",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "title": "Ok"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "ok"
+      ]
+    }
+  },
+  {
+    "name": "label at its limit",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll": {
+          "type": "boolean",
+          "title": "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+      ]
+    }
+  },
+  {
+    "name": "help at its limit",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "title": "Ok",
+          "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "ok"
+      ]
+    }
+  },
+  {
+    "name": "choices at their limit",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "pick": {
+          "type": "string",
+          "title": "Pick",
+          "enum": [
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc0",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc1",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc2",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc3",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc4",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc5",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc6",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc7",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc8",
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc9",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc10",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc11",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc12",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc13",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc14",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc15",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc16",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc17",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc18",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc19",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc20",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc21",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc22",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc23",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc24",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc25",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc26",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc27",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc28",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc29",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc30",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc31",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc32",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc33",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc34",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc35",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc36",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc37",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc38",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc39",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc40",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc41",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc42",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc43",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc44",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc45",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc46",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc47",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc48",
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc49"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "pick"
+      ]
+    }
+  },
+  {
+    "name": "longest text limit",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "essay": {
+          "type": "string",
+          "title": "Essay",
+          "maxLength": 10000
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "essay"
+      ]
+    }
+  },
+  {
+    "name": "64-character ID",
+    "builder_accepts": true,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": {
+          "type": "boolean",
+          "title": "Ok"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    }
+  },
+  {
+    "name": "too many fields",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Many fields",
+      "properties": {
+        "check_1": {
+          "type": "boolean",
+          "title": "Check 1"
+        },
+        "check_2": {
+          "type": "boolean",
+          "title": "Check 2"
+        },
+        "check_3": {
+          "type": "boolean",
+          "title": "Check 3"
+        },
+        "check_4": {
+          "type": "boolean",
+          "title": "Check 4"
+        },
+        "check_5": {
+          "type": "boolean",
+          "title": "Check 5"
+        },
+        "check_6": {
+          "type": "boolean",
+          "title": "Check 6"
+        },
+        "check_7": {
+          "type": "boolean",
+          "title": "Check 7"
+        },
+        "check_8": {
+          "type": "boolean",
+          "title": "Check 8"
+        },
+        "check_9": {
+          "type": "boolean",
+          "title": "Check 9"
+        },
+        "check_10": {
+          "type": "boolean",
+          "title": "Check 10"
+        },
+        "check_11": {
+          "type": "boolean",
+          "title": "Check 11"
+        },
+        "check_12": {
+          "type": "boolean",
+          "title": "Check 12"
+        },
+        "check_13": {
+          "type": "boolean",
+          "title": "Check 13"
+        },
+        "check_14": {
+          "type": "boolean",
+          "title": "Check 14"
+        },
+        "check_15": {
+          "type": "boolean",
+          "title": "Check 15"
+        },
+        "check_16": {
+          "type": "boolean",
+          "title": "Check 16"
+        },
+        "check_17": {
+          "type": "boolean",
+          "title": "Check 17"
+        },
+        "check_18": {
+          "type": "boolean",
+          "title": "Check 18"
+        },
+        "check_19": {
+          "type": "boolean",
+          "title": "Check 19"
+        },
+        "check_20": {
+          "type": "boolean",
+          "title": "Check 20"
+        },
+        "check_21": {
+          "type": "boolean",
+          "title": "Check 21"
+        },
+        "check_22": {
+          "type": "boolean",
+          "title": "Check 22"
+        },
+        "check_23": {
+          "type": "boolean",
+          "title": "Check 23"
+        },
+        "check_24": {
+          "type": "boolean",
+          "title": "Check 24"
+        },
+        "check_25": {
+          "type": "boolean",
+          "title": "Check 25"
+        },
+        "check_26": {
+          "type": "boolean",
+          "title": "Check 26"
+        },
+        "check_27": {
+          "type": "boolean",
+          "title": "Check 27"
+        },
+        "check_28": {
+          "type": "boolean",
+          "title": "Check 28"
+        },
+        "check_29": {
+          "type": "boolean",
+          "title": "Check 29"
+        },
+        "check_30": {
+          "type": "boolean",
+          "title": "Check 30"
+        },
+        "check_31": {
+          "type": "boolean",
+          "title": "Check 31"
+        },
+        "check_32": {
+          "type": "boolean",
+          "title": "Check 32"
+        },
+        "check_33": {
+          "type": "boolean",
+          "title": "Check 33"
+        },
+        "check_34": {
+          "type": "boolean",
+          "title": "Check 34"
+        },
+        "check_35": {
+          "type": "boolean",
+          "title": "Check 35"
+        },
+        "check_36": {
+          "type": "boolean",
+          "title": "Check 36"
+        },
+        "check_37": {
+          "type": "boolean",
+          "title": "Check 37"
+        },
+        "check_38": {
+          "type": "boolean",
+          "title": "Check 38"
+        },
+        "check_39": {
+          "type": "boolean",
+          "title": "Check 39"
+        },
+        "check_40": {
+          "type": "boolean",
+          "title": "Check 40"
+        },
+        "check_41": {
+          "type": "boolean",
+          "title": "Check 41"
+        },
+        "check_42": {
+          "type": "boolean",
+          "title": "Check 42"
+        },
+        "check_43": {
+          "type": "boolean",
+          "title": "Check 43"
+        },
+        "check_44": {
+          "type": "boolean",
+          "title": "Check 44"
+        },
+        "check_45": {
+          "type": "boolean",
+          "title": "Check 45"
+        },
+        "check_46": {
+          "type": "boolean",
+          "title": "Check 46"
+        },
+        "check_47": {
+          "type": "boolean",
+          "title": "Check 47"
+        },
+        "check_48": {
+          "type": "boolean",
+          "title": "Check 48"
+        },
+        "check_49": {
+          "type": "boolean",
+          "title": "Check 49"
+        },
+        "check_50": {
+          "type": "boolean",
+          "title": "Check 50"
+        },
+        "check_51": {
+          "type": "boolean",
+          "title": "Check 51"
+        },
+        "check_52": {
+          "type": "boolean",
+          "title": "Check 52"
+        },
+        "check_53": {
+          "type": "boolean",
+          "title": "Check 53"
+        },
+        "check_54": {
+          "type": "boolean",
+          "title": "Check 54"
+        },
+        "check_55": {
+          "type": "boolean",
+          "title": "Check 55"
+        },
+        "check_56": {
+          "type": "boolean",
+          "title": "Check 56"
+        },
+        "check_57": {
+          "type": "boolean",
+          "title": "Check 57"
+        },
+        "check_58": {
+          "type": "boolean",
+          "title": "Check 58"
+        },
+        "check_59": {
+          "type": "boolean",
+          "title": "Check 59"
+        },
+        "check_60": {
+          "type": "boolean",
+          "title": "Check 60"
+        },
+        "check_61": {
+          "type": "boolean",
+          "title": "Check 61"
+        },
+        "check_62": {
+          "type": "boolean",
+          "title": "Check 62"
+        },
+        "check_63": {
+          "type": "boolean",
+          "title": "Check 63"
+        },
+        "check_64": {
+          "type": "boolean",
+          "title": "Check 64"
+        },
+        "check_65": {
+          "type": "boolean",
+          "title": "Check 65"
+        },
+        "check_66": {
+          "type": "boolean",
+          "title": "Check 66"
+        },
+        "check_67": {
+          "type": "boolean",
+          "title": "Check 67"
+        },
+        "check_68": {
+          "type": "boolean",
+          "title": "Check 68"
+        },
+        "check_69": {
+          "type": "boolean",
+          "title": "Check 69"
+        },
+        "check_70": {
+          "type": "boolean",
+          "title": "Check 70"
+        },
+        "check_71": {
+          "type": "boolean",
+          "title": "Check 71"
+        },
+        "check_72": {
+          "type": "boolean",
+          "title": "Check 72"
+        },
+        "check_73": {
+          "type": "boolean",
+          "title": "Check 73"
+        },
+        "check_74": {
+          "type": "boolean",
+          "title": "Check 74"
+        },
+        "check_75": {
+          "type": "boolean",
+          "title": "Check 75"
+        },
+        "check_76": {
+          "type": "boolean",
+          "title": "Check 76"
+        },
+        "check_77": {
+          "type": "boolean",
+          "title": "Check 77"
+        },
+        "check_78": {
+          "type": "boolean",
+          "title": "Check 78"
+        },
+        "check_79": {
+          "type": "boolean",
+          "title": "Check 79"
+        },
+        "check_80": {
+          "type": "boolean",
+          "title": "Check 80"
+        },
+        "check_81": {
+          "type": "boolean",
+          "title": "Check 81"
+        },
+        "check_82": {
+          "type": "boolean",
+          "title": "Check 82"
+        },
+        "check_83": {
+          "type": "boolean",
+          "title": "Check 83"
+        },
+        "check_84": {
+          "type": "boolean",
+          "title": "Check 84"
+        },
+        "check_85": {
+          "type": "boolean",
+          "title": "Check 85"
+        },
+        "check_86": {
+          "type": "boolean",
+          "title": "Check 86"
+        },
+        "check_87": {
+          "type": "boolean",
+          "title": "Check 87"
+        },
+        "check_88": {
+          "type": "boolean",
+          "title": "Check 88"
+        },
+        "check_89": {
+          "type": "boolean",
+          "title": "Check 89"
+        },
+        "check_90": {
+          "type": "boolean",
+          "title": "Check 90"
+        },
+        "check_91": {
+          "type": "boolean",
+          "title": "Check 91"
+        },
+        "check_92": {
+          "type": "boolean",
+          "title": "Check 92"
+        },
+        "check_93": {
+          "type": "boolean",
+          "title": "Check 93"
+        },
+        "check_94": {
+          "type": "boolean",
+          "title": "Check 94"
+        },
+        "check_95": {
+          "type": "boolean",
+          "title": "Check 95"
+        },
+        "check_96": {
+          "type": "boolean",
+          "title": "Check 96"
+        },
+        "check_97": {
+          "type": "boolean",
+          "title": "Check 97"
+        },
+        "check_98": {
+          "type": "boolean",
+          "title": "Check 98"
+        },
+        "check_99": {
+          "type": "boolean",
+          "title": "Check 99"
+        },
+        "check_100": {
+          "type": "boolean",
+          "title": "Check 100"
+        },
+        "check_101": {
+          "type": "boolean",
+          "title": "Check 101"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "check_1",
+        "check_2",
+        "check_3",
+        "check_4",
+        "check_5",
+        "check_6",
+        "check_7",
+        "check_8",
+        "check_9",
+        "check_10",
+        "check_11",
+        "check_12",
+        "check_13",
+        "check_14",
+        "check_15",
+        "check_16",
+        "check_17",
+        "check_18",
+        "check_19",
+        "check_20",
+        "check_21",
+        "check_22",
+        "check_23",
+        "check_24",
+        "check_25",
+        "check_26",
+        "check_27",
+        "check_28",
+        "check_29",
+        "check_30",
+        "check_31",
+        "check_32",
+        "check_33",
+        "check_34",
+        "check_35",
+        "check_36",
+        "check_37",
+        "check_38",
+        "check_39",
+        "check_40",
+        "check_41",
+        "check_42",
+        "check_43",
+        "check_44",
+        "check_45",
+        "check_46",
+        "check_47",
+        "check_48",
+        "check_49",
+        "check_50",
+        "check_51",
+        "check_52",
+        "check_53",
+        "check_54",
+        "check_55",
+        "check_56",
+        "check_57",
+        "check_58",
+        "check_59",
+        "check_60",
+        "check_61",
+        "check_62",
+        "check_63",
+        "check_64",
+        "check_65",
+        "check_66",
+        "check_67",
+        "check_68",
+        "check_69",
+        "check_70",
+        "check_71",
+        "check_72",
+        "check_73",
+        "check_74",
+        "check_75",
+        "check_76",
+        "check_77",
+        "check_78",
+        "check_79",
+        "check_80",
+        "check_81",
+        "check_82",
+        "check_83",
+        "check_84",
+        "check_85",
+        "check_86",
+        "check_87",
+        "check_88",
+        "check_89",
+        "check_90",
+        "check_91",
+        "check_92",
+        "check_93",
+        "check_94",
+        "check_95",
+        "check_96",
+        "check_97",
+        "check_98",
+        "check_99",
+        "check_100",
+        "check_101"
+      ]
+    }
+  },
+  {
+    "name": "title too long",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "title": "Ok"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "ok"
+      ]
+    }
+  },
+  {
+    "name": "label too long",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll": {
+          "type": "boolean",
+          "title": "lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+      ]
+    }
+  },
+  {
+    "name": "help too long",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "title": "Ok",
+          "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "ok"
+      ]
+    }
+  },
+  {
+    "name": "too many choices",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "pick": {
+          "type": "string",
+          "title": "Pick",
+          "enum": [
+            "cc0",
+            "cc1",
+            "cc2",
+            "cc3",
+            "cc4",
+            "cc5",
+            "cc6",
+            "cc7",
+            "cc8",
+            "cc9",
+            "c10",
+            "c11",
+            "c12",
+            "c13",
+            "c14",
+            "c15",
+            "c16",
+            "c17",
+            "c18",
+            "c19",
+            "c20",
+            "c21",
+            "c22",
+            "c23",
+            "c24",
+            "c25",
+            "c26",
+            "c27",
+            "c28",
+            "c29",
+            "c30",
+            "c31",
+            "c32",
+            "c33",
+            "c34",
+            "c35",
+            "c36",
+            "c37",
+            "c38",
+            "c39",
+            "c40",
+            "c41",
+            "c42",
+            "c43",
+            "c44",
+            "c45",
+            "c46",
+            "c47",
+            "c48",
+            "c49",
+            "c50"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "pick"
+      ]
+    }
+  },
+  {
+    "name": "choice too long",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "pick": {
+          "type": "string",
+          "title": "Pick",
+          "enum": [
+            "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "pick"
+      ]
+    }
+  },
+  {
+    "name": "no choices",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "pick": {
+          "type": "string",
+          "title": "Pick",
+          "enum": []
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "pick"
+      ]
+    }
+  },
+  {
+    "name": "empty choice",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "pick": {
+          "type": "string",
+          "title": "Pick",
+          "enum": [
+            "a",
+            ""
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "pick"
+      ]
+    }
+  },
+  {
+    "name": "repeated choice",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "pick": {
+          "type": "string",
+          "title": "Pick",
+          "enum": [
+            "a",
+            "a"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "pick"
+      ]
+    }
+  },
+  {
+    "name": "text limit too large",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "essay": {
+          "type": "string",
+          "title": "Essay",
+          "maxLength": 10001
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "essay"
+      ]
+    }
+  },
+  {
+    "name": "shortest above longest",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "code": {
+          "type": "string",
+          "title": "Code",
+          "minLength": 9,
+          "maxLength": 4
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "code"
+      ]
+    }
+  },
+  {
+    "name": "smallest above largest",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "reading": {
+          "type": "number",
+          "title": "Reading",
+          "minimum": 5,
+          "maximum": 4.5
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "reading"
+      ]
+    }
+  },
+  {
+    "name": "negative longest",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "code": {
+          "type": "string",
+          "title": "Code",
+          "maxLength": -1
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "code"
+      ]
+    }
+  },
+  {
+    "name": "ID starts with a digit",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "1st": {
+          "type": "boolean",
+          "title": "Ok"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "1st"
+      ]
+    }
+  },
+  {
+    "name": "ID with capitals",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "Okay": {
+          "type": "boolean",
+          "title": "Ok"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "Okay"
+      ]
+    }
+  },
+  {
+    "name": "65-character ID",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Sample",
+      "properties": {
+        "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": {
+          "type": "boolean",
+          "title": "Ok"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "x-order": [
+        "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    }
+  },
+  {
+    "name": "no fields",
+    "builder_accepts": false,
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Empty",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false,
+      "x-order": []
+    }
+  }
+]

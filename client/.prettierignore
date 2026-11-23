@@ -5,3 +5,5 @@ coverage
 package-lock.json
 src/lib/api-types.ts
 public
+# Written by src/forms/builder-samples.test.ts; compared as data, not formatted by hand.
+src/forms/builder-samples.json

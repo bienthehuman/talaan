@@ -144,11 +144,20 @@ the JSON tab with a message saying why.
 
 ### 4.8 Keeping the builder honest
 
-- Pure functions in `client/src/forms/builder.ts` (`schemaToModel`, `modelToSchema`, `fieldName`,
-  move/add/remove). Seeded randomized round-trip tests: any valid schema → model → schema gives an
-  equal document; any model the builder can produce passes `forms/schema.py` (shared fixtures run on
-  both sides).
-- `compat.py` and the new schema rules get entries in `mutation_check_service.py`.
+- Pure functions in `client/src/forms/builder.ts`: `fromSchema` / `toSchema`, `fieldName`, the
+  edits (add, label, name, kind, update, move, duplicate, remove) and `checkBuilder`, which mirrors
+  the publish rules per field. `toSchema` always writes `$schema`, `required` and `x-order`, so a
+  form saved once by the builder is stable from then on.
+- Seeded randomized tests (`builder.test.ts`): 600 random valid schemas read and written back mean
+  the same and show the same fields in the same order; 300 random edit sequences give a schema
+  that reads back as the same model.
+- Shared samples: `builder-samples.test.ts` builds 34 forms through the builder (17 it accepts,
+  17 it refuses, many at a limit or one past it) into `client/src/forms/builder-samples.json`;
+  `server/forms/tests/test_builder_samples.py` requires the server's publish rules to agree on
+  every one. After a deliberate change, rewrite the file with `UPDATE_BUILDER_SAMPLES=1`.
+- The builder is stricter than the server in one way: every field needs a label.
+- The builder and `x-order` handling have entries in `client/scripts/mutation_check.py`; `compat.py`
+  and the schema rules in `mutation_check_service.py`.
 - E2E: an admin builds a form without touching JSON, publishes, assigns it; a worker fills it
   offline, syncs, and the fields appear in the order built.
 
