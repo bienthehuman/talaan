@@ -187,6 +187,8 @@ describe("the form builder", () => {
         }),
       );
       // The new card's label has focus, so typing goes straight in.
+      await waitFor(() => expect(document.activeElement).toHaveValue(""));
+      expect(document.activeElement).toHaveAccessibleName("Label");
       await user.keyboard(label);
     }
     expect(cardTitles()).toEqual(Object.values(labels).map((l, i) => `${i + 1}. ${l}`));
