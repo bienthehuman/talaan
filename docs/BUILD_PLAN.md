@@ -14,6 +14,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 3 | Conflicts: detection, `deleted_remotely`, resolution screen | Scenarios 4, 5, 6: all twelve pass in CI |
 | 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
 | 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed (tagged `v1.1.0`, done) |
+| 6 | Form builder: admins build forms without writing JSON; explicit field order, limits, frozen field names, server-side drafts ([FORM_BUILDER_PLAN.md](FORM_BUILDER_PLAN.md)) | An admin builds, publishes and assigns a form without touching JSON, and a worker fills it offline in the built order (e2e); all gates green; `v1.2.0` |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -223,8 +224,8 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 | 5.5 | **Admin pages.** Review queue, submission detail (two columns, action panel, field titles in history), forms, form editor, assignments, conflict log. | done |
 | 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | done |
 | 5.8 | **Controls polish** (owner feedback after `v1.1.0`): input focus as a highlight, eye button in password fields, roomier and styled selects and date fields, account menu with the theme as three choices and Sign out, right-aligned button groups, centred dialogs. | done |
-| 5.9 | **Focus and emphasis** (owner feedback after 5.8): fields, selects and the Yes/No group show focus as a 2 px accent border with no halo (selects keep it while their list is open); violet `--emphasis` as a third colour for key details (assignment headers, site names, data labels, login tagline). | in review |
-| 5.10 | **Plain-language copy.** Worker and admin text rewritten for non-technical readers: "the office" instead of "the server", "send" instead of "sync", no session/schema/id jargon in worker text, plain conflict-log labels, plainer server refusal reasons. Word list in DESIGN_SYSTEM.md section 7. | in review |
+| 5.9 | **Focus and emphasis** (owner feedback after 5.8): fields, selects and the Yes/No group show focus as a 2 px accent border with no halo (selects keep it while their list is open); violet `--emphasis` as a third colour for key details (assignment headers, site names, data labels, login tagline). | done (#44) |
+| 5.10 | **Plain-language copy.** Worker and admin text rewritten for non-technical readers: "the office" instead of "the server", "send" instead of "sync", no session/schema/id jargon in worker text, plain conflict-log labels, plainer server refusal reasons. Word list in DESIGN_SYSTEM.md section 7. | done (#46) |
 
 ### Definition of done per slice (phase 5)
 
@@ -243,6 +244,42 @@ names used by tests unchanged unless the PR lists the change; no inline `style=`
 - **5.5** Destructive actions are separated from Approve; history shows field titles; the admin assignments
   page has no horizontal scroll at 390 px.
 - **5.6** Impeccable audit has no open P0/P1; demo GIFs and README screenshots show v2; `v1.1.0` tagged.
+
+## Phase 6 slices: form builder
+
+Exit: `v1.2.0`. Admins build forms in a builder instead of writing JSON; the stored format stays the JSON
+Schema subset, and the server stays the judge of every rule. Design in
+[FORM_BUILDER_PLAN.md](FORM_BUILDER_PLAN.md), rules in DATA_MODEL.md section 5, endpoints in protocol.md
+section 11, decisions in [ADR 0013](adr/0013-form-drafts-and-frozen-field-names.md). No slice touches the
+sync service, `src/db/` or the sync engine.
+
+| Slice | Content | Status |
+|---|---|---|
+| 6.0 | **Docs.** Form builder plan, DATA_MODEL section 5 phase 6 rules, protocol section 11 draft endpoints and change summary, ADR 0013. | in review |
+| 6.1 | **Server schema rules.** `x-order`, limits, `forms/compat.py` (change summary; a field name keeps its type per form); `check-schema` returns `changes`; publish refuses `refused` changes; demo sample gets `x-order`. | |
+| 6.2 | **Server drafts.** `form_draft` model and migration, `GET`/`PUT` draft with revision (`409` when stale), publish from draft in one transaction, `Cache-Control: no-store` on `/api/admin/`. | |
+| 6.3 | **Client builder model.** `src/forms/builder.ts` (schema to model and back, field names from labels, add/move/remove) with randomized round-trip tests; `parseForm` honours `x-order`. | |
+| 6.4 | **Builder UI.** Builder and JSON tabs on one draft, field cards, choices editor, move up/down, live preview, change summary before Publish, autosave with a conflict message, "start from a copy". | |
+| 6.5 | **Proof.** E2E: build without JSON, publish, assign, worker fills offline and syncs in the built order; keyboard-only build; axe and tap sizes; README screenshot; `v1.2.0`. | |
+
+### Definition of done per slice (phase 6)
+
+Every slice: the server and client checks in CLAUDE.md green; OpenAPI and `api-types.ts` regenerated after
+any API change; docs updated in the same PR when a rule changes.
+
+- **6.1** Each rule in DATA_MODEL.md section 5 (phase 6) has a test that fails without it, including a type
+  change under a name used only in an older (not the latest) version; new rules have entries in
+  `mutation_check_service.py`; versions published before 6.1 still load and validate submissions.
+- **6.2** A stale `PUT` or publish is `409` and changes nothing; a draft never appears in `GET
+  /api/form-versions`, `/api/assignments` or pull, tested as a worker; publish creates the version and
+  removes the draft atomically (a failure leaves the draft); a worker gets 403 on every draft endpoint.
+- **6.3** Round trip: any valid schema → model → schema is equal (seeded random, 500+ cases); every schema
+  the builder produces passes the server rules (shared fixtures); a version without `x-order` keeps its
+  stored order.
+- **6.4** An admin can build every field type and publish without the JSON tab; problems show on the card
+  they belong to; reorder works by keyboard; no inline `style=`; `modules.test.ts` and the tap-target test
+  green; axe clean in light and dark at 390 px and 1366 px.
+- **6.5** The e2e scenario passes on desktop and Pixel 7; README shows the builder; `v1.2.0` tagged.
 
 ## Baseline checklist (phase 0)
 
