@@ -327,7 +327,7 @@ for the admin web, not for offline clients. Each endpoint needs one permission f
 | `GET submissions/` | `submission.approve` | The review queue, newest change first. Filters: `status`, `worker` (user id), `assignment`, `deleted` (`true`, `false`, `any`; default `false`). A bad filter value is `400`. |
 | `GET submissions/{id}/` | `submission.approve` | The record (data, field versions, form schema) and its event history in order, each with its actor. |
 | `POST submissions/{id}/actions/` | per action | Approve, return, restore, delete, edit (section 5, "Admin actions"). |
-| `GET workers/` | `assignment.manage` | Active users with the worker role, for the assignment form. |
+| `GET workers/` | `assignment.manage` | Active users with the worker role (`id`, `username`, `first_name`, `last_name`), for the assignment form and the workers page. |
 | `GET invites/` | `worker.manage` | Worker invites, newest first, each `{id, username, first_name, last_name, status, created_by, created_at, expires_at, accepted_at}`; `status` is `pending`, `expired`, `accepted` or `revoked`. Filter: `status`. From slice 7.1. |
 | `POST invites/` | `worker.manage` | `{username, first_name, last_name}`. The username must be valid for a Django user, not taken by a user, and not held by an open invite (field errors in `errors`). `201` with the invite and `token`, the only time the token is returned; the link is `/invite#<token>`, valid 7 days (ADR 0014). |
 | `POST invites/{id}/new-link/` | `worker.manage` | For a `pending` or `expired` invite: a new token and a new 7-day expiry; the old link stops working. `200` with the invite and `token`. An accepted or revoked invite is `409` `invite_closed`. |

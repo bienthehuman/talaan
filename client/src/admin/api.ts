@@ -7,6 +7,10 @@ export type SubmissionRow = components["schemas"]["SubmissionRow"];
 export type SubmissionDetail = components["schemas"]["SubmissionDetail"];
 export type AdminEvent = components["schemas"]["Event"];
 export type UserRef = components["schemas"]["UserRef"];
+export type Worker = components["schemas"]["AdminWorker"];
+export type Invite = components["schemas"]["AdminInvite"];
+export type InviteWithToken = components["schemas"]["AdminInviteWithToken"];
+export type InviteStatus = components["schemas"]["InviteStatusEnum"];
 export type ActionResult = components["schemas"]["MutationResult"];
 export type SubmissionStatus = components["schemas"]["SubmissionStatusEnum"];
 export type Assignment = components["schemas"]["AdminAssignment"];
@@ -70,8 +74,8 @@ export async function getSubmission(id: string): Promise<SubmissionDetail> {
   );
 }
 
-export async function listWorkers(): Promise<UserRef[]> {
-  return call(async () => unwrap(await api.GET("/api/admin/workers/")) as unknown as UserRef[]);
+export async function listWorkers(): Promise<Worker[]> {
+  return call(async () => unwrap(await api.GET("/api/admin/workers/")) as unknown as Worker[]);
 }
 
 /** One admin action. The answer is the service's result: `applied`, `rejected` or `conflict`. */
@@ -193,6 +197,39 @@ export async function cancelAssignment(id: number): Promise<Assignment> {
   return call(async () =>
     unwrap(await api.POST("/api/admin/assignments/{id}/cancel/", { params: { path: { id } } })),
   );
+}
+
+// --- worker invites (ADR 0014) ---------------------------------------------------------------
+
+export async function listInvites(query: { status?: InviteStatus; limit: number; offset: number }) {
+  return call(async () => unwrap(await api.GET("/api/admin/invites/", { params: { query } })));
+}
+
+/** The response is the only time the token is sent; the link is `inviteLink(token)`. */
+export async function createInvite(body: {
+  username: string;
+  first_name: string;
+  last_name: string;
+}): Promise<InviteWithToken> {
+  return call(async () => unwrap(await api.POST("/api/admin/invites/", { body })));
+}
+
+/** A new token and a new 7 days for an open invite; the old link stops working. */
+export async function newInviteLink(id: number): Promise<InviteWithToken> {
+  return call(async () =>
+    unwrap(await api.POST("/api/admin/invites/{id}/new-link/", { params: { path: { id } } })),
+  );
+}
+
+export async function revokeInvite(id: number): Promise<Invite> {
+  return call(async () =>
+    unwrap(await api.POST("/api/admin/invites/{id}/revoke/", { params: { path: { id } } })),
+  );
+}
+
+/** The token goes in the fragment, which browsers never send, so it stays out of request logs. */
+export function inviteLink(token: string, origin = window.location.origin): string {
+  return `${origin}/invite#${token}`;
 }
 
 // --- conflict log -----------------------------------------------------------------------------

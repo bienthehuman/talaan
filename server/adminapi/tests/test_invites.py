@@ -205,7 +205,9 @@ def test_accept_makes_a_worker_who_can_sign_in_and_pull(api_client, admin_user, 
     assert (user.first_name, user.last_name) == ("Maria", "Cruz")
     row.refresh_from_db()
     assert row.accepted_user == user and row.status() == "accepted"
-    assert {"id": user.id, "username": "maria"} in admin_client.get("/api/admin/workers/").json()
+    assert {"id": user.id, "username": "maria", "first_name": "Maria", "last_name": "Cruz"} in (
+        admin_client.get("/api/admin/workers/").json()
+    )
 
     login = api_client.post(
         "/api/auth/token/", {"username": "maria", "password": GOOD_PASSWORD}, format="json"

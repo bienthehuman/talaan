@@ -655,7 +655,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserRef'
+                  $ref: '#/components/schemas/AdminWorker'
           description: ''
   /api/assignments/:
     get:
@@ -1128,7 +1128,8 @@ components:
           type: string
           maxLength: 150
         status:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/InviteStatusEnum'
           readOnly: true
         created_by:
           type: string
@@ -1166,7 +1167,8 @@ components:
           type: string
           maxLength: 150
         status:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/InviteStatusEnum'
           readOnly: true
         created_by:
           type: string
@@ -1189,6 +1191,22 @@ components:
       - id
       - status
       - token
+      - username
+    AdminWorker:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+      required:
+      - first_name
+      - id
+      - last_name
       - username
     Assignment:
       type: object
@@ -1623,6 +1641,18 @@ components:
       - first_name
       - last_name
       - username
+    InviteStatusEnum:
+      enum:
+      - pending
+      - expired
+      - accepted
+      - revoked
+      type: string
+      description: |-
+        * `pending` - pending
+        * `expired` - expired
+        * `accepted` - accepted
+        * `revoked` - revoked
     InviteTokenRequest:
       type: object
       properties:

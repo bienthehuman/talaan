@@ -87,6 +87,7 @@ export function RootLayout() {
             <NavLink to="/manage/review">Review</NavLink>
             <NavLink to="/manage/forms">Forms</NavLink>
             <NavLink to="/manage/assignments">Assignments</NavLink>
+            <NavLink to="/manage/workers">Workers</NavLink>
             <NavLink to="/manage/conflicts">Conflict log</NavLink>
           </nav>
           <main id="main" tabIndex={-1} className={styles.main}>

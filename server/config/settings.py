@@ -164,7 +164,10 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
     "COMPONENT_SPLIT_REQUEST": True,
     # Two different `status` fields (a submission's, and a push result's) would otherwise collide.
-    "ENUM_NAME_OVERRIDES": {"SubmissionStatusEnum": "submissions.models.Status"},
+    "ENUM_NAME_OVERRIDES": {
+        "SubmissionStatusEnum": "submissions.models.Status",
+        "InviteStatusEnum": "adminapi.serializers.INVITE_STATUSES",
+    },
 }
 
 # --- Security headers and cookies ----------------------------------------------------------

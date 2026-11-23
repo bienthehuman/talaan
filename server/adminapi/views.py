@@ -121,7 +121,7 @@ def _assignments():
 
 class WorkerListView(generics.ListAPIView):
     permission_classes = [requires(ASSIGNMENT_MANAGE)]
-    serializer_class = s.UserRefSerializer
+    serializer_class = s.AdminWorkerSerializer
     pagination_class = None
 
     def get_queryset(self):
