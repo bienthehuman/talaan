@@ -25,6 +25,10 @@ Option 1, written down, with these rules:
 - **Refresh fails.** If the server refuses the refresh token, the engine pauses and the app asks for
   the password again, for the same account only. Local data and the outbox are never touched. If the
   server cannot be reached, that is not a logout: the engine retries with backoff.
+- **Online-only pages (admin).** Admins have no sync engine, so every admin API call
+  (`client/src/admin/api.ts`) does the same on a 401: refresh once through `auth/refresh.ts` and
+  repeat the request. Repeating is safe because authentication runs before the view. If the refresh
+  token is refused, the page says the session expired and asks the admin to sign in again.
 - **Sign-out.** Signing out removes that person's local database from the device (a shared device
   must not keep their records) and asks first when changes are unsent. Expiry is not sign-out and
   deletes nothing.

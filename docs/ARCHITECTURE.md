@@ -68,7 +68,7 @@ The lost-response case is in [diagrams/push-pull-lost-response.md](diagrams/push
 
 `djangorestframework-simplejwt`: short-lived access token, refresh token. A 401 during sync refreshes the
 token once and repeats the cycle; if that fails it pauses and asks for the password, leaving the outbox
-untouched (ADR 0010). Offline use needs one prior login; local data is keyed
+untouched (ADR 0010). Admin API calls refresh once on a 401 and repeat the request. Offline use needs one prior login; local data is keyed
 by `userId`. Roles are Django groups; permissions are a code catalog checked against `ROLES.md`.
 
 ## 6. Environments
