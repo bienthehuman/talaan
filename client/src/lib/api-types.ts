@@ -181,6 +181,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/invites/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List worker invites, newest first */
+        get: operations["api_admin_invites_list"];
+        put?: never;
+        /** Invite a worker; the response carries the link token, once */
+        post: operations["api_admin_invites_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/invites/{id}/new-link/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replace an open invite's link (new token, new 7-day expiry) */
+        post: operations["api_admin_invites_new_link_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/invites/{id}/revoke/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke an open invite; its link stops working */
+        post: operations["api_admin_invites_revoke_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/submissions/": {
         parameters: {
             query?: never;
@@ -352,6 +404,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/invites/accept/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set a password and become a worker; the link then stops working
+         * @description Public invite endpoints: no authentication (a stale `Authorization` header is ignored),
+         *     throttled per client address. The token travels only in the body (ADR 0014).
+         */
+        post: operations["api_invites_accept_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invites/check/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Who an invite link is for, if it can still be used
+         * @description Public invite endpoints: no authentication (a stale `Authorization` header is ignored),
+         *     throttled per client address. The token travels only in the body (ADR 0014).
+         */
+        post: operations["api_invites_check_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/": {
         parameters: {
             query?: never;
@@ -442,6 +536,36 @@ export interface components {
             readonly published_at: string | null;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        AdminInvite: {
+            readonly id: number;
+            username: string;
+            first_name?: string;
+            last_name?: string;
+            readonly status: string;
+            created_by: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            accepted_at?: string | null;
+        };
+        /** @description The only response that carries the token: the link is `/invite#<token>`. */
+        AdminInviteWithToken: {
+            readonly id: number;
+            username: string;
+            first_name?: string;
+            last_name?: string;
+            readonly status: string;
+            created_by: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            accepted_at?: string | null;
+            readonly token: string;
         };
         Assignment: {
             id: number;
@@ -604,6 +728,30 @@ export interface components {
             status: string;
             database: string;
         };
+        InviteAcceptRequest: {
+            token: string;
+            password: string;
+        };
+        InviteAccepted: {
+            username: string;
+        };
+        InviteCreateRequest: {
+            username: string;
+            /** @default  */
+            first_name: string;
+            /** @default  */
+            last_name: string;
+        };
+        InviteInfo: {
+            username: string;
+            first_name: string;
+            last_name: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        InviteTokenRequest: {
+            token: string;
+        };
         /**
          * @description * `safe` - safe
          *     * `review` - review
@@ -648,6 +796,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["AdminAssignment"][];
+        };
+        PaginatedAdminInviteList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["AdminInvite"][];
         };
         PaginatedConflictLogRowList: {
             /** @example 123 */
@@ -1180,6 +1343,98 @@ export interface operations {
             };
         };
     };
+    api_admin_invites_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+                status?: "accepted" | "expired" | "pending" | "revoked";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAdminInviteList"];
+                };
+            };
+        };
+    };
+    api_admin_invites_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InviteCreateRequest"];
+                "multipart/form-data": components["schemas"]["InviteCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInviteWithToken"];
+                };
+            };
+        };
+    };
+    api_admin_invites_new_link_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInviteWithToken"];
+                };
+            };
+        };
+    };
+    api_admin_invites_revoke_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInvite"];
+                };
+            };
+        };
+    };
     api_admin_submissions_list: {
         parameters: {
             query?: {
@@ -1499,6 +1754,56 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    api_invites_accept_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteAcceptRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InviteAcceptRequest"];
+                "multipart/form-data": components["schemas"]["InviteAcceptRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteAccepted"];
+                };
+            };
+        };
+    };
+    api_invites_check_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteTokenRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InviteTokenRequest"];
+                "multipart/form-data": components["schemas"]["InviteTokenRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteInfo"];
+                };
             };
         };
     };

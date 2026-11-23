@@ -1,8 +1,10 @@
 """Shapes for the admin API (docs/protocol.md section 11). Read-only serializers describe responses;
 the few request serializers validate what an admin sends."""
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 
+from accounts.models import WorkerInvite
 from assignments.models import Assignment
 from forms.models import Form, FormVersion
 from submissions.models import Submission, SubmissionEvent
@@ -194,3 +196,46 @@ class ConflictLogRowSerializer(serializers.Serializer):
     changed_since = serializers.BooleanField(
         help_text="The same worker has changed this record on the server since."
     )
+
+
+INVITE_STATUSES = ("pending", "expired", "accepted", "revoked")
+
+
+class AdminInviteSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+    created_by = serializers.CharField(source="created_by.username")
+
+    class Meta:
+        model = WorkerInvite
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "status",
+            "created_by",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+        ]
+
+    def get_status(self, invite) -> str:
+        return invite.status()
+
+
+class AdminInviteWithTokenSerializer(AdminInviteSerializer):
+    """The only response that carries the token: the link is `/invite#<token>`."""
+
+    token = serializers.SerializerMethodField()
+
+    class Meta(AdminInviteSerializer.Meta):
+        fields = [*AdminInviteSerializer.Meta.fields, "token"]
+
+    def get_token(self, invite) -> str:
+        return self.context["token"]
+
+
+class InviteCreateSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150, validators=[UnicodeUsernameValidator()])
+    first_name = serializers.CharField(max_length=150, allow_blank=True, required=False, default="")
+    last_name = serializers.CharField(max_length=150, allow_blank=True, required=False, default="")

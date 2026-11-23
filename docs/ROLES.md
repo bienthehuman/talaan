@@ -43,7 +43,7 @@ Permissions live in code as a catalog; roles are data (a group per role). No mul
 
 `submission.create`, `submission.edit`, `submission.submit`, `submission.delete`,
 `submission.approve`, `submission.return`, `submission.restore`, `assignment.manage`,
-`form.publish`, `conflictlog.view`, `metrics.view`.
+`form.publish`, `conflictlog.view`, `metrics.view`, `worker.manage`.
 
 Worker: create, edit, submit, delete (all scoped to own). Admin: all except create/submit.
 A test compares the catalog in code against this section so they cannot drift.

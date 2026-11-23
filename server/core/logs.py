@@ -23,6 +23,7 @@ FIELDS = (
     "device_id",
     "mutation_id",
     "record_id",
+    "invite_id",
     "op",
     "code",
     "kind",

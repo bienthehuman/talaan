@@ -392,6 +392,111 @@ paths:
               schema:
                 $ref: '#/components/schemas/SchemaCheck'
           description: ''
+  /api/admin/invites/:
+    get:
+      operationId: api_admin_invites_list
+      summary: List worker invites, newest first
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - accepted
+          - expired
+          - pending
+          - revoked
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminInviteList'
+          description: ''
+    post:
+      operationId: api_admin_invites_create
+      summary: Invite a worker; the response carries the link token, once
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInviteWithToken'
+          description: ''
+  /api/admin/invites/{id}/new-link/:
+    post:
+      operationId: api_admin_invites_new_link_create
+      summary: Replace an open invite's link (new token, new 7-day expiry)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInviteWithToken'
+          description: ''
+  /api/admin/invites/{id}/revoke/:
+    post:
+      operationId: api_admin_invites_revoke_create
+      summary: Revoke an open invite; its link stops working
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvite'
+          description: ''
   /api/admin/submissions/:
     get:
       operationId: api_admin_submissions_list
@@ -720,6 +825,66 @@ paths:
           description: ''
         '503':
           description: Database unreachable (problem+json)
+  /api/invites/accept/:
+    post:
+      operationId: api_invites_accept_create
+      description: |-
+        Public invite endpoints: no authentication (a stale `Authorization` header is ignored),
+        throttled per client address. The token travels only in the body (ADR 0014).
+      summary: Set a password and become a worker; the link then stops working
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteAcceptRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteAcceptRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteAcceptRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteAccepted'
+          description: ''
+  /api/invites/check/:
+    post:
+      operationId: api_invites_check_create
+      description: |-
+        Public invite endpoints: no authentication (a stale `Authorization` header is ignored),
+        throttled per client address. The token travels only in the body (ADR 0014).
+      summary: Who an invite link is for, if it can still be used
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteTokenRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteInfo'
+          description: ''
   /api/me/:
     get:
       operationId: api_me_retrieve
@@ -946,6 +1111,85 @@ components:
       - id
       - number
       - published_at
+    AdminInvite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        status:
+          type: string
+          readOnly: true
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        accepted_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - created_by
+      - expires_at
+      - id
+      - status
+      - username
+    AdminInviteWithToken:
+      type: object
+      description: 'The only response that carries the token: the link is `/invite#<token>`.'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        status:
+          type: string
+          readOnly: true
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        accepted_at:
+          type: string
+          format: date-time
+          nullable: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - created_by
+      - expires_at
+      - id
+      - status
+      - token
+      - username
     Assignment:
       type: object
       properties:
@@ -1323,6 +1567,71 @@ components:
       required:
       - database
       - status
+    InviteAcceptRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 128
+        password:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - password
+      - token
+    InviteAccepted:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+      - username
+    InviteCreateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          default: ''
+          maxLength: 150
+        last_name:
+          type: string
+          default: ''
+          maxLength: 150
+      required:
+      - username
+    InviteInfo:
+      type: object
+      properties:
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - expires_at
+      - first_name
+      - last_name
+      - username
+    InviteTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - token
     LevelEnum:
       enum:
       - safe
@@ -1408,6 +1717,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminAssignment'
+    PaginatedAdminInviteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminInvite'
     PaginatedConflictLogRowList:
       type: object
       required:

@@ -13,14 +13,16 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts import invites
 from accounts.drf import requires
-from accounts.models import User
+from accounts.models import User, WorkerInvite
 from accounts.permissions import (
     ASSIGNMENT_MANAGE,
     CONFLICTLOG_VIEW,
     FORM_PUBLISH,
     SUBMISSION_APPROVE,
     WORKER,
+    WORKER_MANAGE,
 )
 from assignments.models import Assignment
 from core.errors import problem_response
@@ -128,6 +130,102 @@ class WorkerListView(generics.ListAPIView):
     @extend_schema(summary="Workers an assignment can be given to")
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+# --- worker invites (ADR 0014) ----------------------------------------------------------------
+
+
+def _invite_status_filter(qs, status: str):
+    now = timezone.now()
+    open_ = Q(accepted_at__isnull=True, revoked_at__isnull=True)
+    return qs.filter(
+        {
+            "accepted": Q(accepted_at__isnull=False),
+            "revoked": Q(revoked_at__isnull=False),
+            "expired": open_ & Q(expires_at__lte=now),
+            "pending": open_ & Q(expires_at__gt=now),
+        }[status]
+    )
+
+
+def _invite_response(invite, token=None, status=200):
+    if token is None:
+        return Response(s.AdminInviteSerializer(invite).data, status=status)
+    return Response(
+        s.AdminInviteWithTokenSerializer(invite, context={"token": token}).data, status=status
+    )
+
+
+class InviteRefusalMixin:
+    def handle_exception(self, exc):
+        if isinstance(exc, invites.InviteError):
+            return problem_response(exc.status, exc.code, exc.detail)
+        return super().handle_exception(exc)
+
+
+class InviteListCreateView(InviteRefusalMixin, generics.ListCreateAPIView):
+    permission_classes = [requires(WORKER_MANAGE)]
+    serializer_class = s.AdminInviteSerializer
+
+    def get_queryset(self):
+        qs = WorkerInvite.objects.select_related("created_by").order_by("-created_at", "-id")
+        status = self.request.query_params.get("status")
+        if status in (None, ""):
+            return qs
+        if status not in s.INVITE_STATUSES:
+            raise ValidationError({"status": f"Use one of: {', '.join(s.INVITE_STATUSES)}."})
+        return _invite_status_filter(qs, status)
+
+    @extend_schema(
+        parameters=[OpenApiParameter("status", str, enum=list(s.INVITE_STATUSES))],
+        summary="List worker invites, newest first",
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        request=s.InviteCreateSerializer,
+        responses={201: s.AdminInviteWithTokenSerializer},
+        summary="Invite a worker; the response carries the link token, once",
+    )
+    def post(self, request, *args, **kwargs):
+        body = s.InviteCreateSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        data = body.validated_data
+        invite, token = invites.create(
+            request.user, data["username"], data["first_name"].strip(), data["last_name"].strip()
+        )
+        return _invite_response(invite, token, status=201)
+
+
+class InviteNewLinkView(InviteRefusalMixin, APIView):
+    permission_classes = [requires(WORKER_MANAGE)]
+
+    @extend_schema(
+        request=None,
+        responses={200: s.AdminInviteWithTokenSerializer},
+        summary="Replace an open invite's link (new token, new 7-day expiry)",
+    )
+    def post(self, request, pk):
+        made = invites.new_link(request.user, pk)
+        if made is None:
+            raise NotFound("No such invite.")
+        return _invite_response(*made)
+
+
+class InviteRevokeView(InviteRefusalMixin, APIView):
+    permission_classes = [requires(WORKER_MANAGE)]
+
+    @extend_schema(
+        request=None,
+        responses={200: s.AdminInviteSerializer},
+        summary="Revoke an open invite; its link stops working",
+    )
+    def post(self, request, pk):
+        invite = invites.revoke(request.user, pk)
+        if invite is None:
+            raise NotFound("No such invite.")
+        return _invite_response(invite)
 
 
 class AssignmentListCreateView(generics.ListCreateAPIView):

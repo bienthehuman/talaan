@@ -291,8 +291,8 @@ passwords are out of scope (backlog).
 
 | Slice | Content | Status |
 |---|---|---|
-| 7.0 | **Docs.** This plan, ADR 0014, `worker_invite` in DATA_MODEL, invite endpoints in protocol section 11. | in review |
-| 7.1 | **Server.** `worker_invite` model and migration (partial unique index on open usernames), `worker.manage` in the catalog and ROLES.md section 3, admin invite endpoints (list, create, new link, revoke), public `check` and `accept` with the `invite` throttle, `no-store`, log events. | planned |
+| 7.0 | **Docs.** This plan, ADR 0014, `worker_invite` in DATA_MODEL, invite endpoints in protocol section 11. | done (#54) |
+| 7.1 | **Server.** `worker_invite` model and migration (partial unique index on open usernames), `worker.manage` in the catalog and ROLES.md section 3, admin invite endpoints (list, create, new link, revoke), public `check` and `accept` with the `invite` throttle, `no-store`, log events. | in review |
 | 7.2 | **Admin UI.** `/manage/workers`: workers list, invites with status, "Invite worker" form, the link shown once with a copy button, new link and revoke with a confirm. Nav link "Workers". | planned |
 | 7.3 | **Invite page and proof.** Public `/invite` page: reads the token from the fragment and removes it from the address bar, greets by name, set password (show/hide, confirm), clear messages for expired, used and revoked links, then signs in. E2E: invite, accept in a second browser, assign, fill offline, sync. README, `v1.3.0`. | planned |
 

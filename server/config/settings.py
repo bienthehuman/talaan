@@ -139,6 +139,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "login": env("THROTTLE_LOGIN", default="10/min"),
         "push": env("THROTTLE_PUSH", default="120/min"),
+        "invite": env("THROTTLE_INVITE", default="10/min"),
     },
     # Number of proxies in front of Django (production: Caddy and nginx = 2). Without this every
     # client shares the proxy's address and the login rate limit becomes one global bucket.

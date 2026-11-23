@@ -4,7 +4,7 @@ from django.views.decorators.csp import csp_override
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from accounts.views import LoginView, MeView
+from accounts.views import InviteAcceptView, InviteCheckView, LoginView, MeView
 from adminapi import views as admin_views
 from core.views import HealthView
 from sync import views as sync_views
@@ -27,6 +27,8 @@ urlpatterns = [
     path("api/auth/token/", LoginView.as_view(), name="token_obtain"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/me/", MeView.as_view(), name="me"),
+    path("api/invites/check/", InviteCheckView.as_view(), name="invite_check"),
+    path("api/invites/accept/", InviteAcceptView.as_view(), name="invite_accept"),
     path("api/sync/push/", sync_views.PushView.as_view(), name="sync_push"),
     path("api/sync/pull/", sync_views.PullView.as_view(), name="sync_pull"),
     path(
@@ -43,6 +45,17 @@ urlpatterns = [
         name="admin_submission",
     ),
     path("api/admin/workers/", admin_views.WorkerListView.as_view(), name="admin_workers"),
+    path("api/admin/invites/", admin_views.InviteListCreateView.as_view(), name="admin_invites"),
+    path(
+        "api/admin/invites/<int:pk>/new-link/",
+        admin_views.InviteNewLinkView.as_view(),
+        name="admin_invite_new_link",
+    ),
+    path(
+        "api/admin/invites/<int:pk>/revoke/",
+        admin_views.InviteRevokeView.as_view(),
+        name="admin_invite_revoke",
+    ),
     path(
         "api/admin/assignments/",
         admin_views.AssignmentListCreateView.as_view(),
