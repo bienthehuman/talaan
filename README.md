@@ -51,7 +51,11 @@ docker compose exec server python manage.py seed_demo
 | Login | Password | What it is |
 |---|---|---|
 | `worker1`, `worker2` | `demo-password-1` | Field workers. Each has one assignment. |
-| `admin` | `demo-password-1` | Review queue, forms, assignments and conflict log under `/manage`. |
+| `admin` | `demo-password-1` | Review queue, forms, assignments, workers and conflict log under `/manage`. |
+
+There is no sign-up. To add a worker, sign in as `admin`, open **Workers** and create an invite link; open
+it in another browser (or a private window), choose a password, and that person is a worker. A link works
+once and for 7 days, and the server stores only a hash of it ([ADR 0014](docs/adr/0014-worker-invites.md)).
 
 ## Try to break it
 
@@ -147,6 +151,8 @@ worker on the client; pytest, Vitest and Playwright; Docker Compose and GitHub A
   Web Lock so only one tab syncs.
 - Roles are data (groups) and permissions are a catalog in code; the admin API checks the catalog, not role
   names.
+- Workers join through a one-time invite link: the token travels in the URL fragment and a POST body, never
+  in a logged URL, and the account exists only once its owner has chosen a password.
 
 Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), the [protocol](docs/protocol.md), the
 [push/pull lost-response diagram](docs/diagrams/push-pull-lost-response.md) and the
