@@ -328,6 +328,10 @@ for the admin web, not for offline clients. Each endpoint needs one permission f
 | `GET submissions/{id}/` | `submission.approve` | The record (data, field versions, form schema) and its event history in order, each with its actor. |
 | `POST submissions/{id}/actions/` | per action | Approve, return, restore, delete, edit (section 5, "Admin actions"). |
 | `GET workers/` | `assignment.manage` | Active users with the worker role, for the assignment form. |
+| `GET invites/` | `worker.manage` | Worker invites, newest first, each `{id, username, first_name, last_name, status, created_by, created_at, expires_at, accepted_at}`; `status` is `pending`, `expired`, `accepted` or `revoked`. Filter: `status`. From slice 7.1. |
+| `POST invites/` | `worker.manage` | `{username, first_name, last_name}`. The username must be valid for a Django user, not taken by a user, and not held by an open invite (field errors in `errors`). `201` with the invite and `token`, the only time the token is returned; the link is `/invite#<token>`, valid 7 days (ADR 0014). |
+| `POST invites/{id}/new-link/` | `worker.manage` | For a `pending` or `expired` invite: a new token and a new 7-day expiry; the old link stops working. `200` with the invite and `token`. An accepted or revoked invite is `409` `invite_closed`. |
+| `POST invites/{id}/revoke/` | `worker.manage` | Sets `revoked_at` on a `pending` or `expired` invite; the link stops working and the username is free again. A second call changes nothing; an accepted invite is `409` `invite_closed`. |
 | `GET assignments/` | `assignment.manage` | All assignments with their submission count. Filters: `worker`, `cancelled` (default `any`). |
 | `POST assignments/` | `assignment.manage` | `{form_version_id, worker_id, site_name, due_date?}`. The version must be published and the user a worker; problems are field errors in `errors`. |
 | `POST assignments/{id}/cancel/` | `assignment.manage` | Sets `cancelled_at` once; existing submissions stay; a second call changes nothing. |
@@ -341,6 +345,22 @@ for the admin web, not for offline clients. Each endpoint needs one permission f
 | `GET conflicts/` | `conflictlog.view` | Every `conflict` and `rejected` event caused by a worker's own change on a record assigned to them, newest first: `reason` (conflict kind or rejection code), `fields`, the record, the worker, `mutation_id`, and `changed_since` (the same worker has changed that record on the server afterwards). Filters: `kind`, `worker`, `changed_since`. |
 
 Every `/api/admin/` response sends `Cache-Control: no-store` (`core.middleware.AdminNoStoreMiddleware`).
+
+### Invite acceptance (public)
+
+Under `/api/invites/`, no authentication (an `Authorization` header is ignored), throttled per client
+address with scope `invite` (same rate as login), `Cache-Control: no-store`. The token travels only in the
+body. From slice 7.1.
+
+| Endpoint | What it does |
+|---|---|
+| `POST check/` | `{token}` returns `{username, first_name, last_name, expires_at}` for a pending invite, so the page can greet the invitee. |
+| `POST accept/` | `{token, password}`. With the invite row locked: must still be pending; the password passes Django's validators (checked against the username and names; failures are `400` with `errors.password`, a list of sentences); the username must still be free (`409` `username_taken`). Then creates the user in the `worker` group and marks the invite accepted, in one transaction: `201` `{username}`. The client then signs in through the normal login endpoint. |
+
+Both return `404` `invite_not_found` for an unknown token and `410` with `invite_expired`, `invite_used`
+or `invite_revoked` otherwise, so the page can say what to do (ask the admin for a new link, or sign in).
+The token has 256 bits, so telling these apart reveals nothing useful. Logs record `invite_created`,
+`invite_reissued`, `invite_revoked` and `invite_accepted` with ids only, never a token.
 
 The conflict log cannot see what a worker did on their device. A worker who discards their edits leaves no
 trace on the server, so `changed_since: false` means "no later change from that worker", not "unresolved".

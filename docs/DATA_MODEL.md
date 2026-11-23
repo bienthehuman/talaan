@@ -14,6 +14,7 @@ Status: accepted. The server owns every version and sequence.
 | `applied_mutation` | mutation_id UUID PK, device_id, user_id, result JSONB, created_at | Idempotency ledger, one row per mutation ever processed |
 | `submission_event` | id, submission_id, version, kind, actor_id, mutation_id, detail JSONB, created_at | Append-only audit trail; feeds admin history and the v1 conflict log |
 | `device` | id UUID, user_id, last_seen_at, app_version | Registered on first sync |
+| `worker_invite` | id, username, first_name, last_name, token_hash (unique), created_by, created_at, expires_at, accepted_at, accepted_user_id, revoked_at | Phase 7 (ADR 0014). Only the SHA-256 of the link token is stored. At most one open invite (not accepted, not revoked) per username: partial unique index. Status is derived: `accepted`, `revoked`, `expired` (`expires_at` passed), else `pending`. Rows are kept as a record |
 
 Submission status: `draft → submitted → approved`, plus `returned` (admin sends back; worker can
 edit again). `approved` and `submitted` are locked for workers.
