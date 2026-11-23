@@ -21,6 +21,11 @@ Both clips are real runs of the app (`bash scripts/demo.sh` records them), not m
   <img src="docs/media/screen-admin.png" alt="Admin review of an inspection in dark mode: answers, history timeline and the action panel" width="560">
 </p>
 
+**Admins build forms without writing JSON.** Each field is a card; the worker preview and the Publish
+check stay beside it, and work in progress is saved as a server draft.
+
+<img src="docs/media/screen-builder.png" alt="The form builder: a Choice field card with its choices editor, beside the Publish card and a live preview of the worker's form" width="680">
+
 **Work offline, reload, reconnect while the server drops its first answer: one record, no duplicate.**
 
 ![Offline work, a reload, and a dropped response](docs/media/offline-and-lost-response.gif)

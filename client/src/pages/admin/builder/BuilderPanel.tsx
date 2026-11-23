@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { TextField } from "../../../components/TextField";
@@ -36,8 +36,9 @@ export function BuilderPanel({
   const label = (id: string) =>
     model.fields.find((f) => f.id === id)?.title?.trim() || "Untitled field";
 
-  // A new or duplicated card takes focus on its label, so typing can start straight away.
-  useEffect(() => {
+  // A new or duplicated card takes focus on its label, so typing can start straight away. A layout
+  // effect, so focus moves before the browser handles the next key press.
+  useLayoutEffect(() => {
     if (!focusCard.current) return;
     const card = document.getElementById(`card-${focusCard.current}`);
     focusCard.current = null;

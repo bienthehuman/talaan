@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useId, useLayoutEffect, useRef } from "react";
 import { Button } from "../../../components/Button";
 import { TextField } from "../../../components/TextField";
 import {
@@ -293,8 +293,8 @@ export function ChoicesEditor({
   const focus = useRef<{ index: number; part: string } | null>(null);
   const setFocus = (target: { index: number; part: string }) => (focus.current = target);
 
-  // After a move, add or remove, focus follows the choice (runs after the re-render).
-  useEffect(() => {
+  // After a move, add or remove, focus follows the choice (before the next key press).
+  useLayoutEffect(() => {
     const target = focus.current;
     if (!target) return;
     focus.current = null;

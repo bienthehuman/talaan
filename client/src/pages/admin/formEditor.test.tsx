@@ -152,7 +152,7 @@ describe("the form builder", () => {
     expect(publishButton()).toBeDisabled();
     expect(api.to("PUT", "/api/admin/forms/1/draft/")).toHaveLength(0);
     await expectNoA11yViolations(container);
-  });
+  }, 15_000); // axe over a page of field cards is slow in jsdom
 
   it("a published field keeps its kind of answer", async () => {
     server();
@@ -187,6 +187,8 @@ describe("the form builder", () => {
         }),
       );
       // The new card's label has focus, so typing goes straight in.
+      await waitFor(() => expect(document.activeElement).toHaveValue(""));
+      expect(document.activeElement).toHaveAccessibleName("Label");
       await user.keyboard(label);
     }
     expect(cardTitles()).toEqual(Object.values(labels).map((l, i) => `${i + 1}. ${l}`));
@@ -254,7 +256,7 @@ describe("the form builder", () => {
     expect(
       within(card("Hours run")).getByText(/smallest value is larger than the largest/),
     ).toBeInTheDocument();
-  });
+  }, 15_000); // axe over a page of field cards is slow in jsdom
 
   it("reorders fields by keyboard, keeps focus on the button and says where the field went", async () => {
     server();
@@ -571,7 +573,7 @@ describe("a new form", () => {
     expect(document.getElementById("schema-status")).toHaveTextContent("Add at least one field.");
     expect(publishButton()).toBeDisabled();
     await expectNoA11yViolations(container);
-  });
+  }, 15_000); // axe over a page of field cards is slow in jsdom
 
   it("can start from a copy of another form's latest version, as a draft", async () => {
     const api = server();

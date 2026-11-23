@@ -164,6 +164,8 @@ As built in slice 6.4 (`client/src/pages/admin/FormEditorPage.tsx`, `pages/admin
   line announces the new position.
 - "Start from a copy" creates the form, then saves the copied version (title set to the new name)
   as its first draft.
+- On a wide screen (two columns, 1200 px and up) the Publish card and the preview stay in view
+  while a long form scrolls (slice 6.5).
 
 ### 4.8 Keeping the builder honest
 
@@ -181,8 +183,13 @@ As built in slice 6.4 (`client/src/pages/admin/FormEditorPage.tsx`, `pages/admin
 - The builder is stricter than the server in one way: every field needs a label.
 - The builder and `x-order` handling have entries in `client/scripts/mutation_check.py`; `compat.py`
   and the schema rules in `mutation_check_service.py`.
-- E2E: an admin builds a form without touching JSON, publishes, assigns it; a worker fills it
-  offline, syncs, and the fields appear in the order built.
+- E2E (`e2e/tests/14-build-and-fill.spec.ts`, desktop and Pixel 7): an admin builds a form with
+  the keyboard and no JSON (four kinds of field, choices, Required, a bound, a field moved up two
+  places), publishes and assigns it; a worker syncs, goes offline, sees the fields in the built
+  order (not jsonb's), fills them in, and the record reaches the server with exactly those
+  answers. `BUILDER_SCREENSHOT=<path>` on a fresh stack also saves the README screenshot.
+  `13-form-builder.spec.ts` covers tap sizes, axe in light and dark at 390 and 1366 px, and
+  keyboard reorder.
 
 ## 5. Slices
 
