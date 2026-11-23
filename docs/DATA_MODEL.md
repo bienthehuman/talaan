@@ -8,6 +8,7 @@ Status: accepted. The server owns every version and sequence.
 |---|---|---|
 | `form` | id, name | A form family, e.g. "Generator inspection" |
 | `form_version` | id, form_id, number, schema JSONB, published_at | Immutable once published. Unique (form_id, number). |
+| `form_draft` | id, form_id (unique), schema JSONB, revision int, based_on_version_id, updated_by, updated_at | Phase 6 (slice 6.2). At most one per form; may be incomplete; never sent to workers; deleted when published (ADR 0013) |
 | `assignment` | id, form_version_id, worker_id, site_name, due_date, cancelled_at | What a worker downloads |
 | `submission` | id UUID (client-generated), assignment_id, form_version_id, data JSONB, status, version int, field_versions JSONB, server_seq bigint, deleted_at, updated_by, updated_at | `version` counts accepted changes; `field_versions[f]` = version that last changed f |
 | `applied_mutation` | mutation_id UUID PK, device_id, user_id, result JSONB, created_at | Idempotency ledger, one row per mutation ever processed |
@@ -148,9 +149,27 @@ drives the server (`jsonschema`) and the client (Zod) with identical behaviour. 
   `returned` save ignores `required`; `submit` enforces every required field (protocol.md section 5).
 - A published version is immutable. To change a form, publish a new version (ADR 0008).
 
+Phase 6 rules (FORM_BUILDER_PLAN.md; enforced from slice 6.1, checked at publish only, so versions
+published earlier are not re-checked):
+
+- **`x-order`** (top level): a list naming every property exactly once, in display order. Required on a
+  new publish. `jsonb` does not keep key order, so readers use `x-order` when present and the stored key
+  order otherwise. JSON Schema ignores `x-` keywords, so submission validation is unchanged.
+- **Limits:** at most 100 fields; `title` at most 200 characters; field `description` at most 500; at most
+  50 choices per `enum`, each at most 100 characters; `maxLength` at most 10,000; the whole schema at most
+  64 KB serialised.
+- **Field names keep their type** for the life of a form: across all of a form's published versions a
+  name always has the same `type`, and a removed name may return only with that type (ADR 0013).
+- **Change summary:** publishing compares the schema with the form's latest published version. Each
+  change is `safe` (label, help text or order changed; optional field added; limit relaxed; choice
+  added), `review` (field removed; choice removed; field made required; limit tightened) or `refused`
+  (a name given another type). `refused` blocks the publish; `review` items are shown to the admin
+  before they confirm.
+
 ### Sample form schema
 
 The demo seed publishes this form. A test fails if this block and `server/forms/samples.py` differ.
+It predates `x-order`; slice 6.1 adds it to both.
 
 ```json
 {

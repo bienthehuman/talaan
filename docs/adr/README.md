@@ -17,3 +17,4 @@ Status values: proposed, accepted, superseded by NNNN.
 | [0010](0010-token-storage-and-session-resume.md) | Token storage in localStorage, refresh once on 401, sign-out wipes local data | accepted |
 | [0011](0011-css-modules-for-component-styles.md) | CSS Modules for component styles; tokens and shared primitives stay global | accepted |
 | [0012](0012-visual-identity-and-self-hosted-font.md) | Visual identity "Wayfinding Line" and a self-hosted webfont | accepted |
+| [0013](0013-form-drafts-and-frozen-field-names.md) | Form drafts in their own table; field names keep their type for the life of a form | accepted |

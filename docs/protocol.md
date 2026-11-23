@@ -333,9 +333,14 @@ for the admin web, not for offline clients. Each endpoint needs one permission f
 | `POST assignments/{id}/cancel/` | `assignment.manage` | Sets `cancelled_at` once; existing submissions stay; a second call changes nothing. |
 | `GET forms/`, `POST forms/` | `form.publish` | Forms with their versions; create a form `{name}` (unique). |
 | `POST forms/{id}/versions/` | `form.publish` | `{schema}`: validated with the same rules as publishing in the Django admin (section 5 of DATA_MODEL.md), then created and published in one step as the next version number. A refused schema is `400` with `errors.schema` (a list of sentences) and nothing is created. |
-| `POST forms/check-schema/` | `form.publish` | `{schema}` returns `{valid, errors}` without saving, for the editor's live feedback. |
+| `POST forms/check-schema/` | `form.publish` | `{schema}` returns `{valid, errors}` without saving, for the editor's live feedback. From slice 6.1 it takes an optional `form_id` and also returns `changes`: the change summary against that form's latest published version, each `{level, field, message}` with `level` one of `safe`, `review`, `refused`. |
 | `GET form-versions/{id}/` | `form.publish` | One version with its schema. |
+| `GET forms/{id}/draft/` | `form.publish` | Phase 6 (slice 6.2). The form's draft `{schema, revision, based_on_version, updated_by, updated_at}`, or `404` when it has none. |
+| `PUT forms/{id}/draft/` | `form.publish` | `{schema, revision}`; `revision` is the one last read (`0` to create). Saves any JSON object (a draft may be invalid) and returns the draft with `revision + 1`. A stale `revision` is `409` with the current draft in the body, so a second admin never overwrites the first silently. |
+| `POST forms/{id}/draft/publish/` | `form.publish` | `{revision}`: validates the draft (DATA_MODEL.md section 5), creates the next version and deletes the draft in one transaction. `400` with `errors.schema` when refused, `409` when stale. |
 | `GET conflicts/` | `conflictlog.view` | Every `conflict` and `rejected` event caused by a worker's own change on a record assigned to them, newest first: `reason` (conflict kind or rejection code), `fields`, the record, the worker, `mutation_id`, and `changed_since` (the same worker has changed that record on the server afterwards). Filters: `kind`, `worker`, `changed_since`. |
+
+Draft responses send `Cache-Control: no-store`; from slice 6.2 every `/api/admin/` response does.
 
 The conflict log cannot see what a worker did on their device. A worker who discards their edits leaves no
 trace on the server, so `changed_since: false` means "no later change from that worker", not "unresolved".
