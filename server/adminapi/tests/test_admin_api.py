@@ -311,10 +311,54 @@ def test_the_forms_list_shows_versions_and_a_version_shows_its_schema(
 def test_checking_a_schema_reports_problems_without_saving(admin_client):
     before = FormVersion.objects.count()
     ok = post(admin_client, "/forms/check-schema/", {"schema": GENERATOR_INSPECTION}).json()
-    assert ok == {"valid": True, "errors": []}
+    assert ok == {"valid": True, "errors": [], "changes": []}
     bad = post(admin_client, "/forms/check-schema/", {"schema": {"type": "string"}}).json()
     assert bad["valid"] is False and bad["errors"]
     assert FormVersion.objects.count() == before
+
+
+def changed(schema=GENERATOR_INSPECTION, **fields):
+    """The sample with some properties replaced (None removes one); x-order follows."""
+    props = {**schema["properties"], **fields}
+    props = {k: v for k, v in props.items() if v is not None}
+    required = [r for r in schema["required"] if r in props]
+    return {**schema, "properties": props, "required": required, "x-order": list(props)}
+
+
+def test_checking_against_a_form_returns_the_change_summary(admin_client, form):
+    new = changed(
+        notes=None,
+        pressure_bar={"type": "number", "title": "Pressure (bar)"},
+    )
+    body = post(admin_client, "/forms/check-schema/", {"schema": new, "form_id": form.id}).json()
+    assert body["valid"] is True and body["errors"] == []
+    levels = {(c["field"], c["level"]) for c in body["changes"]}
+    assert levels == {("notes", "review"), ("pressure_bar", "safe")}
+    unknown = post(admin_client, "/forms/check-schema/", {"schema": new, "form_id": 99999})
+    assert unknown.status_code == 400 and "form_id" in unknown.json()["errors"]
+
+
+def test_a_field_cannot_change_type_and_the_check_says_so_first(admin_client, form):
+    new = changed(hours_run={"type": "string", "title": "Hours run"})
+    check = post(admin_client, "/forms/check-schema/", {"schema": new, "form_id": form.id}).json()
+    assert check["valid"] is False
+    assert [c["field"] for c in check["changes"] if c["level"] == "refused"] == ["hours_run"]
+    assert any("hours_run" in e for e in check["errors"])
+    before = FormVersion.objects.count()
+    response = post(admin_client, f"/forms/{form.id}/versions/", {"schema": new})
+    assert response.status_code == 400
+    assert any("hours_run" in e for e in response.json()["errors"]["schema"])
+    assert FormVersion.objects.count() == before
+
+
+def test_a_removed_field_comes_back_only_with_its_old_type(admin_client, form):
+    without = changed(notes=None)
+    assert post(admin_client, f"/forms/{form.id}/versions/", {"schema": without}).status_code == 201
+    as_number = changed(without, notes={"type": "number", "title": "Notes"})
+    refused = post(admin_client, f"/forms/{form.id}/versions/", {"schema": as_number})
+    assert refused.status_code == 400
+    as_text = changed(without, notes={"type": "string", "title": "Notes"})
+    assert post(admin_client, f"/forms/{form.id}/versions/", {"schema": as_text}).status_code == 201
 
 
 # --- conflict log -----------------------------------------------------------------------------

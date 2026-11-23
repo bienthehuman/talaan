@@ -129,9 +129,23 @@ class SchemaSerializer(serializers.Serializer):
     schema = serializers.JSONField()
 
 
+class SchemaCheckRequestSerializer(SchemaSerializer):
+    form_id = serializers.IntegerField(
+        required=False,
+        help_text="Also compare with this form's published versions (the change summary).",
+    )
+
+
+class SchemaChangeSerializer(serializers.Serializer):
+    level = serializers.ChoiceField(choices=["safe", "review", "refused"])
+    field = serializers.CharField(allow_blank=True, help_text="Empty for a change to the form.")
+    message = serializers.CharField()
+
+
 class SchemaCheckSerializer(serializers.Serializer):
     valid = serializers.BooleanField()
     errors = serializers.ListField(child=serializers.CharField())
+    changes = SchemaChangeSerializer(many=True)
 
 
 class ConflictLogRowSerializer(serializers.Serializer):

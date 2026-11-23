@@ -107,10 +107,15 @@ export async function getFormVersion(id: number): Promise<FormVersionDetail> {
   );
 }
 
-/** What publishing would report, without publishing. */
-export async function checkSchema(schema: unknown): Promise<{ valid: boolean; errors: string[] }> {
+/** What publishing would report, without publishing. With a form id it also checks the
+ *  schema against that form's published versions and lists what changes. */
+export async function checkSchema(schema: unknown, formId?: number) {
   return call(async () =>
-    unwrap(await api.POST("/api/admin/forms/check-schema/", { body: { schema } })),
+    unwrap(
+      await api.POST("/api/admin/forms/check-schema/", {
+        body: formId === undefined ? { schema } : { schema, form_id: formId },
+      }),
+    ),
   );
 }
 

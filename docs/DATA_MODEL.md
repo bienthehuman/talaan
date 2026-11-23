@@ -155,21 +155,25 @@ published earlier are not re-checked):
 - **`x-order`** (top level): a list naming every property exactly once, in display order. Required on a
   new publish. `jsonb` does not keep key order, so readers use `x-order` when present and the stored key
   order otherwise. JSON Schema ignores `x-` keywords, so submission validation is unchanged.
-- **Limits:** at most 100 fields; `title` at most 200 characters; field `description` at most 500; at most
-  50 choices per `enum`, each at most 100 characters; `maxLength` at most 10,000; the whole schema at most
-  64 KB serialised.
+- **Limits:** at most 100 fields; `title` at most 200 characters and `description` at most 500 (form and
+  fields); at most 50 choices per `enum`, each at most 100 characters; `maxLength` at most 10,000; the whole
+  schema at most 64 KB serialised as UTF-8.
+- **Bounds that fit:** `minLength` may not exceed `maxLength`, nor `minimum` exceed `maximum`, since no
+  answer could pass.
 - **Field names keep their type** for the life of a form: across all of a form's published versions a
   name always has the same `type`, and a removed name may return only with that type (ADR 0013).
 - **Change summary:** publishing compares the schema with the form's latest published version. Each
-  change is `safe` (label, help text or order changed; optional field added; limit relaxed; choice
-  added), `review` (field removed; choice removed; field made required; limit tightened) or `refused`
-  (a name given another type). `refused` blocks the publish; `review` items are shown to the admin
+  change is `safe` (label, help text or order changed; optional field added; field no longer required;
+  limit relaxed or removed; choice added; a choice field opened to any text), `review` (field removed;
+  choice removed; field made required or added as required; limit tightened or added; a text field
+  turned into a choice) or `refused` (a name given another type than it had in any earlier version).
+  Order is compared only when both versions have `x-order`. Code: `forms/compat.py`; the publish check
+  is `forms.models.publish_problems`, run with the form row locked. `refused` blocks the publish; `review` items are shown to the admin
   before they confirm.
 
 ### Sample form schema
 
 The demo seed publishes this form. A test fails if this block and `server/forms/samples.py` differ.
-It predates `x-order`; slice 6.1 adds it to both.
 
 ```json
 {
@@ -217,6 +221,14 @@ It predates `x-order`; slice 6.1 adds it to both.
     "coolant_ok",
     "hours_run"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "x-order": [
+    "site_contact",
+    "oil_level",
+    "oil_pressure_psi",
+    "coolant_ok",
+    "hours_run",
+    "notes"
+  ]
 }
 ```

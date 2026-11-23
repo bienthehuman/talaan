@@ -3,7 +3,8 @@
     cd server && python scripts/mutation_check_service.py        (about 8 minutes)
     python scripts/mutation_check_service.py lock duplicate     (only matching entries)
 
-Run it after changing sync/services.py, forms/validation.py or submissions/guard.py. Each entry
+Run it after changing sync/services.py, forms/ (validation, schema, compat, models) or
+submissions/guard.py. Each entry
 replaces an exact piece of source, runs the tests, and restores the file. A bug that no test notices
 means a rule is unprotected (exit 1). A pattern that no longer matches means the entry is stale
 after a refactor and must be updated (exit 2), so the check cannot quietly stop checking.
@@ -290,8 +291,80 @@ M = [  # (description, file, old, new)
     (
         "invalid schemas can be published",
         "adminapi/views.py",
-        "        if problems := validate_form_schema(schema):",
-        "        if False and (problems := validate_form_schema(schema)):",
+        "            if problems := publish_problems(form.pk, schema):",
+        "            if False and (problems := publish_problems(form.pk, schema)):",
+    ),
+    (
+        "publish ignores the per-form name/type rule",
+        "forms/models.py",
+        "        problems += refused(changes(published_schemas(form_id), schema))",
+        "        pass",
+    ),
+    (
+        "two publishes of one form are not serialised",
+        "forms/models.py",
+        "            Form.objects.select_for_update().get(pk=self.form_id)\n            self.full_clean()",
+        "            self.full_clean()",
+    ),
+    (
+        "type rule looks only at the latest version",
+        "forms/compat.py",
+        "    types = _types(history)",
+        "    types = _types(history[-1:])",
+    ),
+    (
+        "removing a field is not flagged for review",
+        "forms/compat.py",
+        '                    REVIEW,\n                    name,\n                    f"{_label(name, old_spec)} is removed.',
+        '                    SAFE,\n                    name,\n                    f"{_label(name, old_spec)} is removed.',
+    ),
+    (
+        "a tighter limit counts as looser",
+        "forms/compat.py",
+        "            tighter = (after > before) == larger_is_tighter",
+        "            tighter = (after < before) == larger_is_tighter",
+    ),
+    (
+        "choice removal not flagged",
+        "forms/compat.py",
+        "    if removed := [c for c in before if c not in after]:",
+        "    if removed := []:",
+    ),
+    (
+        "x-order may leave fields out",
+        "forms/schema.py",
+        "    if missing := sorted(set(properties) - set(order)):",
+        "    if missing := []:",
+    ),
+    (
+        "x-order not required",
+        "forms/schema.py",
+        '    if "x-order" not in schema:\n        return [',
+        '    if "x-order" not in schema:\n        return []\n        return [',
+    ),
+    (
+        "no field count limit",
+        "forms/schema.py",
+        "    if len(properties) > MAX_FIELDS:",
+        "    if False:",
+    ),
+    (
+        "choice length unchecked",
+        "forms/schema.py",
+        "            elif any(len(c) > MAX_CHOICE for c in choices):",
+        "            elif False:",
+    ),
+    (
+        "schema size unchecked",
+        "forms/schema.py",
+        "    if size > MAX_SCHEMA_BYTES:",
+        "    if False:",
+    ),
+    (
+        "impossible bounds accepted",
+        "forms/schema.py",
+        "            if _number(spec.get(low)) and _number(spec.get(high)) and spec[low] > spec[high]:",
+        "            if False:",
     ),
     (
         "assignments skip model validation",

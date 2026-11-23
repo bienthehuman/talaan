@@ -20,7 +20,8 @@ from accounts.permissions import (
     WORKER,
 )
 from assignments.models import Assignment
-from forms.models import Form, FormVersion
+from forms.compat import changes
+from forms.models import Form, FormVersion, publish_problems, published_schemas
 from forms.schema import validate_form_schema
 from submissions.models import EventKind, Submission, SubmissionEvent
 
@@ -256,9 +257,11 @@ class FormVersionCreateView(APIView):
         body = s.SchemaSerializer(data=request.data)
         body.is_valid(raise_exception=True)
         schema = body.validated_data["schema"]
-        if problems := validate_form_schema(schema):
-            raise ValidationError({"schema": problems})
         with transaction.atomic():
+            # Locked so the per-form name/type rule sees every version published before this one.
+            Form.objects.select_for_update().get(pk=form.pk)
+            if problems := publish_problems(form.pk, schema):
+                raise ValidationError({"schema": problems})
             version = FormVersion.objects.create(form=form, schema=schema)
             version.publish()
         return Response(s.FormVersionDetailSerializer(version).data, status=201)
@@ -280,15 +283,23 @@ class SchemaCheckView(APIView):
     permission_classes = [requires(FORM_PUBLISH)]
 
     @extend_schema(
-        request=s.SchemaSerializer,
+        request=s.SchemaCheckRequestSerializer,
         responses={200: s.SchemaCheckSerializer},
         summary="Check a form schema without publishing it",
     )
     def post(self, request):
-        body = s.SchemaSerializer(data=request.data)
+        body = s.SchemaCheckRequestSerializer(data=request.data)
         body.is_valid(raise_exception=True)
-        problems = validate_form_schema(body.validated_data["schema"])
-        return Response({"valid": not problems, "errors": problems})
+        schema = body.validated_data["schema"]
+        form_id = body.validated_data.get("form_id")
+        if form_id is None:
+            problems = validate_form_schema(schema)
+            return Response({"valid": not problems, "errors": problems, "changes": []})
+        if not Form.objects.filter(pk=form_id).exists():
+            raise ValidationError({"form_id": "No such form."})
+        problems = publish_problems(form_id, schema)
+        found = changes(published_schemas(form_id), schema) if isinstance(schema, dict) else []
+        return Response({"valid": not problems, "errors": problems, "changes": found})
 
 
 # --- conflict log -----------------------------------------------------------------------------

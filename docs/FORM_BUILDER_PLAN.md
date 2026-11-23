@@ -72,7 +72,7 @@ and returns a list of changes, each one `safe`, `review` or `refused`:
 | Change | Level |
 |---|---|
 | Label, help text or order changed; optional field added; limit relaxed; choice added | safe |
-| Field removed; choice removed; field made required; limit tightened | review (admin confirms) |
+| Field removed; choice removed; field made required or added as required; limit tightened | review (admin confirms) |
 | Existing name given another type; removed name reused with another type | refused |
 
 The existing check endpoint returns these with the validation problems, and publish refuses a

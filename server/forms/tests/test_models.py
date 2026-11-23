@@ -88,3 +88,42 @@ def test_an_unpublished_draft_can_be_deleted(form):
 def test_number_must_be_positive(form):
     with pytest.raises(IntegrityError), transaction.atomic():
         FormVersion.objects.create(form=form, number=0, schema=GENERATOR_INSPECTION)
+
+
+def with_extra(kind: str) -> dict:
+    props = {**GENERATOR_INSPECTION["properties"], "extra": {"type": kind}}
+    return {**GENERATOR_INSPECTION, "properties": props, "x-order": list(props)}
+
+
+def test_publishing_refuses_a_field_that_changes_type(form):
+    draft(form, with_extra("number")).publish()
+    second = draft(form, with_extra("string"))
+    with pytest.raises(ValidationError, match="extra"):
+        second.publish()
+    second.refresh_from_db()
+    assert not second.is_published
+
+
+@pytest.mark.django_db(transaction=True)
+def test_two_publishes_at_once_cannot_give_a_field_two_types():
+    """The form row is locked during publish, so the second publish sees the first."""
+    from functools import partial
+
+    from sync.tests.concurrency import run_together
+
+    for round_ in range(10):
+        form = Form.objects.create(name=f"Race {round_}")
+        draft(form).publish()
+        a, b = draft(form, with_extra("number")), draft(form, with_extra("string"))
+
+        def publish(version):
+            try:
+                FormVersion.objects.get(pk=version.pk).publish()
+                return "published"
+            except ValidationError:
+                return "refused"
+
+        assert sorted(run_together([partial(publish, a), partial(publish, b)])) == [
+            "published",
+            "refused",
+        ]
