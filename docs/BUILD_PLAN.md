@@ -15,7 +15,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
 | 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed (tagged `v1.1.0`, done) |
 | 6 | Form builder: admins build forms without writing JSON; explicit field order, limits, frozen field names, server-side drafts ([FORM_BUILDER_PLAN.md](FORM_BUILDER_PLAN.md)) | An admin builds, publishes and assigns a form without touching JSON, and a worker fills it offline in the built order (e2e); all gates green; `v1.2.0` (tagged `v1.2.0`, done) |
-| 7 | Worker invites: an admin invites a worker by link, the invitee sets their own password ([ADR 0014](adr/0014-worker-invites.md)) | An admin invites a worker, the worker opens the link on a phone, sets a password and fills an assigned form offline (e2e); all gates green; `v1.3.0` |
+| 7 | Worker invites: an admin invites a worker by link, the invitee sets their own password ([ADR 0014](adr/0014-worker-invites.md)) | An admin invites a worker, the worker opens the link on a phone, sets a password and fills an assigned form offline (e2e); all gates green; `v1.3.0` (tagged `v1.3.0`, done) |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -282,7 +282,7 @@ any API change; docs updated in the same PR when a rule changes.
   green; axe clean in light and dark at 390 px and 1366 px.
 - **6.5** The e2e scenario passes on desktop and Pixel 7; README shows the builder; `v1.2.0` tagged.
 
-## Phase 7 slices: worker invites
+## Phase 7 slices: worker invites (done: tagged `v1.3.0` on 2026-11-24)
 
 Exit: `v1.3.0`. Admins add workers from the app without ever knowing their password. Decisions in
 [ADR 0014](adr/0014-worker-invites.md), table in DATA_MODEL.md section 1, endpoints in protocol.md section
@@ -294,7 +294,7 @@ passwords are out of scope (backlog).
 | 7.0 | **Docs.** This plan, ADR 0014, `worker_invite` in DATA_MODEL, invite endpoints in protocol section 11. | done (#54) |
 | 7.1 | **Server.** `worker_invite` model and migration (partial unique index on open usernames), `worker.manage` in the catalog and ROLES.md section 3, admin invite endpoints (list, create, new link, revoke), public `check` and `accept` with the `invite` throttle, `no-store`, log events. | done (#55) |
 | 7.2 | **Admin UI.** `/manage/workers`: workers list, invites with status, "Invite worker" form, the link shown once with a copy button, new link and revoke with a confirm. Nav link "Workers". `GET workers/` also returns first and last name. | done (#56) |
-| 7.3 | **Invite page and proof.** Public `/invite` page: reads the token from the fragment and removes it from the address bar, greets by name, set password (show/hide, confirm), clear messages for expired, used and revoked links, then signs in. E2E: invite, accept in a second browser, assign, fill offline, sync. README, `v1.3.0`. | in review |
+| 7.3 | **Invite page and proof.** Public `/invite` page: reads the token from the fragment and removes it from the address bar, greets by name, set password (show/hide, confirm), clear messages for expired, used and revoked links, then signs in. E2E: invite, accept in a second browser, assign, fill offline, sync. README, `v1.3.0`. | done (#57) |
 
 ### Definition of done per slice (phase 7)
 
