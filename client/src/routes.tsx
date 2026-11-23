@@ -61,6 +61,10 @@ export const routes: RouteObject[] = [
                     ),
                   },
                   {
+                    path: "workers",
+                    lazy: page(() => import("./pages/admin/WorkersPage"), "WorkersPage"),
+                  },
+                  {
                     path: "conflicts",
                     lazy: page(() => import("./pages/admin/ConflictLogPage"), "ConflictLogPage"),
                   },

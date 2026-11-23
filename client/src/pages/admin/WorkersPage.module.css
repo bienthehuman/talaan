@@ -1,0 +1,37 @@
+/* The invite panel at the side from 900 px, the lists beside it (as on the assignments page). */
+.layout {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+}
+.side {
+  min-width: 0;
+}
+.panel {
+  padding: var(--space-5);
+}
+.panel :global(.input) {
+  width: 100%;
+}
+.list {
+  min-width: 0;
+}
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 340px minmax(0, 1fr);
+  }
+  .side {
+    position: sticky;
+    top: var(--space-4);
+  }
+}
+.note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}

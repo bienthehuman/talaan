@@ -139,6 +139,7 @@ describe("admin navigation", () => {
       ["Review", "/manage/review"],
       ["Forms", "/manage/forms"],
       ["Assignments", "/manage/assignments"],
+      ["Workers", "/manage/workers"],
       ["Conflict log", "/manage/conflicts"],
     ]);
   });

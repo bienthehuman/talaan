@@ -2,6 +2,7 @@
 the few request serializers validate what an admin sends."""
 
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from accounts.models import WorkerInvite
@@ -13,6 +14,11 @@ from submissions.models import Submission, SubmissionEvent
 class UserRefSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     username = serializers.CharField()
+
+
+class AdminWorkerSerializer(UserRefSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
 
 
 class SubmissionRowSerializer(serializers.ModelSerializer):
@@ -219,6 +225,7 @@ class AdminInviteSerializer(serializers.ModelSerializer):
             "accepted_at",
         ]
 
+    @extend_schema_field(serializers.ChoiceField(choices=INVITE_STATUSES))
     def get_status(self, invite) -> str:
         return invite.status()
 

@@ -542,7 +542,7 @@ export interface components {
             username: string;
             first_name?: string;
             last_name?: string;
-            readonly status: string;
+            readonly status: components["schemas"]["InviteStatusEnum"];
             created_by: string;
             /** Format: date-time */
             created_at?: string;
@@ -557,7 +557,7 @@ export interface components {
             username: string;
             first_name?: string;
             last_name?: string;
-            readonly status: string;
+            readonly status: components["schemas"]["InviteStatusEnum"];
             created_by: string;
             /** Format: date-time */
             created_at?: string;
@@ -566,6 +566,12 @@ export interface components {
             /** Format: date-time */
             accepted_at?: string | null;
             readonly token: string;
+        };
+        AdminWorker: {
+            id: number;
+            username: string;
+            first_name: string;
+            last_name: string;
         };
         Assignment: {
             id: number;
@@ -749,6 +755,14 @@ export interface components {
             /** Format: date-time */
             expires_at: string;
         };
+        /**
+         * @description * `pending` - pending
+         *     * `expired` - expired
+         *     * `accepted` - accepted
+         *     * `revoked` - revoked
+         * @enum {string}
+         */
+        InviteStatusEnum: "pending" | "expired" | "accepted" | "revoked";
         InviteTokenRequest: {
             token: string;
         };
@@ -1568,7 +1582,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRef"][];
+                    "application/json": components["schemas"]["AdminWorker"][];
                 };
             };
         };
