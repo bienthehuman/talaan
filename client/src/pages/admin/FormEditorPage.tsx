@@ -23,6 +23,7 @@ const STARTER = {
   },
   required: [],
   additionalProperties: false,
+  "x-order": ["notes"],
 };
 
 function tryParse(text: string): { value: unknown } | { error: string } {
@@ -107,7 +108,8 @@ function Editor({
   const parsedSettled = tryParse(settled);
   // Ask the server what a publish would say, but only about text that has stopped changing.
   const check = useRequest(
-    () => ("value" in parsedSettled ? checkSchema(parsedSettled.value) : Promise.resolve(null)),
+    () =>
+      "value" in parsedSettled ? checkSchema(parsedSettled.value, formId) : Promise.resolve(null),
     [settled],
   );
   const upToDate = settled === text && !check.loading;

@@ -20,4 +20,12 @@ GENERATOR_INSPECTION = {
     },
     "required": ["oil_level", "coolant_ok", "hours_run"],
     "additionalProperties": False,
+    "x-order": [
+        "site_contact",
+        "oil_level",
+        "oil_pressure_psi",
+        "coolant_ok",
+        "hours_run",
+        "notes",
+    ],
 }

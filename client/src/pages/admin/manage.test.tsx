@@ -107,7 +107,7 @@ function server(handlers: Record<string, (call: Call) => Response> = {}) {
           schema: GENERATOR_SCHEMA,
         });
       case "POST /api/admin/forms/check-schema/":
-        return json({ valid: true, errors: [] });
+        return json({ valid: true, errors: [], changes: [] });
       case "GET /api/admin/assignments/":
         return json(
           page([assignment(), assignment({ id: 8, site_name: "Old site", cancelled: true })]),
@@ -249,6 +249,7 @@ describe("the form editor", () => {
         json({
           valid: false,
           errors: ['"additionalProperties" must be false so unknown fields are rejected.'],
+          changes: [],
         }),
     });
     await open();

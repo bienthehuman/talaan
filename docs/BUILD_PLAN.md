@@ -255,8 +255,8 @@ sync service, `src/db/` or the sync engine.
 
 | Slice | Content | Status |
 |---|---|---|
-| 6.0 | **Docs.** Form builder plan, DATA_MODEL section 5 phase 6 rules, protocol section 11 draft endpoints and change summary, ADR 0013. | in review |
-| 6.1 | **Server schema rules.** `x-order`, limits, `forms/compat.py` (change summary; a field name keeps its type per form); `check-schema` returns `changes`; publish refuses `refused` changes; demo sample gets `x-order`. | |
+| 6.0 | **Docs.** Form builder plan, DATA_MODEL section 5 phase 6 rules, protocol section 11 draft endpoints and change summary, ADR 0013. | done (#47) |
+| 6.1 | **Server schema rules.** `x-order`, limits, `forms/compat.py` (change summary; a field name keeps its type per form); `check-schema` returns `changes`; publish refuses `refused` changes; demo sample gets `x-order`. Also: `minLength`/`minimum` may not exceed their maximum. | in review |
 | 6.2 | **Server drafts.** `form_draft` model and migration, `GET`/`PUT` draft with revision (`409` when stale), publish from draft in one transaction, `Cache-Control: no-store` on `/api/admin/`. | |
 | 6.3 | **Client builder model.** `src/forms/builder.ts` (schema to model and back, field names from labels, add/move/remove) with randomized round-trip tests; `parseForm` honours `x-order`. | |
 | 6.4 | **Builder UI.** Builder and JSON tabs on one draft, field cards, choices editor, move up/down, live preview, change summary before Publish, autosave with a conflict message, "start from a copy". | |

@@ -18,6 +18,7 @@ function schema(title: string) {
       },
       required: ["tank_level"],
       additionalProperties: false,
+      "x-order": ["tank_level", "pressure"],
     },
     null,
     2,

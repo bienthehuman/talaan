@@ -539,6 +539,13 @@ export interface components {
             status: string;
             database: string;
         };
+        /**
+         * @description * `safe` - safe
+         *     * `review` - review
+         *     * `refused` - refused
+         * @enum {string}
+         */
+        LevelEnum: "safe" | "review" | "refused";
         Me: {
             id: number;
             username: string;
@@ -685,9 +692,21 @@ export interface components {
          * @enum {string}
          */
         RecordStatusEnum: "draft" | "submitted" | "approved" | "returned";
+        SchemaChange: {
+            level: components["schemas"]["LevelEnum"];
+            /** @description Empty for a change to the form. */
+            field: string;
+            message: string;
+        };
         SchemaCheck: {
             valid: boolean;
             errors: string[];
+            changes: components["schemas"]["SchemaChange"][];
+        };
+        SchemaCheckRequestRequest: {
+            schema: unknown;
+            /** @description Also compare with this form's published versions (the change summary). */
+            form_id?: number;
         };
         SchemaRequest: {
             schema: unknown;
@@ -974,9 +993,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SchemaRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["SchemaRequest"];
-                "multipart/form-data": components["schemas"]["SchemaRequest"];
+                "application/json": components["schemas"]["SchemaCheckRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SchemaCheckRequestRequest"];
+                "multipart/form-data": components["schemas"]["SchemaCheckRequestRequest"];
             };
         };
         responses: {

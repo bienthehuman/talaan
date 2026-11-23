@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 
+from .compat import changes, refused
 from .schema import validate_form_schema
 
 
@@ -57,14 +58,37 @@ class FormVersion(models.Model):
         return self.published_at is not None
 
     def clean(self) -> None:
-        problems = validate_form_schema(self.schema)
+        problems = publish_problems(self.form_id, self.schema)
         if problems:
             raise ValidationError({"schema": problems})
 
     def publish(self) -> None:
-        """Validate and publish. Publishing an already published version does nothing."""
+        """Validate and publish. Publishing an already published version does nothing.
+
+        The form row is locked first, so two publishes of one form are checked one after the other
+        and cannot both give a field name a different type."""
         if self.is_published:
             return
-        self.full_clean()
-        self.published_at = timezone.now()
-        self.save(update_fields=["published_at"])
+        with transaction.atomic():
+            Form.objects.select_for_update().get(pk=self.form_id)
+            self.full_clean()
+            self.published_at = timezone.now()
+            self.save(update_fields=["published_at"])
+
+
+def published_schemas(form_id: int) -> list[dict]:
+    """The schemas of a form's published versions, oldest first."""
+    return list(
+        FormVersion.objects.filter(form_id=form_id, published_at__isnull=False)
+        .order_by("number")
+        .values_list("schema", flat=True)
+    )
+
+
+def publish_problems(form_id: int, schema: object) -> list[str]:
+    """Everything that would stop `schema` being published as the next version of the form: the
+    schema rules, then the per-form name/type rule (ADR 0013). Empty means it can be published."""
+    problems = validate_form_schema(schema)
+    if isinstance(schema, dict):
+        problems += refused(changes(published_schemas(form_id), schema))
+    return problems

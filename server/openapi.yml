@@ -264,13 +264,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SchemaRequest'
+              $ref: '#/components/schemas/SchemaCheckRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SchemaRequest'
+              $ref: '#/components/schemas/SchemaCheckRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SchemaRequest'
+              $ref: '#/components/schemas/SchemaCheckRequestRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1168,6 +1168,16 @@ components:
       required:
       - database
       - status
+    LevelEnum:
+      enum:
+      - safe
+      - review
+      - refused
+      type: string
+      description: |-
+        * `safe` - safe
+        * `review` - review
+        * `refused` - refused
     Me:
       type: object
       properties:
@@ -1457,6 +1467,20 @@ components:
         * `submitted` - submitted
         * `approved` - approved
         * `returned` - returned
+    SchemaChange:
+      type: object
+      properties:
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        field:
+          type: string
+          description: Empty for a change to the form.
+        message:
+          type: string
+      required:
+      - field
+      - level
+      - message
     SchemaCheck:
       type: object
       properties:
@@ -1466,9 +1490,24 @@ components:
           type: array
           items:
             type: string
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaChange'
       required:
+      - changes
       - errors
       - valid
+    SchemaCheckRequestRequest:
+      type: object
+      properties:
+        schema: {}
+        form_id:
+          type: integer
+          description: Also compare with this form's published versions (the change
+            summary).
+      required:
+      - schema
     SchemaRequest:
       type: object
       properties:
