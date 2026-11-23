@@ -16,6 +16,7 @@ ASSIGNMENT_MANAGE = "assignment.manage"
 FORM_PUBLISH = "form.publish"
 CONFLICTLOG_VIEW = "conflictlog.view"
 METRICS_VIEW = "metrics.view"
+WORKER_MANAGE = "worker.manage"
 
 CATALOG = frozenset(
     {
@@ -30,6 +31,7 @@ CATALOG = frozenset(
         FORM_PUBLISH,
         CONFLICTLOG_VIEW,
         METRICS_VIEW,
+        WORKER_MANAGE,
     }
 )
 

@@ -3,8 +3,8 @@
     cd server && python scripts/mutation_check_service.py        (about 8 minutes)
     python scripts/mutation_check_service.py lock duplicate     (only matching entries)
 
-Run it after changing sync/services.py, forms/ (validation, schema, compat, models) or
-submissions/guard.py. Each entry
+Run it after changing sync/services.py, forms/ (validation, schema, compat, models),
+submissions/guard.py or accounts/invites.py. Each entry
 replaces an exact piece of source, runs the tests, and restores the file. A bug that no test notices
 means a rule is unprotected (exit 1). A pattern that no longer matches means the entry is stale
 after a refactor and must be updated (exit 2), so the check cannot quietly stop checking.
@@ -503,6 +503,42 @@ M = [  # (description, file, old, new)
         "sync/middleware.py",
         "if not (settings.DEBUG and settings.FAULT_INJECTION):",
         "if False:",
+    ),
+    (
+        "invite accept without the row lock",
+        "accounts/invites.py",
+        "WorkerInvite.objects.select_for_update().filter(token_hash",
+        "WorkerInvite.objects.filter(token_hash",
+    ),
+    (
+        "invites never expire",
+        "accounts/models.py",
+        "        if self.expires_at <= (now or timezone.now()):",
+        "        if False:",
+    ),
+    (
+        "invite accept skips password rules",
+        "accounts/invites.py",
+        "        validate_password(password, user=user)\n",
+        "        pass\n",
+    ),
+    (
+        "invite responses may be cached",
+        "core/middleware.py",
+        '"/api/admin/", "/api/invites/"',
+        '"/api/admin/",',
+    ),
+    (
+        "invited user not made a worker",
+        "accounts/invites.py",
+        "    user.groups.add(Group.objects.get(name=WORKER))\n",
+        "",
+    ),
+    (
+        "accepted invite can be revoked",
+        "accounts/invites.py",
+        "    if invite.accepted_at:\n        raise InviteError(409",
+        "    if False:\n        raise InviteError(409",
     ),
 ]
 

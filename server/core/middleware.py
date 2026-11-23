@@ -46,16 +46,17 @@ class RequestLogMiddleware:
 
 
 class AdminNoStoreMiddleware:
-    """`Cache-Control: no-store` on every admin API response: they carry submission data and form
-    drafts, which must not be kept by a browser or proxy cache on a shared machine."""
+    """`Cache-Control: no-store` on every admin API and invite response: they carry submission data,
+    form drafts and invite tokens, which must not be kept by a browser or proxy cache on a shared
+    machine."""
 
-    PREFIX = "/api/admin/"
+    PREFIXES = ("/api/admin/", "/api/invites/")
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
-        if request.path.startswith(self.PREFIX):
+        if request.path.startswith(self.PREFIXES):
             response["Cache-Control"] = "no-store"
         return response
