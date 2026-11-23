@@ -27,6 +27,7 @@ export const routes: RouteObject[] = [
         errorElement: <RouteError />,
         children: [
           { path: "login", element: <LoginPage /> },
+          { path: "invite", lazy: page(() => import("./pages/InvitePage"), "InvitePage") },
           {
             element: <RequireAuth />,
             children: [

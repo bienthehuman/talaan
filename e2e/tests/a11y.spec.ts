@@ -7,6 +7,7 @@ import { ADMIN, signIn } from "./helpers";
 
 const SCREENS: { name: string; path: string; signedIn?: boolean; admin?: boolean }[] = [
   { name: "sign in", path: "/login" },
+  { name: "invite link that can't be used", path: "/invite#not-a-real-token" },
   { name: "assignments", path: "/", signedIn: true },
   { name: "sync status", path: "/sync", signedIn: true },
   { name: "review queue", path: "/manage/review", signedIn: true, admin: true },
