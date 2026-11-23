@@ -37,7 +37,7 @@ export type MessageContext = "login" | "general";
 /** Sentence-case, what-happened-and-what-to-do messages. */
 export function messageFor(error: unknown, context: MessageContext = "general"): string {
   if (error instanceof NetworkError) {
-    return "Can't reach the server. Check your connection and try again.";
+    return "Can't connect. Check your signal or internet connection and try again.";
   }
   if (error instanceof ApiError) {
     const { code, retry_after } = error.problem;
@@ -46,14 +46,14 @@ export function messageFor(error: unknown, context: MessageContext = "general"):
       return `Too many attempts. Try again in ${wait} ${wait === 1 ? "second" : "seconds"}.`;
     }
     if (code === "session_expired") {
-      return "Your session has expired. Sign out and sign in again.";
+      return "Your sign-in has expired. Sign out, then sign in again.";
     }
     if (context === "login") {
       if (code === "unauthenticated") return "Wrong username or password.";
       if (code === "validation_error") return "Enter your username and password.";
     }
     if (code === "server_error" || code === "database_unavailable") {
-      return "The server had a problem. Try again in a moment.";
+      return "Something went wrong on our side. Try again in a moment.";
     }
   }
   return "Something went wrong. Try again.";

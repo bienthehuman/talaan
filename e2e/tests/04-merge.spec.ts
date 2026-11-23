@@ -34,7 +34,7 @@ test("edits to different fields on two devices are both kept", async ({
   await waitSynced(other.page);
 
   // The device that synced first picks up the other's change on its next cycle.
-  await page.getByRole("button", { name: "Sync now" }).click();
+  await page.getByRole("button", { name: "Send now" }).click();
   for (const device of [page, other.page]) {
     await expect(device.getByLabel("Hours run (required)")).toHaveValue("10");
     await expect(device.getByLabel("Notes")).toHaveValue("leak near the gasket");

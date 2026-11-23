@@ -8,7 +8,7 @@ built.
 
 ## 1. Principles
 
-- **Honest state.** "Saved on this device" and "Synced" must never look the same. State is never
+- **Honest state.** "Saved on this device" and "Sent" must never look the same. State is never
   conveyed by colour alone: every state has an icon or mark plus a text label.
 - **Worker app is mobile first**: one-handed, gloves, sunlight. Admin app is desktop first.
 - **Familiar controls, precise details.** Standard web navigation, buttons, inputs and tables. The visual
@@ -58,7 +58,7 @@ primitive or component CSS Module) is set by [ADR 0011](adr/0011-css-modules-for
 | `--band-focus` | `#4fc3cc` | `#4fc3cc` | Focus ring on the band (8.5:1); the light `--accent` is too dark there |
 | `--band-emphasis` | `#b49cff` | `#b49cff` | Emphasis on the band and band panels, such as the login tagline (7.7:1) |
 
-The band's primary button ("Sync now") is `--accent` with `--accent-text` in both schemes. Its pending
+The band's primary button ("Send now") is `--accent` with `--accent-text` in both schemes. Its pending
 numeral uses `#f5b84b` (10:1 on the band).
 
 ### Type
@@ -109,11 +109,11 @@ The line is the signature of the app. It replaces the look of the v1 badge but k
 icons, so state never relies on colour or position alone. Stops sit at the same positions on every row, so
 a list reads top to bottom.
 
-| State | Label (unchanged) | Line | Icon | Colour |
+| State | Label | Line | Icon | Colour |
 |---|---|---|---|---|
 | Pending | Saved on this device | stop 1 filled | device | `--pending` / `--pending-mark` |
-| Syncing | Syncing… | stop 2 filled, pulses (static under reduced motion) | spinner / static arrows | `--accent` |
-| Synced | Synced | stops up to 3 filled (4 when approved) | check | `--ok` |
+| Syncing | Sending… | stop 2 filled, pulses (static under reduced motion) | spinner / static arrows | `--accent` |
+| Synced | Sent | stops up to 3 filled (4 when approved) | check | `--ok` |
 | Conflict | Needs your decision | the line breaks before stop 3; red stop | alert | `--danger` |
 | Rejected | Not accepted: *reason* | the line breaks before stop 3; red stop | block | `--danger` |
 
@@ -130,9 +130,9 @@ a list reads top to bottom.
 in the line colour) and "Talaan", then the account menu: an avatar and the user name ("Account: worker1")
 that opens a panel with who is signed in, the theme as three plain choices (System, Light, Dark) and Sign
 out. Signed out, the same control is "Display settings" and holds only the theme. It is a disclosure (Tab
-moves through the panel; Escape or a click outside closes it), not an ARIA menu. Worker row 2: the pending count as one large numeral with "pending · Last sync 08:32" beside
+moves through the panel; Escape or a click outside closes it), not an ARIA menu. Worker row 2: the pending count as one large numeral with "not sent yet · Last sent 08:32" beside
 it (still one link to `/sync`, accessible name unchanged), "N need your decision" as a red chip when there
-is one, and Sync now as the solid primary. So a phone header is two rows, and the tab order follows the rows.
+is one, and Send now as the solid primary. So a phone header is two rows, and the tab order follows the rows.
 The theme is no longer a button that cycles through choices.
 
 **Admin navigation.** Desktop: a left rail on `--surface-2` with Review, Forms, Assignments, Conflict log;
@@ -197,9 +197,25 @@ and dark; it is the target of the axe test.
 
 Favicon (SVG: the line-colour ring on the band colour), `theme-color` per scheme matching the band
 (`#16181d` light, `#0b0c0e` dark), a title per route (`Page · Talaan`), app name Talaan and tagline
-"Offline-first field data sync". 404 and error pages share the empty/error state layout. The login page
+"Inspections that work without signal". 404 and error pages share the empty/error state layout. The login page
 puts the band at full height above the form on a phone (brand, tagline, the station line as an
 illustration of the promise) and beside it on desktop.
+
+## 7. Words
+
+Workers and office staff are not technical. Write for someone who knows the job, not the software
+(ADR 0012; slice 5.10).
+
+- **"The office", not "the server"**, in worker text. It matches the station line's third stop.
+  Admin screens may say "the server" only where nothing plainer is true.
+- **"Send", not "sync"**: Send now, Sending…, Sent, Last sent, "N not sent yet". Internal names (the
+  sync engine, `/sync`, `syncState`) stay as they are.
+- **Signal, not connection or network**, where the cause is the worker's coverage.
+- **No session, token, browser storage, schema, mutation, id or role** in worker text. A lapsed sign-in
+  is "enter your password again"; the storage card talks about keeping saved work safe.
+- **Say what happens to their work**: is it safe, has it reached the office, what to do next.
+- **Never show a raw code.** Unknown problems get a general sentence.
+- Admin labels name what happened to an inspection ("Same change sent twice"), not the mechanism.
 
 ## Worker pages (phase 2)
 
@@ -238,7 +254,7 @@ lost until they choose to discard (always behind a confirmation).
 ## Admin pages (phase 4)
 
 Admins work online through the admin API and have no device to sync, so the header shows no pending count or
-"Sync now" for them. They land on the review queue. The screens live under `/manage/...`, not `/admin/...`:
+"Send now" for them. They land on the review queue. The screens live under `/manage/...`, not `/admin/...`:
 the proxy sends `/admin` to the Django admin.
 
 - **Review queue** (`/manage/review`): a table (site, form and version, worker, status, updated, a "Review"
@@ -271,9 +287,9 @@ the proxy sends `/admin` to the Django admin.
 
 ## Worker experience (phase 4)
 
-- **Sync status** (`/sync`, linked from the header's "N pending · Last sync" text): changes waiting to be
+- **Sending** (`/sync`, linked from the header's "N not sent yet · Last sent" text): changes waiting to be
   sent, last sync, the last problem in words, and one sentence about what the engine is doing ("Trying again
-  at 10:42", "Paused. Sign in again to continue."). "Retry now" starts a sync (disabled while one runs).
+  at 10:42", "Paused. Enter your password to continue."). "Try again now" starts a sync (disabled while one runs).
   Below: inspections that need a decision, what is waiting per inspection (kinds of change, how many times it
   was tried, why it failed), and whether the browser has promised to keep the data. Problem codes are never
   shown raw for the common cases.
@@ -300,7 +316,7 @@ are unless a line here says otherwise.
   the edits are ("Saved on this device · 08:41"). "Submit inspection" sits in a sticky bottom action bar on a
   phone. "Delete" moves out of that row to a destructive secondary button below the form, still behind its
   confirmation.
-- **Sync status** (worker): the summary is the device's own line with the pending numeral. "Retry now" is
+- **Sending** (worker): the summary is the device's own line with the pending numeral. "Try again now" is
   primary only when something is waiting, and secondary otherwise. Empty sections use the quiet empty state.
 - **Review queue** (admin): dense table, status chips, short dates, and the whole row opens the record (the
   "Review" link stays as its named target).

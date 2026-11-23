@@ -3,12 +3,12 @@ import styles from "./SyncBadge.module.css";
 
 export type SyncState = "pending" | "syncing" | "synced" | "conflict" | "rejected";
 
-/** Labels from docs/DESIGN_SYSTEM.md section 3. "Saved on this device" and "Synced" must never
+/** Labels from docs/DESIGN_SYSTEM.md section 3. "Saved on this device" and "Sent" must never
  *  look alike: different icon, different words, different colour, a different stop on the line. */
 const LABELS: Record<SyncState, string> = {
   pending: "Saved on this device",
-  syncing: "Syncing…",
-  synced: "Synced",
+  syncing: "Sending…",
+  synced: "Sent",
   conflict: "Needs your decision",
   rejected: "Not accepted",
 };

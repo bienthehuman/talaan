@@ -41,7 +41,7 @@ export function LoginPage() {
   return (
     <div className={`page ${styles.login}`}>
       <div className={styles.intro}>
-        <p className={styles.tagline}>Offline-first field data sync</p>
+        <p className={styles.tagline}>Inspections that work without signal</p>
         <ol className={styles.line} aria-hidden="true">
           <li>On this device</li>
           <li>Sending</li>
@@ -55,7 +55,7 @@ export function LoginPage() {
       </div>
       <form className={`card stack ${styles.form}`} onSubmit={onSubmit} noValidate aria-busy={busy}>
         <h1>Sign in</h1>
-        <p>You need to sign in once with a connection. After that the app works offline.</p>
+        <p>Sign in once while you have signal. After that, the app works without it.</p>
         {error && (
           <div className="alert" role="alert">
             {error}

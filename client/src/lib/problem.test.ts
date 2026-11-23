@@ -18,7 +18,7 @@ describe("toProblem", () => {
 describe("messageFor", () => {
   it("explains a network failure", () => {
     expect(messageFor(new NetworkError())).toBe(
-      "Can't reach the server. Check your connection and try again.",
+      "Can't connect. Check your signal or internet connection and try again.",
     );
   });
 
@@ -37,6 +37,6 @@ describe("messageFor", () => {
 
   it("does not leak server details for 5xx", () => {
     const err = new ApiError({ status: 500, code: "server_error", detail: "stack trace" });
-    expect(messageFor(err)).toBe("The server had a problem. Try again in a moment.");
+    expect(messageFor(err)).toBe("Something went wrong on our side. Try again in a moment.");
   });
 });

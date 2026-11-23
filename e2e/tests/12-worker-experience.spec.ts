@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-test("the sync status panel shows what is waiting and sends it on 'Retry now'", async ({
+test("the sync status panel shows what is waiting and sends it on 'Try again now'", async ({
   page,
   context,
 }) => {
@@ -21,8 +21,8 @@ test("the sync status panel shows what is waiting and sends it on 'Retry now'", 
   await startInspection(page);
   await page.getByLabel("Notes").fill("waiting in the panel");
 
-  await page.getByRole("link", { name: /^\d+ pending · Last sync/ }).click();
-  await expect(page.getByRole("heading", { name: "Sync status" })).toBeVisible();
+  await page.getByRole("link", { name: /^\d+ not sent yet · Last sent/ }).click();
+  await expect(page.getByRole("heading", { name: "Sending" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Waiting to be sent" })).toContainText(
     "new inspection",
   );
@@ -30,21 +30,21 @@ test("the sync status panel shows what is waiting and sends it on 'Retry now'", 
     page.getByText("Changes waiting to be sent").locator("xpath=following-sibling::dd"),
   ).toHaveText("1");
 
-  // Offline, "Retry now" tries and says honestly why it did not work.
-  await page.getByRole("button", { name: "Retry now" }).click();
+  // Offline, "Try again now" tries and says honestly why it did not work.
+  await page.getByRole("button", { name: "Try again now" }).click();
   await expect(page.getByRole("region", { name: "Waiting to be sent" })).toContainText(
-    "The server could not be reached.",
+    "Couldn't reach the office. Check your signal.",
   );
   await expect(page.getByRole("region", { name: "Waiting to be sent" })).toContainText(
     "tried 1 time",
   );
-  await expect(page.getByText(/The last attempt failed/)).toBeVisible();
+  await expect(page.getByText(/Couldn't send\. Trying again/)).toBeVisible();
 
   // Back online it goes out and the panel empties.
   await context.setOffline(false);
-  await page.getByRole("button", { name: "Retry now" }).click();
+  await page.getByRole("button", { name: "Try again now" }).click();
   await expect(page.getByText("Nothing is waiting")).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByText("Everything that can be sent has been sent.")).toBeVisible();
+  await expect(page.getByText("All your work has been sent.")).toBeVisible();
   expect(await pendingCount(page)).toBe(0);
 });
 
@@ -71,8 +71,8 @@ test("the browser is asked to protect local data after the first sync, and the p
   await signIn(page);
   await waitForFirstSync(page);
   await expect.poll(() => page.evaluate(() => window.__persistCalls)).toBe(1);
-  await page.getByRole("link", { name: /^\d+ pending · Last sync/ }).click();
-  await expect(page.getByText(/^Protected\. The browser will not clear/)).toBeVisible();
+  await page.getByRole("link", { name: /^\d+ not sent yet · Last sent/ }).click();
+  await expect(page.getByText(/^Kept safe\. Your saved work stays/)).toBeVisible();
 });
 
 async function offerInstall(page: Page) {
@@ -127,8 +127,8 @@ test("every control a worker taps is at least 44 px each way", async ({ page }) 
     [
       "sync status",
       async () => {
-        await page.getByRole("link", { name: /^\d+ pending · Last sync/ }).click();
-        await expect(page.getByRole("heading", { name: "Sync status" })).toBeVisible();
+        await page.getByRole("link", { name: /^\d+ not sent yet · Last sent/ }).click();
+        await expect(page.getByRole("heading", { name: "Sending" })).toBeVisible();
       },
     ],
   ];

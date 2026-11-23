@@ -11,17 +11,17 @@ import { formatFull, formatWhen } from "../../lib/when";
 const PAGE = 25;
 
 const REASON: Record<string, string> = {
-  field_conflict: "Same field changed on two devices",
-  deleted_remotely: "Edited a record that was deleted",
-  edited_since_base: "Deleted a record that others had edited",
-  locked: "Edited a submitted or approved record",
-  not_found: "Record not found",
-  invalid: "Failed validation",
-  invalid_state: "Not allowed in the record's state",
-  unknown_form_version: "Unknown form version",
-  forbidden: "Not allowed for this role",
-  id_taken: "Id already in use",
-  mutation_id_reuse: "Mutation id reused",
+  field_conflict: "Same answer changed on two devices",
+  deleted_remotely: "Edited after it was deleted",
+  edited_since_base: "Deleted after someone else edited it",
+  locked: "Edited after it was submitted or approved",
+  not_found: "Inspection not found",
+  invalid: "Answers didn't fit the form",
+  invalid_state: "Not allowed at this stage",
+  unknown_form_version: "Form or assignment not found",
+  forbidden: "Not allowed for this user",
+  id_taken: "Inspection number already in use",
+  mutation_id_reuse: "Same change sent twice",
 };
 
 export function ConflictLogPage() {
@@ -59,9 +59,9 @@ export function ConflictLogPage() {
     <div className="page page--wide stack">
       <h1>Conflict log</h1>
       <p>
-        Changes a worker made that the server did not apply. The server cannot see what the worker
-        then did on their device, so "Changed since" only says whether they changed the record on
-        the server afterwards.
+        Changes from workers that were not saved, because someone else changed the same inspection
+        first or the change was not allowed. "Changed since" says whether the worker sent another
+        change to that inspection afterwards. Changes still on their device do not show here.
       </p>
 
       <form className="row filters" aria-label="Filters" onSubmit={(e) => e.preventDefault()}>

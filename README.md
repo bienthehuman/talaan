@@ -17,7 +17,7 @@ edit the same field offline get a conflict screen instead of one of them quietly
 Both clips are real runs of the app (`bash scripts/demo.sh` records them), not mock-ups.
 
 <p>
-  <img src="docs/media/screen-worker.png" alt="Worker assignments on a phone: the sign band with the pending count and Sync now, and each inspection with its station line" width="260">
+  <img src="docs/media/screen-worker.png" alt="Worker assignments on a phone: the sign band with the not-sent count and Send now, and each inspection with its station line" width="260">
   <img src="docs/media/screen-admin.png" alt="Admin review of an inspection in dark mode: answers, history timeline and the action panel" width="560">
 </p>
 
@@ -67,7 +67,7 @@ Do these in order; each one is something the app promises to survive.
    a decision screen with the starting value, yours and theirs. Nothing was overwritten. Choose one.
 4. **Delete a record under a worker.** With a worker editing offline, delete the same record as `admin` in
    `/manage/review`. When the worker reconnects they are told it was deleted and keep their edits. Restore
-   it as admin and *Sync now*: their edits are sent again.
+   it as admin and *Send now*: their edits are sent again.
 5. **Edit something that was approved.** Approve a submitted record as admin, then edit it from a phone that
    has not synced yet. The server answers `locked`, the worker gets a plain message, and nothing retries.
 6. **Look at it from the outside.** The sync panel (`/sync`, the "N pending" text in the header) shows what

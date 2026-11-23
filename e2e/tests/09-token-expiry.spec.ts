@@ -72,7 +72,9 @@ test("when the session cannot be refreshed the outbox is kept and signing in aga
   );
 
   await context.setOffline(false);
-  await expect(page.getByText(/Your session has expired/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/For your security, enter your password again/)).toBeVisible({
+    timeout: 30_000,
+  });
   expect(await pendingCount(page)).toBe(3); // nothing lost, nothing dropped
 
   await page.unroute("**/api/auth/token/refresh/**");
@@ -80,7 +82,7 @@ test("when the session cannot be refreshed the outbox is kept and signing in aga
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
   await expect.poll(() => pendingCount(page), { timeout: 30_000 }).toBe(0);
-  await expect(page.getByText(/Your session has expired/)).toBeHidden();
+  await expect(page.getByText(/For your security, enter your password again/)).toBeHidden();
   const records = await serverRecords(page);
   for (const id of ids) {
     const matching = records.filter((r) => r.id === id);

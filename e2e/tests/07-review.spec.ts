@@ -29,7 +29,7 @@ async function submittedOffline(
     .click();
   await page.getByLabel("Notes").fill("reviewed in e2e");
   await page.getByRole("button", { name: "Submit inspection" }).click();
-  await expect(page.getByText("Submitted. It can't be edited here.")).toBeVisible();
+  await expect(page.getByText("Submitted. It can no longer be changed.")).toBeVisible();
   return id;
 }
 
@@ -64,8 +64,10 @@ test("the admin approves what a worker submitted offline, and the worker sees it
   await expect(admin.page.getByRole("region", { name: "History" })).toContainText("Approved");
   await expect(admin.page.getByRole("button", { name: "Approve" })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Sync now" }).click();
-  await expect(page.getByText("Approved and locked.", { exact: true })).toBeVisible({
+  await page.getByRole("button", { name: "Send now" }).click();
+  await expect(
+    page.getByText("Approved. It can no longer be changed.", { exact: true }),
+  ).toBeVisible({
     timeout: 20_000,
   });
   await admin.context.close();
@@ -94,7 +96,7 @@ test("a returned submission is editable again for the worker, with the reason", 
     "Hours look wrong",
   );
 
-  await page.getByRole("button", { name: "Sync now" }).click();
+  await page.getByRole("button", { name: "Send now" }).click();
   await expect(page.getByLabel("Notes")).toBeEnabled({ timeout: 20_000 });
   await page.getByLabel("Notes").fill("fixed after review");
   await waitSynced(page);

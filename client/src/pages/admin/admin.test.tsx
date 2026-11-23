@@ -114,8 +114,8 @@ describe("who sees what", () => {
     await screen.findByRole("heading", { name: "Review" });
     expect(router.state.location.pathname).toBe("/manage/review");
     expect(screen.getByRole("navigation", { name: "Admin" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Sync now" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/pending · Last sync/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Send now" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/not sent yet · Last sent/)).not.toBeInTheDocument();
   });
 
   it("keeps a worker out and never calls the admin API for them", async () => {
@@ -192,7 +192,7 @@ describe("the review queue", () => {
     signInAdmin();
     renderApp("/manage/review");
     expect(
-      await screen.findByText("The server had a problem. Try again in a moment."),
+      await screen.findByText("Something went wrong on our side. Try again in a moment."),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
   });
@@ -202,7 +202,9 @@ describe("the review queue", () => {
     signInAdmin();
     renderApp("/manage/review");
     expect(
-      await screen.findByText("Can't reach the server. Check your connection and try again."),
+      await screen.findByText(
+        "Can't connect. Check your signal or internet connection and try again.",
+      ),
     ).toBeInTheDocument();
   });
 });

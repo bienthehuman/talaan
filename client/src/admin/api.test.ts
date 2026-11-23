@@ -72,7 +72,7 @@ describe("admin requests after the access token expires", () => {
     const error = await listForms().catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ApiError);
     expect((error as ApiError).problem.code).toBe("session_expired");
-    expect(messageFor(error)).toBe("Your session has expired. Sign out and sign in again.");
+    expect(messageFor(error)).toBe("Your sign-in has expired. Sign out, then sign in again.");
     expect(getSession()?.user.username).toBe("admin");
   });
 

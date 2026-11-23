@@ -211,7 +211,7 @@ describe("the form editor", () => {
     const preview = screen.getByRole("region", { name: "Preview" });
     expect(within(preview).getByLabelText("Oil level (required)")).toBeInTheDocument();
     expect(within(preview).getByLabelText("Hours run (required)")).toBeInTheDocument();
-    expect(await screen.findByText("The server accepts this schema.")).toBeInTheDocument();
+    expect(await screen.findByText("This form is ready to publish.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Publish version 3" })).toBeEnabled();
     await expectNoA11yViolations(container);
   });
@@ -239,7 +239,7 @@ describe("the form editor", () => {
     const user = userEvent.setup();
     await user.click(editor);
     await user.paste("{ not json");
-    expect(await screen.findByText(/Not valid JSON:/)).toBeInTheDocument();
+    expect(await screen.findByText(/isn't valid JSON:/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Publish version 3" })).toBeDisabled();
   });
 
@@ -252,7 +252,7 @@ describe("the form editor", () => {
         }),
     });
     await open();
-    expect(await screen.findByText("The server would refuse this schema:")).toBeInTheDocument();
+    expect(await screen.findByText("This form can't be published yet:")).toBeInTheDocument();
     expect(
       within(document.getElementById("schema-status")!).getByText(/additionalProperties/),
     ).toBeInTheDocument();
@@ -466,12 +466,12 @@ describe("the conflict log", () => {
     const table = await screen.findByRole("table", { name: "Conflict log" });
     const [first, second] = within(table).getAllByRole("row").slice(1);
     expect(
-      within(first!).getByText("Conflict: Same field changed on two devices"),
+      within(first!).getByText("Conflict: Same answer changed on two devices"),
     ).toBeInTheDocument();
     expect(within(first!).getByText("notes")).toBeInTheDocument();
     expect(within(first!).getAllByRole("cell")[5]).toHaveTextContent("No");
     expect(
-      within(second!).getByText("Rejected: Edited a submitted or approved record"),
+      within(second!).getByText("Rejected: Edited after it was submitted or approved"),
     ).toBeInTheDocument();
     expect(within(second!).getAllByRole("cell")[5]).toHaveTextContent("Yes");
     expect(within(first!).getByRole("link", { name: "Open North plant record" })).toHaveAttribute(

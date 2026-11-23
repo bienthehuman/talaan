@@ -37,7 +37,7 @@ export function ReauthPrompt({ onSignedIn }: { onSignedIn: () => void }) {
   return (
     <form className={bannerClass("warn")} onSubmit={submit} aria-busy={busy} noValidate>
       <p role="status">
-        Your session has expired. Sign in again to keep syncing. Your changes are safe on this
+        For your security, enter your password again to keep sending. Your work is safe on this
         device.
       </p>
       {error && (

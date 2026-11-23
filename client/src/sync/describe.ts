@@ -7,48 +7,46 @@ export function describeProblem(code: string | null): string {
     case "":
       return "None";
     case "network":
-      return "The server could not be reached.";
+      return "Couldn't reach the office. Check your signal.";
     case "timeout":
-      return "The server took too long to answer.";
+      return "The office took too long to answer.";
     case "server_error":
     case "database_unavailable":
     case "fault_injected":
-      return "The server had a problem.";
+      return "The office system had a problem.";
     case "rate_limited":
-      return "The server asked the app to slow down.";
+      return "The office system is busy.";
     case "unauthenticated":
     case "session_expired":
-      return "Your session expired. Sign in again.";
+      return "You need to enter your password again.";
     case "client_too_old":
-      return "This version of the app is too old to sync.";
+      return "This version of the app is out of date.";
     case "local_error":
-      return "This device could not save data.";
+      return "This device couldn't save your work.";
     case "forbidden":
-      return "Your account is not allowed to sync.";
+      return "Your account isn't allowed to send inspections.";
     case "empty_results":
-      return "The server's answer was incomplete.";
+      return "The office's answer was incomplete.";
     default:
-      return `Problem: ${code}`;
+      return "Something went wrong while sending.";
   }
 }
 
 export function describeState(state: EngineState, pending: number, retryAt: number | null): string {
   switch (state) {
     case "syncing":
-      return "Syncing now.";
+      return "Sending now.";
     case "retrying":
       return retryAt
-        ? `The last attempt failed. Trying again at ${new Date(retryAt).toLocaleTimeString()}.`
-        : "The last attempt failed. Trying again soon.";
+        ? `Couldn't send. Trying again at ${new Date(retryAt).toLocaleTimeString()}.`
+        : "Couldn't send. Trying again soon.";
     case "paused-auth":
-      return "Paused. Sign in again to continue.";
+      return "Paused. Enter your password to continue.";
     case "upgrade-required":
-      return "Stopped. This version of the app is too old to sync; reload to update.";
+      return "Stopped. This version of the app is out of date. Reload the page to update.";
     case "error":
-      return "Stopped by an error. Press Retry now to try again.";
+      return "Stopped by a problem. Press Try again now.";
     default:
-      return pending > 0
-        ? "Waiting for the next sync."
-        : "Everything that can be sent has been sent.";
+      return pending > 0 ? "Waiting to send." : "All your work has been sent.";
   }
 }

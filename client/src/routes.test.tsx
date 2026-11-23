@@ -39,7 +39,7 @@ describe("routing", () => {
     expect(await screen.findByRole("heading", { name: "Style guide" })).toBeInTheDocument();
     for (const label of [
       "Saved on this device",
-      "Synced",
+      "Sent",
       "Needs your decision",
       "Not accepted: approved",
     ]) {
@@ -70,7 +70,9 @@ describe("layout", () => {
 
     signIn();
     renderApp("/");
-    expect(screen.getByRole("link", { name: "0 pending · Last sync: never" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "0 not sent yet · Last sent: never" }),
+    ).toBeInTheDocument();
   });
 
   it("signs out with no unsent changes straight away", async () => {

@@ -29,7 +29,7 @@ test("a lost response after commit is retried and applied exactly once", async (
   const id = await startInspection(page);
   await page.getByLabel("Notes").fill(note);
 
-  await expect(page.getByText("Synced", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Sent", { exact: true })).toBeVisible({ timeout: 30_000 });
   expect(await pendingCount(page)).toBe(0);
 
   // The first answer was the injected 503 (the server had already committed); the retry carried the

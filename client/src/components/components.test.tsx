@@ -8,11 +8,11 @@ import { ToastProvider, useToast } from "./Toast";
 describe("SyncBadge", () => {
   const states: SyncState[] = ["pending", "syncing", "synced", "conflict", "rejected"];
 
-  it("never shows 'Saved on this device' and 'Synced' alike", () => {
+  it("never shows 'Saved on this device' and 'Sent' alike", () => {
     const { container: pending } = render(<SyncBadge state="pending" />);
     const { container: synced } = render(<SyncBadge state="synced" />);
     expect(pending).toHaveTextContent("Saved on this device");
-    expect(synced).toHaveTextContent("Synced");
+    expect(synced).toHaveTextContent("Sent");
     expect(pending.innerHTML).not.toBe(synced.innerHTML);
     // Different words and a different icon (the colour comes from a CSS Module class, not checked here).
     const icon = (c: HTMLElement) => c.querySelector("svg path")?.getAttribute("d");

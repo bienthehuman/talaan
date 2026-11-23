@@ -49,7 +49,7 @@ export function RootLayout() {
               <span className={`${styles.numeral} ${pending > 0 ? styles.waiting : ""}`}>
                 {pending}
               </span>{" "}
-              pending · Last sync: {formatLastSync(lastSyncAt)}
+              not sent yet · Last sent: {formatLastSync(lastSyncAt)}
             </Link>
             {conflicts > 0 && (
               <Link to="/" className={`${styles.needsDecision} tap-link`}>
@@ -62,22 +62,23 @@ export function RootLayout() {
               disabled={state === "syncing"}
               aria-busy={state === "syncing" || undefined}
             >
-              {state === "syncing" ? "Syncing…" : "Sync now"}
+              {state === "syncing" ? "Sending…" : "Send now"}
             </Button>
           </div>
         )}
       </header>
       {!online && (
         <Banner kind="warn">
-          You're offline. Changes are saved on this device and will sync when you're back online.
+          You're offline. Your work is saved on this device and will be sent when you have signal
+          again.
         </Banner>
       )}
       {user?.role === "worker" && <InstallPrompt />}
       {user?.role === "worker" && state === "paused-auth" && <ReauthPrompt onSignedIn={resume} />}
       {state === "upgrade-required" && (
         <Banner kind="danger">
-          This version of the app is too old to sync. Your changes are safe on this device. Reload
-          to update.
+          This version of the app is out of date and can't send your work. Your work is safe on this
+          device. Reload the page to update.
         </Banner>
       )}
       {user?.role === "admin" ? (
@@ -99,11 +100,11 @@ export function RootLayout() {
       )}
       <ConfirmDialog
         open={confirmingSignOut}
-        title="Sign out with unsent changes?"
+        title="Sign out with unsent work?"
         message={
           pending === 1
-            ? "1 change is saved only on this device. Signing out will delete it."
-            : `${pending} changes are saved only on this device. Signing out will delete them.`
+            ? "1 change hasn't reached the office yet. Signing out will delete it from this device."
+            : `${pending} changes haven't reached the office yet. Signing out will delete them from this device.`
         }
         confirmLabel="Sign out and delete"
         destructive

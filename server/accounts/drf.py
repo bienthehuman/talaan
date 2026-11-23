@@ -11,7 +11,7 @@ class IsWorker(BasePermission):
 
 
 class IsWorkerOrAdmin(BasePermission):
-    message = "Your role cannot do this."
+    message = "Your account isn't allowed to do this."
 
     def has_permission(self, request, view) -> bool:
         user = request.user
@@ -30,7 +30,7 @@ def requires(permission: str) -> type[BasePermission]:
     role name, decides: a role that is later given or denied a permission needs no view change."""
 
     class HasPermission(BasePermission):
-        message = "Your role cannot do this."
+        message = "Your account isn't allowed to do this."
 
         def has_permission(self, request, view) -> bool:
             user = request.user

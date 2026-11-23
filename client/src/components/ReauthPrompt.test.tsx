@@ -33,7 +33,7 @@ async function submit(password: string) {
 describe("ReauthPrompt", () => {
   it("says the changes are safe and has no structural a11y problems", async () => {
     const { container } = setup(server(2));
-    expect(screen.getByText(/Your changes are safe on this device/)).toBeInTheDocument();
+    expect(screen.getByText(/Your work is safe on this device/)).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 

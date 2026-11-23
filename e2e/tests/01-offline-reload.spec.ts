@@ -8,7 +8,7 @@ import {
 } from "./helpers";
 
 // Scenario 1: create and edit offline, reload the browser. Data and outbox survive, and the badge
-// says "Saved on this device", never "Synced". Then the connection returns and it all reaches the server.
+// says "Saved on this device", never "Sent". Then the connection returns and it all reaches the server.
 
 test("work done offline survives a reload and syncs when the connection returns", async ({
   page,
@@ -34,12 +34,12 @@ test("work done offline survives a reload and syncs when the connection returns"
   await expect(page.getByLabel("Notes")).toHaveValue(note);
   await expect(page.getByLabel("Oil level (required)")).toHaveValue("low");
   await expect(page.getByText("Saved on this device", { exact: true })).toBeVisible();
-  await expect(page.getByText("Synced", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Sent", { exact: true })).toHaveCount(0);
   expect(await pendingCount(page)).toBe(1);
 
   // Back online: the engine sends it without being asked, and the badge changes.
   await context.setOffline(false);
-  await expect(page.getByText("Synced", { exact: true })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("Sent", { exact: true })).toBeVisible({ timeout: 20_000 });
   expect(await pendingCount(page)).toBe(0);
 
   const stored = (await serverRecords(page)).find((r) => r.id === id);

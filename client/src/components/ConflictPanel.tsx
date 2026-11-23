@@ -62,7 +62,7 @@ export function ConflictPanel({ db, row, definition, onDiscard }: Props) {
             <fieldset key={f.field} className={`field field--choice ${styles.pick}`}>
               <legend>{title(f.field)}</legend>
               <p className="field-hint">
-                Before either of you: {formatValue(field(f.field), f.start)}
+                Before either change: {formatValue(field(f.field), f.start)}
               </p>
               <label className="choice">
                 <input

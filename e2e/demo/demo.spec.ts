@@ -140,7 +140,7 @@ test("two phones change the same field: a conflict, nothing overwritten, then a 
   );
   expect(stored?.data.notes).toBe("from phone B");
 
-  await a.page.getByRole("button", { name: "Sync now" }).click();
+  await a.page.getByRole("button", { name: "Send now" }).click();
   await expect(a.page.getByLabel("Notes")).toHaveValue("from phone B", { timeout: 20_000 });
   await a.context.close();
 });

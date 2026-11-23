@@ -158,14 +158,16 @@ function Editor({
             />
           </div>
           <div id="schema-status" role="status" className="stack">
-            {"error" in parsed && <p className="field-error">Not valid JSON: {parsed.error}</p>}
+            {"error" in parsed && (
+              <p className="field-error">The text isn't valid JSON: {parsed.error}</p>
+            )}
             {"value" in parsed && !upToDate && <p className="field-hint">Checking…</p>}
             {"value" in parsed && upToDate && check.data?.valid && (
-              <p>The server accepts this schema.</p>
+              <p>This form is ready to publish.</p>
             )}
             {"value" in parsed && upToDate && serverProblems.length > 0 && (
               <div>
-                <p className="field-error">The server would refuse this schema:</p>
+                <p className="field-error">This form can't be published yet:</p>
                 <ul>
                   {serverProblems.map((p) => (
                     <li key={p}>{p}</li>
@@ -199,7 +201,7 @@ function Editor({
               <PreviewFields fields={form.fields} />
             </>
           ) : (
-            <p>The preview appears when the schema describes a form.</p>
+            <p>The preview appears once the text above describes a form.</p>
           )}
         </section>
       </div>

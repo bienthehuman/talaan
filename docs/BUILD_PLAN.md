@@ -224,6 +224,7 @@ and [ADR 0012](adr/0012-visual-identity-and-self-hosted-font.md); reasons in
 | 5.6 | **Polish and proof.** Audit and critique pass, dark and reduced-motion check, README screenshots, re-recorded demo GIFs, `v1.1.0`. | done |
 | 5.8 | **Controls polish** (owner feedback after `v1.1.0`): input focus as a highlight, eye button in password fields, roomier and styled selects and date fields, account menu with the theme as three choices and Sign out, right-aligned button groups, centred dialogs. | done |
 | 5.9 | **Focus and emphasis** (owner feedback after 5.8): fields, selects and the Yes/No group show focus as a 2 px accent border with no halo (selects keep it while their list is open); violet `--emphasis` as a third colour for key details (assignment headers, site names, data labels, login tagline). | in review |
+| 5.10 | **Plain-language copy.** Worker and admin text rewritten for non-technical readers: "the office" instead of "the server", "send" instead of "sync", no session/schema/id jargon in worker text, plain conflict-log labels, plainer server refusal reasons. Word list in DESIGN_SYSTEM.md section 7. | in review |
 
 ### Definition of done per slice (phase 5)
 
@@ -306,3 +307,4 @@ names used by tests unchanged unless the PR lists the change; no inline `style=`
 | Metrics from rollups instead of grouped queries over the ledger at every scrape (it scans `applied_mutation`); pull lag per device with a time series store | Slice 4.5 | when the ledger is large | what I would change at scale |
 | Clear the Dependabot `minimatch` alert (build-time only, via vite-plugin-pwa > workbox-build > glob): try an npm `overrides` entry, or dismiss as tolerable | Slice 0.5 | when convenient | `npm audit --omit=dev` is already clean |
 | Postgres major-version upgrade procedure, tested | Slice 0.5 | later | currently a manual note in DEPLOY.md |
+| Re-take README screenshots and re-record demo GIFs with the slice 5.10 wording ("Send now", "not sent yet") | Slice 5.10 | soon | `bash scripts/demo.sh`; the films still show "Sync now" |
