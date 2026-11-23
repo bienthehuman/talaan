@@ -18,3 +18,4 @@ Status values: proposed, accepted, superseded by NNNN.
 | [0011](0011-css-modules-for-component-styles.md) | CSS Modules for component styles; tokens and shared primitives stay global | accepted |
 | [0012](0012-visual-identity-and-self-hosted-font.md) | Visual identity "Wayfinding Line" and a self-hosted webfont | accepted |
 | [0013](0013-form-drafts-and-frozen-field-names.md) | Form drafts in their own table; field names keep their type for the life of a form | accepted |
+| [0014](0014-worker-invites.md) | Workers join through a one-time invite link; the invitee sets the password | accepted |

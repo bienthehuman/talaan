@@ -15,6 +15,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
 | 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed (tagged `v1.1.0`, done) |
 | 6 | Form builder: admins build forms without writing JSON; explicit field order, limits, frozen field names, server-side drafts ([FORM_BUILDER_PLAN.md](FORM_BUILDER_PLAN.md)) | An admin builds, publishes and assigns a form without touching JSON, and a worker fills it offline in the built order (e2e); all gates green; `v1.2.0` (tagged `v1.2.0`, done) |
+| 7 | Worker invites: an admin invites a worker by link, the invitee sets their own password ([ADR 0014](adr/0014-worker-invites.md)) | An admin invites a worker, the worker opens the link on a phone, sets a password and fills an assigned form offline (e2e); all gates green; `v1.3.0` |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -281,6 +282,38 @@ any API change; docs updated in the same PR when a rule changes.
   green; axe clean in light and dark at 390 px and 1366 px.
 - **6.5** The e2e scenario passes on desktop and Pixel 7; README shows the builder; `v1.2.0` tagged.
 
+## Phase 7 slices: worker invites
+
+Exit: `v1.3.0`. Admins add workers from the app without ever knowing their password. Decisions in
+[ADR 0014](adr/0014-worker-invites.md), table in DATA_MODEL.md section 1, endpoints in protocol.md section
+11. No slice touches the sync service, `src/db/` or the sync engine. Deactivating workers and resetting
+passwords are out of scope (backlog).
+
+| Slice | Content | Status |
+|---|---|---|
+| 7.0 | **Docs.** This plan, ADR 0014, `worker_invite` in DATA_MODEL, invite endpoints in protocol section 11. | in review |
+| 7.1 | **Server.** `worker_invite` model and migration (partial unique index on open usernames), `worker.manage` in the catalog and ROLES.md section 3, admin invite endpoints (list, create, new link, revoke), public `check` and `accept` with the `invite` throttle, `no-store`, log events. | planned |
+| 7.2 | **Admin UI.** `/manage/workers`: workers list, invites with status, "Invite worker" form, the link shown once with a copy button, new link and revoke with a confirm. Nav link "Workers". | planned |
+| 7.3 | **Invite page and proof.** Public `/invite` page: reads the token from the fragment and removes it from the address bar, greets by name, set password (show/hide, confirm), clear messages for expired, used and revoked links, then signs in. E2E: invite, accept in a second browser, assign, fill offline, sync. README, `v1.3.0`. | planned |
+
+### Definition of done per slice (phase 7)
+
+Every slice: the server and client checks in CLAUDE.md green; OpenAPI and `api-types.ts` regenerated after
+any API change; docs updated in the same PR when a rule changes.
+
+- **7.1** Each rule in protocol section 11 (invites) has a test that fails without it: a worker gets 403 on
+  every admin invite endpoint; the token is never stored or logged (assert on the row and on captured
+  logs); an expired, used or revoked token is refused and creates no user; two concurrent accepts of one
+  token create exactly one user (`run_together`); a username taken between invite and accept is `409`;
+  new link kills the old token; the new user is in the `worker` group, appears in `GET workers/`, and can
+  sign in and pull. The partial unique index is tested as the app role.
+- **7.2** An admin can invite, copy the link, replace it and revoke it by keyboard; the token is not kept
+  after the panel closes; no inline `style=`; `modules.test.ts` and the tap-target test green; axe clean
+  in light and dark at 390 px and 1366 px.
+- **7.3** The token never appears in a request URL (asserted in e2e with request logging); the scenario
+  passes on desktop and Pixel 7; every invite error state has a message that says what to do; `v1.3.0`
+  tagged after CI on `main` passed.
+
 ## Baseline checklist (phase 0)
 
 **Repo and GitHub**
@@ -347,3 +380,5 @@ any API change; docs updated in the same PR when a rule changes.
 | Re-take README screenshots and re-record demo GIFs with the slice 5.10 wording ("Send now", "not sent yet") | Slice 5.10 | soon | `bash scripts/demo.sh`; the films still show "Sync now" |
 | Discard a form draft (start again from the last published version); there is no delete endpoint yet, so a draft lives until it is published | Slice 6.4 | soon | `DELETE /api/admin/forms/<id>/draft/` with the revision, plus a confirm in the editor |
 | Keep "the ID follows the label" across a reload: the draft does not store it, so a reopened draft treats every unpublished ID as hand-edited | Slice 6.4 | later | harmless (IDs can still be edited by hand); would need an `x-` key or a draft side table |
+| Deactivate a worker and reset a password from the admin web | Phase 7 plan | after token revocation | deactivation needs server-side refresh token revocation (above), or the worker keeps syncing up to 7 days |
+| Send invite links by email (needs an email backend and a sender domain) | Phase 7 plan | when a host exists | phase 7 has the admin copy the link |
