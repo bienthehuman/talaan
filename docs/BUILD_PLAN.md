@@ -14,7 +14,7 @@ not days or weeks: slices are batched for review and ordered by risk and depende
 | 3 | Conflicts: detection, `deleted_remotely`, resolution screen | Scenarios 4, 5, 6: all twelve pass in CI |
 | 4 | v1: admin web, worker UX, operability, load test, README, demo video | `v1.0` (tagged `v1.0.0`, done) |
 | 5 | UI redesign "Wayfinding Line": tokens and font, components, header, worker and admin pages, polish ([REDESIGN_PLAN.md](REDESIGN_PLAN.md)) | `v1.1.0`: every screen on DESIGN_SYSTEM.md v2, all gates green, README media refreshed (tagged `v1.1.0`, done) |
-| 6 | Form builder: admins build forms without writing JSON; explicit field order, limits, frozen field names, server-side drafts ([FORM_BUILDER_PLAN.md](FORM_BUILDER_PLAN.md)) | An admin builds, publishes and assigns a form without touching JSON, and a worker fills it offline in the built order (e2e); all gates green; `v1.2.0` |
+| 6 | Form builder: admins build forms without writing JSON; explicit field order, limits, frozen field names, server-side drafts ([FORM_BUILDER_PLAN.md](FORM_BUILDER_PLAN.md)) | An admin builds, publishes and assigns a form without touching JSON, and a worker fills it offline in the built order (e2e); all gates green; `v1.2.0` (tagged `v1.2.0`, done) |
 
 Gate: do not start phase 3 until phase 2's tests pass.
 Each phase ends with an automated demo (pytest and/or Playwright) plus a release tag.
@@ -245,7 +245,7 @@ names used by tests unchanged unless the PR lists the change; no inline `style=`
   page has no horizontal scroll at 390 px.
 - **5.6** Impeccable audit has no open P0/P1; demo GIFs and README screenshots show v2; `v1.1.0` tagged.
 
-## Phase 6 slices: form builder
+## Phase 6 slices: form builder (done: tagged `v1.2.0` on 2026-11-23)
 
 Exit: `v1.2.0`. Admins build forms in a builder instead of writing JSON; the stored format stays the JSON
 Schema subset, and the server stays the judge of every rule. Design in
@@ -260,7 +260,7 @@ sync service, `src/db/` or the sync engine.
 | 6.2 | **Server drafts.** `form_draft` model and migration, `GET`/`PUT` draft with revision (`409` when stale), publish from draft in one transaction, `Cache-Control: no-store` on `/api/admin/`. | done (#49) |
 | 6.3 | **Client builder model.** `src/forms/builder.ts` (schema to model and back, field names from labels, add/move/remove) with randomized round-trip tests; `parseForm` honours `x-order`. | done (#50) |
 | 6.4 | **Builder UI.** Builder and JSON tabs on one draft, field cards, choices editor, move up/down, live preview, change summary before Publish, autosave with a conflict message, "start from a copy". | done (#51) |
-| 6.5 | **Proof.** E2E: build without JSON, publish, assign, worker fills offline and syncs in the built order; keyboard-only build; axe and tap sizes; README screenshot; `v1.2.0`. | in review; `v1.2.0` is tagged after merge |
+| 6.5 | **Proof.** E2E: build without JSON, publish, assign, worker fills offline and syncs in the built order; keyboard-only build; axe and tap sizes; README screenshot; `v1.2.0`. | done (#52) |
 
 ### Definition of done per slice (phase 6)
 

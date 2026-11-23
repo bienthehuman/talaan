@@ -1,6 +1,6 @@
 # Form builder plan (phase 6)
 
-Status: **accepted** 2026-11-23 (slice 6.0). Decisions in section 6; ADR 0013 records the
+Status: **done**: built in slices 6.0 to 6.5, tagged `v1.2.0` on 2026-11-23 (accepted 2026-11-23, slice 6.0). Decisions in section 6; ADR 0013 records the
 hard-to-reverse ones.
 
 ## 1. Problem
