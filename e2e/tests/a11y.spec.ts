@@ -11,6 +11,7 @@ const SCREENS: { name: string; path: string; signedIn?: boolean; admin?: boolean
   { name: "sync status", path: "/sync", signedIn: true },
   { name: "review queue", path: "/manage/review", signedIn: true, admin: true },
   { name: "forms", path: "/manage/forms", signedIn: true, admin: true },
+  { name: "form builder", path: "/manage/forms/1/edit", signedIn: true, admin: true },
   { name: "assignments admin", path: "/manage/assignments", signedIn: true, admin: true },
   { name: "conflict log", path: "/manage/conflicts", signedIn: true, admin: true },
   { name: "page not found", path: "/no-such-page" },

@@ -121,3 +121,21 @@ export async function createSyncedInspection(page: Page, notes: string): Promise
   await waitSynced(page);
   return id;
 }
+
+/** Every visible control smaller than 44 px either way (DESIGN_SYSTEM.md: tap targets), as
+ *  readable lines. Radios and checkboxes are measured through their `label.choice`. */
+export async function smallControls(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const selector =
+      'button, a[href], summary, select, textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), label.choice';
+    return [...document.querySelectorAll<HTMLElement>(selector)]
+      .filter((el) => !el.closest(".skip-link") && !el.classList.contains("skip-link"))
+      .map((el) => ({ el, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.width > 0 && box.height > 0)
+      .filter(({ box }) => box.width < 44 || box.height < 44)
+      .map(
+        ({ el, box }) =>
+          `${el.tagName.toLowerCase()} "${(el.textContent || el.getAttribute("aria-label") || "").trim().slice(0, 30)}" ${Math.round(box.width)}x${Math.round(box.height)}`,
+      );
+  });
+}

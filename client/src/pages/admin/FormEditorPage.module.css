@@ -4,3 +4,74 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
   align-items: start;
 }
+.note {
+  margin: 0;
+  color: var(--text-muted);
+}
+.saveLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: var(--tap-min);
+}
+.saveLine p {
+  margin: 0;
+}
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1.5px solid var(--border);
+}
+.tab {
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1.5px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--text);
+}
+.tab[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.panel {
+  min-width: 0;
+}
+.changesHeading {
+  margin: 0;
+  font-size: var(--text-md);
+}
+.changes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+.change {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: baseline;
+}
+.level {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.refused {
+  color: var(--danger);
+}
+.review {
+  color: var(--text);
+}
+.safe {
+  color: var(--text-muted);
+}

@@ -1,5 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pendingCount, signIn, startInspection, waitForFirstSync, waitSynced } from "./helpers";
+import {
+  pendingCount,
+  signIn,
+  smallControls,
+  startInspection,
+  waitForFirstSync,
+  waitSynced,
+} from "./helpers";
 
 // What a worker in the field sees about their own device: the sync status panel, the install prompt,
 // storage protection, and controls big enough to hit with a thumb.
@@ -135,19 +142,7 @@ test("every control a worker taps is at least 44 px each way", async ({ page }) 
   const tooSmall: string[] = [];
   for (const [name, go] of pages) {
     await go();
-    const found = await page.evaluate(() => {
-      const selector =
-        'button, a[href], summary, select, textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), label.choice';
-      return [...document.querySelectorAll<HTMLElement>(selector)]
-        .filter((el) => !el.closest(".skip-link") && !el.classList.contains("skip-link"))
-        .map((el) => ({ el, box: el.getBoundingClientRect() }))
-        .filter(({ box }) => box.width > 0 && box.height > 0)
-        .filter(({ box }) => box.width < 44 || box.height < 44)
-        .map(
-          ({ el, box }) =>
-            `${el.tagName.toLowerCase()} "${(el.textContent || el.getAttribute("aria-label") || "").trim().slice(0, 30)}" ${Math.round(box.width)}x${Math.round(box.height)}`,
-        );
-    });
+    const found = await smallControls(page);
     tooSmall.push(...found.map((f) => `${name}: ${f}`));
   }
   expect(tooSmall).toEqual([]);

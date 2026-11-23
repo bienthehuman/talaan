@@ -12,6 +12,8 @@ export type SubmissionStatus = components["schemas"]["SubmissionStatusEnum"];
 export type Assignment = components["schemas"]["AdminAssignment"];
 export type Form = components["schemas"]["Form"];
 export type FormVersionDetail = components["schemas"]["FormVersionDetail"];
+export type FormDraft = components["schemas"]["FormDraft"];
+export type SchemaChange = components["schemas"]["SchemaChange"];
 export type ConflictRow = components["schemas"]["ConflictLogRow"];
 export type AdminAction = "approve" | "return" | "restore" | "delete" | "edit";
 
@@ -119,15 +121,52 @@ export async function checkSchema(schema: unknown, formId?: number) {
   );
 }
 
-export async function publishVersion(formId: number, schema: unknown): Promise<FormVersionDetail> {
+/** The form's draft (ADR 0013), or null when it has none. */
+export async function getDraft(formId: number): Promise<FormDraft | null> {
+  try {
+    return await call(async () =>
+      unwrap(await api.GET("/api/admin/forms/{id}/draft/", { params: { path: { id: formId } } })),
+    );
+  } catch (error) {
+    if (error instanceof ApiError && error.problem.status === 404) return null;
+    throw error;
+  }
+}
+
+/** Save the draft over `revision` (0 starts one). Someone else's save in between is a 409
+ *  `stale_draft`; read it with `staleDraft`. */
+export async function saveDraft(
+  formId: number,
+  schema: unknown,
+  revision: number,
+): Promise<FormDraft> {
   return call(async () =>
     unwrap(
-      await api.POST("/api/admin/forms/{id}/versions/", {
+      await api.PUT("/api/admin/forms/{id}/draft/", {
         params: { path: { id: formId } },
-        body: { schema },
+        body: { schema, revision },
       }),
     ),
   );
+}
+
+export async function publishDraft(formId: number, revision: number): Promise<FormVersionDetail> {
+  return call(async () =>
+    unwrap(
+      await api.POST("/api/admin/forms/{id}/draft/publish/", {
+        params: { path: { id: formId } },
+        body: { revision },
+      }),
+    ),
+  );
+}
+
+/** For a 409 `stale_draft`: the draft as it is now (null once it was published). `undefined` for
+ *  any other error. */
+export function staleDraft(error: unknown): FormDraft | null | undefined {
+  if (!(error instanceof ApiError) || error.problem.code !== "stale_draft") return undefined;
+  const draft = (error.problem as { draft?: FormDraft | null }).draft;
+  return draft ?? null;
 }
 
 // --- assignments ------------------------------------------------------------------------------

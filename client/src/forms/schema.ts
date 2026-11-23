@@ -69,7 +69,7 @@ export function parseForm(schema: unknown): FormDefinition | null {
       .map((name) => [name, properties[name]!] as const)
       .map(([name, p]) => ({
         name,
-        title: p.title ?? name,
+        title: p.title?.trim() ? p.title : name,
         description: p.description,
         type: p.type,
         required: required.has(name),
