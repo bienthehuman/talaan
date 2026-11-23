@@ -2,8 +2,11 @@
 and read the conflict log. Reads go through the ORM; every change to a submission still goes through
 sync.services (see AdminActionView). Each endpoint requires one catalog permission."""
 
-from django.db import transaction
+import json
+
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Exists, F, OuterRef, Q
+from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics
 from rest_framework.exceptions import NotFound, ValidationError
@@ -20,9 +23,10 @@ from accounts.permissions import (
     WORKER,
 )
 from assignments.models import Assignment
+from core.errors import problem_response
 from forms.compat import changes
-from forms.models import Form, FormVersion, publish_problems, published_schemas
-from forms.schema import validate_form_schema
+from forms.models import Form, FormDraft, FormVersion, publish_problems, published_schemas
+from forms.schema import MAX_SCHEMA_BYTES, validate_form_schema
 from submissions.models import EventKind, Submission, SubmissionEvent
 
 from . import serializers as s
@@ -275,6 +279,120 @@ class FormVersionDetailView(generics.RetrieveAPIView):
     @extend_schema(summary="One form version with its schema")
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+# A draft may be invalid, but it is still stored, so it gets a ceiling too: twice the publish limit.
+MAX_DRAFT_BYTES = 2 * MAX_SCHEMA_BYTES
+
+
+def _form(pk: int) -> Form:
+    form = Form.objects.filter(pk=pk).first()
+    if form is None:
+        raise NotFound("No such form.")
+    return form
+
+
+def _draft(form_id: int) -> FormDraft | None:
+    return (
+        FormDraft.objects.select_related("based_on_version", "updated_by")
+        .filter(form_id=form_id)
+        .first()
+    )
+
+
+def _stale(form_id: int) -> Response:
+    """409: someone saved or published the draft since the caller read it. The body carries the
+    draft as it is now, so the editor can offer it instead of overwriting it."""
+    current = _draft(form_id)
+    return problem_response(
+        409,
+        "stale_draft",
+        "Someone else changed this draft after you opened it.",
+        draft=s.FormDraftSerializer(current).data if current else None,
+    )
+
+
+class FormDraftView(APIView):
+    """The one draft of a form (ADR 0013). Only admins with form.publish see drafts; workers never
+    do. Saves carry the revision last read, and a stale one is refused, never merged."""
+
+    permission_classes = [requires(FORM_PUBLISH)]
+
+    @extend_schema(responses={200: s.FormDraftSerializer}, summary="The form's draft")
+    def get(self, request, pk):
+        draft = _draft(_form(pk).pk)
+        if draft is None:
+            raise NotFound("This form has no draft.")
+        return Response(s.FormDraftSerializer(draft).data)
+
+    @extend_schema(
+        request=s.FormDraftSaveSerializer,
+        responses={
+            200: s.FormDraftSerializer,
+            201: s.FormDraftSerializer,
+            409: s.StaleDraftSerializer,
+        },
+        summary="Save the form's draft (revision 0 starts one)",
+    )
+    def put(self, request, pk):
+        form = _form(pk)
+        body = s.FormDraftSaveSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        schema, revision = body.validated_data["schema"], body.validated_data["revision"]
+        if not isinstance(schema, dict):
+            raise ValidationError({"schema": "A draft must be a JSON object."})
+        size = len(json.dumps(schema, separators=(",", ":"), ensure_ascii=False).encode())
+        if size > MAX_DRAFT_BYTES:
+            raise ValidationError({"schema": f"A draft is at most {MAX_DRAFT_BYTES // 1024} KB."})
+
+        if revision == 0:
+            latest = form.versions.filter(published_at__isnull=False).order_by("-number").first()
+            try:
+                with transaction.atomic():
+                    FormDraft.objects.create(
+                        form=form, schema=schema, based_on_version=latest, updated_by=request.user
+                    )
+            except IntegrityError:  # someone started one first
+                return _stale(form.pk)
+            return Response(s.FormDraftSerializer(_draft(form.pk)).data, status=201)
+
+        # Compare and set in one statement: only the revision the caller read is replaced.
+        saved = FormDraft.objects.filter(form=form, revision=revision).update(
+            schema=schema,
+            revision=F("revision") + 1,
+            updated_by=request.user,
+            updated_at=timezone.now(),
+        )
+        if not saved:
+            return _stale(form.pk)
+        return Response(s.FormDraftSerializer(_draft(form.pk)).data)
+
+
+class FormDraftPublishView(APIView):
+    """Publish the draft as the next version and delete it, in one transaction."""
+
+    permission_classes = [requires(FORM_PUBLISH)]
+
+    @extend_schema(
+        request=s.FormDraftPublishSerializer,
+        responses={201: s.FormVersionDetailSerializer, 409: s.StaleDraftSerializer},
+        summary="Publish the form's draft as its next version",
+    )
+    def post(self, request, pk):
+        form = _form(pk)
+        body = s.FormDraftPublishSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        with transaction.atomic():
+            Form.objects.select_for_update().get(pk=form.pk)
+            draft = FormDraft.objects.select_for_update().filter(form=form).first()
+            if draft is None or draft.revision != body.validated_data["revision"]:
+                return _stale(form.pk)
+            if problems := publish_problems(form.pk, draft.schema):
+                raise ValidationError({"schema": problems})
+            version = FormVersion.objects.create(form=form, schema=draft.schema)
+            version.publish()
+            draft.delete()
+        return Response(s.FormVersionDetailSerializer(version).data, status=201)
 
 
 class SchemaCheckView(APIView):

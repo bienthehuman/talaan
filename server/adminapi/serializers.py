@@ -129,6 +129,38 @@ class SchemaSerializer(serializers.Serializer):
     schema = serializers.JSONField()
 
 
+class FormDraftSerializer(serializers.Serializer):
+    schema = serializers.JSONField(help_text="Work in progress; may be incomplete or invalid.")
+    revision = serializers.IntegerField(help_text="Send this back when saving or publishing.")
+    based_on_version = serializers.IntegerField(
+        source="based_on_version.number",
+        allow_null=True,
+        help_text="The number of the latest published version when the draft was started.",
+    )
+    updated_by = serializers.CharField(source="updated_by.username", allow_null=True)
+    updated_at = serializers.DateTimeField()
+
+
+class FormDraftSaveSerializer(serializers.Serializer):
+    schema = serializers.JSONField()
+    revision = serializers.IntegerField(
+        min_value=0, help_text="The revision last read; 0 to start a draft."
+    )
+
+
+class FormDraftPublishSerializer(serializers.Serializer):
+    revision = serializers.IntegerField(min_value=1)
+
+
+class StaleDraftSerializer(serializers.Serializer):
+    """The 409 problem body: the draft as it is now (null when it was published or removed)."""
+
+    status = serializers.IntegerField()
+    code = serializers.CharField()
+    detail = serializers.CharField()
+    draft = FormDraftSerializer(allow_null=True)
+
+
 class SchemaCheckRequestSerializer(SchemaSerializer):
     form_id = serializers.IntegerField(
         required=False,

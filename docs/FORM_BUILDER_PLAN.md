@@ -90,8 +90,8 @@ New table `form_draft`: one row per form at most (`form_id` unique, `schema` JSO
 - `POST /api/admin/forms/<id>/draft/publish/` validates, creates the next `FormVersion` and deletes
   the draft in one transaction. Version numbers are given only at publish, so abandoned drafts
   leave no gaps.
-- Drafts may be incomplete or invalid; only publish validates. Drafts are visible only with
-  `form.publish`.
+- Drafts may be incomplete or invalid (a JSON object of at most 128 KB); only publish validates.
+  Drafts are visible only with `form.publish`.
 - A draft table rather than unpublished `FormVersion` rows keeps `form_version` a clean, immutable
   history and keeps the immutability trigger simple. The Django admin keeps working on
   `FormVersion` as today (JSON, for emergencies).

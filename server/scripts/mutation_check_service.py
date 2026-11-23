@@ -367,6 +367,42 @@ M = [  # (description, file, old, new)
         "            if False:",
     ),
     (
+        "a stale draft save overwrites",
+        "adminapi/views.py",
+        "FormDraft.objects.filter(form=form, revision=revision).update(",
+        "FormDraft.objects.filter(form=form).update(",
+    ),
+    (
+        "draft publish ignores the revision",
+        "adminapi/views.py",
+        'if draft is None or draft.revision != body.validated_data["revision"]:',
+        "if draft is None:",
+    ),
+    (
+        "publishing leaves the draft behind",
+        "adminapi/views.py",
+        "            draft.delete()\n",
+        "",
+    ),
+    (
+        "draft publish not in one transaction",
+        "adminapi/views.py",
+        "        with transaction.atomic():\n            Form.objects.select_for_update().get(pk=form.pk)\n            draft =",
+        "        if True:\n            Form.objects.select_for_update().get(pk=form.pk)\n            draft =",
+    ),
+    (
+        "draft size unchecked",
+        "adminapi/views.py",
+        "        if size > MAX_DRAFT_BYTES:",
+        "        if False:",
+    ),
+    (
+        "admin responses may be cached",
+        "core/middleware.py",
+        '            response["Cache-Control"] = "no-store"',
+        "            pass",
+    ),
+    (
         "assignments skip model validation",
         "adminapi/views.py",
         "            assignment.full_clean()",

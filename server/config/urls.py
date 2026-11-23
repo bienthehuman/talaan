@@ -60,6 +60,16 @@ urlpatterns = [
         name="admin_form_versions",
     ),
     path(
+        "api/admin/forms/<int:pk>/draft/",
+        admin_views.FormDraftView.as_view(),
+        name="admin_form_draft",
+    ),
+    path(
+        "api/admin/forms/<int:pk>/draft/publish/",
+        admin_views.FormDraftPublishView.as_view(),
+        name="admin_form_draft_publish",
+    ),
+    path(
         "api/admin/forms/check-schema/",
         admin_views.SchemaCheckView.as_view(),
         name="admin_schema_check",

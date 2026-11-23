@@ -94,6 +94,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/forms/{id}/draft/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The form's draft
+         * @description The one draft of a form (ADR 0013). Only admins with form.publish see drafts; workers never
+         *     do. Saves carry the revision last read, and a stale one is refused, never merged.
+         */
+        get: operations["api_admin_forms_draft_retrieve"];
+        /**
+         * Save the form's draft (revision 0 starts one)
+         * @description The one draft of a form (ADR 0013). Only admins with form.publish see drafts; workers never
+         *     do. Saves carry the revision last read, and a stale one is refused, never merged.
+         */
+        put: operations["api_admin_forms_draft_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/forms/{id}/draft/publish/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish the form's draft as its next version
+         * @description Publish the draft as the next version and delete it, in one transaction.
+         */
+        post: operations["api_admin_forms_draft_publish_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/forms/{id}/versions/": {
         parameters: {
             query?: never;
@@ -509,6 +555,25 @@ export interface components {
         FormCreateRequest: {
             name: string;
         };
+        FormDraft: {
+            /** @description Work in progress; may be incomplete or invalid. */
+            schema: unknown;
+            /** @description Send this back when saving or publishing. */
+            revision: number;
+            /** @description The number of the latest published version when the draft was started. */
+            based_on_version: number | null;
+            updated_by: string | null;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        FormDraftPublishRequest: {
+            revision: number;
+        };
+        FormDraftSaveRequest: {
+            schema: unknown;
+            /** @description The revision last read; 0 to start a draft. */
+            revision: number;
+        };
         FormVersion: {
             id: number;
             form_id: number;
@@ -710,6 +775,13 @@ export interface components {
         };
         SchemaRequest: {
             schema: unknown;
+        };
+        /** @description The 409 problem body: the draft as it is now (null when it was published or removed). */
+        StaleDraft: {
+            status: number;
+            code: string;
+            detail: string;
+            draft: components["schemas"]["FormDraft"] | null;
         };
         SubmissionDetail: {
             /** Format: uuid */
@@ -953,6 +1025,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Form"];
+                };
+            };
+        };
+    };
+    api_admin_forms_draft_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDraft"];
+                };
+            };
+        };
+    };
+    api_admin_forms_draft_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FormDraftSaveRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FormDraftSaveRequest"];
+                "multipart/form-data": components["schemas"]["FormDraftSaveRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDraft"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDraft"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaleDraft"];
+                };
+            };
+        };
+    };
+    api_admin_forms_draft_publish_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FormDraftPublishRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FormDraftPublishRequest"];
+                "multipart/form-data": components["schemas"]["FormDraftPublishRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormVersionDetail"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaleDraft"];
                 };
             };
         };

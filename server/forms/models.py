@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
@@ -92,3 +93,30 @@ def publish_problems(form_id: int, schema: object) -> list[str]:
     if isinstance(schema, dict):
         problems += refused(changes(published_schemas(form_id), schema))
     return problems
+
+
+class FormDraft(models.Model):
+    """Unpublished work on the next version of a form (ADR 0013). At most one per form; it may be
+    incomplete or invalid. Never sent to workers. Publishing turns it into a FormVersion and deletes
+    it in the same transaction. `revision` counts saves, so a stale save is refused, not merged."""
+
+    form = models.OneToOneField(Form, on_delete=models.CASCADE, related_name="draft")
+    schema = models.JSONField()
+    revision = models.PositiveIntegerField(default=1)
+    based_on_version = models.ForeignKey(
+        FormVersion, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(revision__gte=1), name="forms_formdraft_revision_gte_1"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.form.name} draft (revision {self.revision})"

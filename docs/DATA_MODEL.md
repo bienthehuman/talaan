@@ -8,7 +8,7 @@ Status: accepted. The server owns every version and sequence.
 |---|---|---|
 | `form` | id, name | A form family, e.g. "Generator inspection" |
 | `form_version` | id, form_id, number, schema JSONB, published_at | Immutable once published. Unique (form_id, number). |
-| `form_draft` | id, form_id (unique), schema JSONB, revision int, based_on_version_id, updated_by, updated_at | Phase 6 (slice 6.2). At most one per form; may be incomplete; never sent to workers; deleted when published (ADR 0013) |
+| `form_draft` | id, form_id (unique), schema JSONB, revision int, based_on_version_id, updated_by, updated_at | At most one per form (unique `form_id`); may be incomplete, at most 128 KB; `revision` counts saves (compare-and-set); never sent to workers; deleted when published (ADR 0013) |
 | `assignment` | id, form_version_id, worker_id, site_name, due_date, cancelled_at | What a worker downloads |
 | `submission` | id UUID (client-generated), assignment_id, form_version_id, data JSONB, status, version int, field_versions JSONB, server_seq bigint, deleted_at, updated_by, updated_at | `version` counts accepted changes; `field_versions[f]` = version that last changed f |
 | `applied_mutation` | mutation_id UUID PK, device_id, user_id, result JSONB, created_at | Idempotency ledger, one row per mutation ever processed |
