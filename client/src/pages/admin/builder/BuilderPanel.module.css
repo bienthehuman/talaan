@@ -1,0 +1,20 @@
+.privacy {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.count {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.list {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+}
+.add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

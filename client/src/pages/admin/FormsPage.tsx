@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
-import { createForm, listForms } from "../../admin/api";
+import { createForm, getFormVersion, listForms, saveDraft } from "../../admin/api";
 import { Button, buttonClass } from "../../components/Button";
 import { EmptyState, ErrorState, LoadingState } from "../../components/States";
 import { TextField } from "../../components/TextField";
+import { useToast } from "../../components/Toast";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useRequest } from "../../hooks/useRequest";
 import { fieldErrors, messageFor } from "../../lib/problem";
@@ -13,18 +14,39 @@ export function FormsPage() {
   useDocumentTitle("Forms");
   const navigate = useNavigate();
   const forms = useRequest(listForms, []);
+  const toast = useToast();
   const [name, setName] = useState("");
+  const [copyFrom, setCopyFrom] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // A copy starts from another form's latest published version.
+  const copyable = (forms.data ?? []).flatMap((form) => {
+    const latest = form.versions.filter((v) => v.published_at).at(-1);
+    return latest ? [{ form, latest }] : [];
+  });
 
   async function create(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    let form;
     try {
-      const form = await createForm(name.trim());
-      navigate(`/manage/forms/${form.id}/edit`);
+      form = await createForm(name.trim());
     } catch (err) {
       setError(fieldErrors(err)?.name?.[0] ?? messageFor(err));
+      return;
     }
+    if (copyFrom) {
+      // The copy becomes the new form's draft; nothing is published until the admin says so.
+      try {
+        const source = (await getFormVersion(Number(copyFrom))).schema;
+        await saveDraft(form.id, { ...(source as object), title: form.name }, 0);
+      } catch (err) {
+        toast.show(
+          `Created ${form.name}, but could not copy the form. ${messageFor(err)}`,
+          "error",
+        );
+      }
+    }
+    navigate(`/manage/forms/${form.id}/edit`);
   }
 
   return (
@@ -39,6 +61,22 @@ export function FormsPage() {
           error={error ?? undefined}
           onChange={(e) => setName(e.target.value)}
         />
+        <div className="field">
+          <label htmlFor="copy-from">Start from</label>
+          <select
+            id="copy-from"
+            className="input"
+            value={copyFrom}
+            onChange={(e) => setCopyFrom(e.target.value)}
+          >
+            <option value="">A blank form</option>
+            {copyable.map(({ form, latest }) => (
+              <option key={latest.id} value={latest.id}>
+                A copy of {form.name} (version {latest.number})
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="actions">
           <Button type="submit" disabled={!name.trim()}>
             Create form
@@ -70,7 +108,7 @@ export function FormsPage() {
                       Version {v.number}
                       {v.published_at
                         ? ` · published ${formatWhen(v.published_at)}`
-                        : " · draft (publish it in the Django admin)"}
+                        : " · not published (publish it in the Django admin)"}
                     </span>
                   </li>
                 ))}
@@ -78,7 +116,7 @@ export function FormsPage() {
             )}
             <div>
               <Link className={buttonClass("secondary")} to={`/manage/forms/${form.id}/edit`}>
-                {latest ? "New version" : "Write the first version"}
+                {latest ? "New version" : "Build the first version"}
               </Link>
             </div>
           </section>

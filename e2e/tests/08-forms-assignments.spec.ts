@@ -40,11 +40,12 @@ test("publish a form, assign it, the worker fills it in, then cancel the assignm
   const site = `Boiler room ${tag}`;
   await signIn(page, ADMIN);
 
-  // A new form, with a starter schema to edit.
+  // A new form opens in the builder; this test writes JSON in the advanced tab.
   await page.getByRole("link", { name: "Forms" }).click();
   await page.getByLabel("Name").fill(formName);
   await page.getByRole("button", { name: "Create form" }).click();
   await expect(page.getByRole("heading", { name: `${formName} · version 1` })).toBeVisible();
+  await page.getByRole("tab", { name: "JSON (advanced)" }).click();
 
   // Text that is not JSON cannot be published, and the page says why.
   await replaceSchema(page, "{ not json");

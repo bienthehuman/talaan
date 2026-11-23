@@ -62,6 +62,16 @@ describe("parseForm", () => {
   });
 });
 
+describe("parseForm labels", () => {
+  it("uses the field ID when a label is missing or blank, so every input has a name", () => {
+    const parsed = parseForm({
+      type: "object",
+      properties: { a: { type: "string", title: "  " }, b: { type: "string" } },
+    })!;
+    expect(parsed.fields.map((f) => f.title)).toEqual(["a", "b"]);
+  });
+});
+
 describe("validateRecord", () => {
   it("a draft may be incomplete", () => {
     expect(validateRecord(form, {}, { complete: false })).toEqual({});

@@ -1,0 +1,84 @@
+.item {
+  list-style: none;
+}
+/* A card with problems gets a danger edge, so it can be found while scrolling a long form. */
+.invalid {
+  border-inline-start: 4px solid var(--danger);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: baseline;
+  justify-content: space-between;
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-lg);
+  overflow-wrap: anywhere;
+}
+.number {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+.kind {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.pair {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  align-items: end;
+}
+.details {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.details[open] .summary {
+  margin-bottom: var(--space-2);
+}
+.problems {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.choices {
+  min-width: 0;
+}
+.choiceList {
+  margin: var(--space-2) 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+.choiceRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: var(--space-1);
+  align-items: center;
+}
+@media (max-width: 480px) {
+  .choiceRow {
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+  }
+  .choiceRow > :first-child {
+    grid-column: 1 / -1;
+  }
+}

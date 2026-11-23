@@ -105,6 +105,14 @@ M=[
 ("repeated field IDs pass the builder","src/forms/builder.ts","(names.get(f.name) ?? 0) > 1","false"),
 ("an empty form passes the builder","src/forms/builder.ts","if (model.fields.length === 0)","if (false)"),
 ("form size counted in characters, not bytes","src/forms/builder.ts","new TextEncoder().encode(JSON.stringify(toSchema(model))).length","JSON.stringify(toSchema(model)).length"),
+("draft saves send a stale revision","src/pages/admin/builder/useDraftSaver.ts","          revision.current = draft.revision;\n",""),
+("autosave saves a stale debounced value","src/pages/admin/builder/useDraftSaver.ts","settled === null || settled !== current ||","settled === null ||"),
+("autosave keeps going after a conflict","src/pages/admin/builder/useDraftSaver.ts","if (conflict || settled === null","if (settled === null"),
+("keep mine saves over the old revision","src/pages/admin/builder/useDraftSaver.ts","    keepMine(theirs: FormDraft) {\n      revision.current = theirs.revision;","    keepMine(theirs: FormDraft) {"),
+("publish sends a revision without saving first","src/pages/admin/FormEditorPage.tsx","const revision = await saver.flush();","const revision = 1;"),
+("publish allowed while the builder shows problems","src/pages/admin/FormEditorPage.tsx","    !builderBlocks &&\n",""),
+("cards show no problems","src/pages/admin/builder/BuilderPanel.tsx","problems={problems.fields[field.id] ?? []}","problems={[]}"),
+("move buttons blocked at the ends lose focus","src/pages/admin/builder/FieldCard.tsx","aria-disabled={index === 0 ? true : undefined}","disabled={index === 0}"),
 ]
 ONLY=sys.argv[1:]  # optional: run only entries whose description contains one of these words
 bad=0

@@ -159,7 +159,7 @@ describe("forms", () => {
     const empty = screen.getByRole("region", { name: "Roof check" });
     expect(within(empty).getByText(/No versions yet/)).toBeInTheDocument();
     expect(
-      within(empty).getByRole("link", { name: "Write the first version" }),
+      within(empty).getByRole("link", { name: "Build the first version" }),
     ).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
@@ -192,127 +192,6 @@ describe("forms", () => {
     await user.type(await screen.findByLabelText("Name"), "Roof check");
     await user.click(screen.getByRole("button", { name: "Create form" }));
     expect(await screen.findByText("A form with this name already exists.")).toBeInTheDocument();
-  });
-});
-
-describe("the form editor", () => {
-  const open = async () => {
-    signInAdmin();
-    const r = renderApp("/manage/forms/1/edit");
-    await screen.findByRole("heading", { name: "Generator inspection · version 3" });
-    return r;
-  };
-
-  it("starts from the latest version and previews the form a worker would see", async () => {
-    server();
-    const { container } = await open();
-    const editor = screen.getByLabelText("Form schema (JSON)") as HTMLTextAreaElement;
-    expect(JSON.parse(editor.value)).toEqual(GENERATOR_SCHEMA);
-    const preview = screen.getByRole("region", { name: "Preview" });
-    expect(within(preview).getByLabelText("Oil level (required)")).toBeInTheDocument();
-    expect(within(preview).getByLabelText("Hours run (required)")).toBeInTheDocument();
-    expect(await screen.findByText("This form is ready to publish.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Publish version 3" })).toBeEnabled();
-    await expectNoA11yViolations(container);
-  });
-
-  it("the preview follows the text", async () => {
-    server();
-    await open();
-    const editor = screen.getByLabelText("Form schema (JSON)");
-    const schema = {
-      ...GENERATOR_SCHEMA,
-      properties: { tank: { type: "string", title: "Tank level" } },
-      required: [],
-    };
-    await userEvent.setup().clear(editor);
-    await userEvent.setup().click(editor);
-    await userEvent.setup().paste(JSON.stringify(schema));
-    expect(await screen.findByLabelText("Tank level")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Oil level (required)")).not.toBeInTheDocument();
-  });
-
-  it("will not publish text that is not JSON, and says what is wrong", async () => {
-    server();
-    await open();
-    const editor = screen.getByLabelText("Form schema (JSON)");
-    const user = userEvent.setup();
-    await user.click(editor);
-    await user.paste("{ not json");
-    expect(await screen.findByText(/isn't valid JSON:/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Publish version 3" })).toBeDisabled();
-  });
-
-  it("shows the server's reasons and will not publish a schema it would refuse", async () => {
-    server({
-      "POST /api/admin/forms/check-schema/": () =>
-        json({
-          valid: false,
-          errors: ['"additionalProperties" must be false so unknown fields are rejected.'],
-          changes: [],
-        }),
-    });
-    await open();
-    expect(await screen.findByText("This form can't be published yet:")).toBeInTheDocument();
-    expect(
-      within(document.getElementById("schema-status")!).getByText(/additionalProperties/),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Publish version 3" })).toBeDisabled();
-  });
-
-  it("publishes after confirming, then goes back to the list", async () => {
-    const api = server({
-      "POST /api/admin/forms/1/versions/": () =>
-        json(
-          {
-            id: 12,
-            number: 3,
-            published_at: "x",
-            created_at: "x",
-            form_id: 1,
-            form_name: "Generator inspection",
-            schema: GENERATOR_SCHEMA,
-          },
-          201,
-        ),
-    });
-    const { router } = await open();
-    const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Publish version 3" }));
-    expect(api.to("POST", "/api/admin/forms/1/versions/")).toHaveLength(0); // asked first
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Publish" }));
-    await waitFor(() => expect(router.state.location.pathname).toBe("/manage/forms"));
-    expect(api.to("POST", "/api/admin/forms/1/versions/")[0]!.body).toEqual({
-      schema: GENERATOR_SCHEMA,
-    });
-    expect(
-      await screen.findByText("Published Generator inspection version 3."),
-    ).toBeInTheDocument();
-  });
-
-  it("shows why a publish was refused", async () => {
-    server({
-      "POST /api/admin/forms/1/versions/": () =>
-        json(
-          { code: "validation_error", errors: { schema: ["Unsupported top-level keys: x."] } },
-          400,
-        ),
-    });
-    await open();
-    const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Publish version 3" }));
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Publish" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Unsupported top-level keys: x.");
-  });
-
-  it("offers a starter schema for a form with no versions", async () => {
-    server();
-    signInAdmin();
-    renderApp("/manage/forms/2/edit");
-    await screen.findByRole("heading", { name: "Roof check · version 1" });
-    expect(
-      JSON.parse((screen.getByLabelText("Form schema (JSON)") as HTMLTextAreaElement).value).type,
-    ).toBe("object");
   });
 });
 

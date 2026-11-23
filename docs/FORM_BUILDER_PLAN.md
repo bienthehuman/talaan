@@ -142,6 +142,29 @@ the JSON tab with a message saying why.
 - "Start from a copy" of another form's latest version when creating a form.
 - Design system v2, CSS Modules, 44 px tap targets, axe-clean; usable on a tablet.
 
+As built in slice 6.4 (`client/src/pages/admin/FormEditorPage.tsx`, `pages/admin/builder/`):
+
+- The editor opens the form's draft if there is one (saying who saved it and when), else the latest
+  published version, else a blank form titled with the form's name. A schema the builder cannot show
+  opens in the JSON tab with the reason; invalid JSON keeps the JSON tab until it parses.
+- Autosave: 1.5 s after the last change, one save at a time, each carrying the revision the
+  previous one returned (`useDraftSaver`). Opening the editor saves nothing; a draft is created by
+  the first change. A `409 stale_draft` stops autosave and offers **Load their version** or **Keep
+  mine (replace theirs)**; if the form was published meanwhile, it offers a reload. Nothing is
+  merged.
+- Publish saves any pending change first, then publishes that revision. It stays disabled while
+  the builder shows a problem, the server check is pending or refuses, a save conflict is open, or
+  there is nothing new (no draft and no change).
+- The Publish card lists the change summary from `check-schema` with `form_id`: "Not allowed",
+  "Check" or "Safe", in the server's words.
+- Cards: label, type (only the kinds a published name may keep), help text, Required, the type's
+  settings (longest/shortest answer, choices, smallest/largest value), the field ID under a
+  disclosure (read-only once published), and Move up, Move down, Duplicate, Remove (Remove asks
+  first). Move buttons at an end stay focusable (`aria-disabled`) so focus is never lost; a status
+  line announces the new position.
+- "Start from a copy" creates the form, then saves the copied version (title set to the new name)
+  as its first draft.
+
 ### 4.8 Keeping the builder honest
 
 - Pure functions in `client/src/forms/builder.ts`: `fromSchema` / `toSchema`, `fieldName`, the

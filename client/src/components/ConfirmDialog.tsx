@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "./Button";
 import styles from "./Dialog.module.css";
 
@@ -23,6 +23,7 @@ export function ConfirmDialog({
   onCancel,
 }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -32,8 +33,8 @@ export function ConfirmDialog({
   }, [open]);
 
   return (
-    <dialog ref={ref} className={styles.dialog} aria-labelledby="confirm-title" onCancel={onCancel}>
-      <h2 id="confirm-title">{title}</h2>
+    <dialog ref={ref} className={styles.dialog} aria-labelledby={titleId} onCancel={onCancel}>
+      <h2 id={titleId}>{title}</h2>
       <p>{message}</p>
       <div className="actions">
         <Button variant="secondary" onClick={onCancel}>

@@ -258,8 +258,8 @@ sync service, `src/db/` or the sync engine.
 | 6.0 | **Docs.** Form builder plan, DATA_MODEL section 5 phase 6 rules, protocol section 11 draft endpoints and change summary, ADR 0013. | done (#47) |
 | 6.1 | **Server schema rules.** `x-order`, limits, `forms/compat.py` (change summary; a field name keeps its type per form); `check-schema` returns `changes`; publish refuses `refused` changes; demo sample gets `x-order`. Also: `minLength`/`minimum` may not exceed their maximum. | done (#48) |
 | 6.2 | **Server drafts.** `form_draft` model and migration, `GET`/`PUT` draft with revision (`409` when stale), publish from draft in one transaction, `Cache-Control: no-store` on `/api/admin/`. | done (#49) |
-| 6.3 | **Client builder model.** `src/forms/builder.ts` (schema to model and back, field names from labels, add/move/remove) with randomized round-trip tests; `parseForm` honours `x-order`. | in review |
-| 6.4 | **Builder UI.** Builder and JSON tabs on one draft, field cards, choices editor, move up/down, live preview, change summary before Publish, autosave with a conflict message, "start from a copy". | |
+| 6.3 | **Client builder model.** `src/forms/builder.ts` (schema to model and back, field names from labels, add/move/remove) with randomized round-trip tests; `parseForm` honours `x-order`. | done (#50) |
+| 6.4 | **Builder UI.** Builder and JSON tabs on one draft, field cards, choices editor, move up/down, live preview, change summary before Publish, autosave with a conflict message, "start from a copy". | in review |
 | 6.5 | **Proof.** E2E: build without JSON, publish, assign, worker fills offline and syncs in the built order; keyboard-only build; axe and tap sizes; README screenshot; `v1.2.0`. | |
 
 ### Definition of done per slice (phase 6)
@@ -345,3 +345,5 @@ any API change; docs updated in the same PR when a rule changes.
 | Clear the Dependabot `minimatch` alert (build-time only, via vite-plugin-pwa > workbox-build > glob): try an npm `overrides` entry, or dismiss as tolerable | Slice 0.5 | when convenient | `npm audit --omit=dev` is already clean |
 | Postgres major-version upgrade procedure, tested | Slice 0.5 | later | currently a manual note in DEPLOY.md |
 | Re-take README screenshots and re-record demo GIFs with the slice 5.10 wording ("Send now", "not sent yet") | Slice 5.10 | soon | `bash scripts/demo.sh`; the films still show "Sync now" |
+| Discard a form draft (start again from the last published version); there is no delete endpoint yet, so a draft lives until it is published | Slice 6.4 | soon | `DELETE /api/admin/forms/<id>/draft/` with the revision, plus a confirm in the editor |
+| Keep "the ID follows the label" across a reload: the draft does not store it, so a reopened draft treats every unpublished ID as hand-edited | Slice 6.4 | later | harmless (IDs can still be edited by hand); would need an `x-` key or a draft side table |
