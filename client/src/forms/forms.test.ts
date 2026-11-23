@@ -27,6 +27,35 @@ describe("parseForm", () => {
     expect(form.fields.find((f) => f.name === "notes")?.required).toBe(false);
   });
 
+  it("shows fields in x-order, whatever order the keys were stored in", () => {
+    const stored = {
+      ...SCHEMA,
+      properties: { notes: SCHEMA.properties.notes, hours_run: SCHEMA.properties.hours_run },
+    };
+    expect(
+      parseForm({ ...stored, "x-order": ["hours_run", "notes"] })!.fields.map((f) => f.name),
+    ).toEqual(["hours_run", "notes"]);
+  });
+
+  it("keeps the stored order when x-order is missing or does not list every field once", () => {
+    const stored = {
+      ...SCHEMA,
+      properties: { notes: SCHEMA.properties.notes, hours_run: SCHEMA.properties.hours_run },
+    };
+    for (const order of [
+      undefined,
+      ["hours_run"],
+      ["hours_run", "hours_run"],
+      ["hours_run", "nope"],
+      ["hours_run", "notes", "x"],
+    ]) {
+      expect(parseForm({ ...stored, "x-order": order })!.fields.map((f) => f.name)).toEqual([
+        "notes",
+        "hours_run",
+      ]);
+    }
+  });
+
   it("refuses a schema it cannot read", () => {
     expect(parseForm(null)).toBeNull();
     expect(parseForm({ properties: { a: { type: "array" } } })).toBeNull();

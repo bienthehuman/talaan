@@ -3,7 +3,8 @@
     cd client && python3 scripts/mutation_check.py        (a few minutes)
 
 Exit 1 if a bug survives, 2 if a pattern went stale after a refactor (update the entry). Run it after
-changing src/db/apply.ts or src/sync/. Restores every file, including on failure.
+changing src/db/apply.ts, src/sync/ or src/forms/. Restores every file, including on failure.
+    python3 scripts/mutation_check.py builder x-order   (only matching entries)
 """
 import subprocess, sys
 M=[
@@ -91,9 +92,24 @@ M=[
 ("retry now disabled when idle","src/pages/SyncStatusPage.tsx",'disabled={status.state === "syncing"}',"disabled={status.state !== \"syncing\"}"),
 ("header no longer links to the sync panel","src/components/RootLayout.tsx",'<Link to="/sync" className="tap-link">','<Link to="/" className="tap-link">'),
 ("pull does not say which device asks","src/sync/transport.ts",'header: { ...header, "X-Device-Id": deviceId }',"header"),
+("x-order ignored","src/forms/schema.ts","    Array.isArray(order) &&\n","    false &&\n"),
+("an x-order that leaves fields out is trusted","src/forms/schema.ts","    order.length === names.length &&\n",""),
+("a published field can be renamed","src/forms/builder.ts","(f.locked ? f :","(false ? f :"),
+("retired names reused for new fields","src/forms/builder.ts","const taken = new Set(Object.keys(model.history));","const taken = new Set<string>();"),
+("a published field can change type","src/forms/builder.ts","return kept === undefined ? all :","return true ? all :"),
+("required fields not written","src/forms/builder.ts",".filter((f) => f.required)",".filter(() => false)"),
+("x-order not in the builder's order","src/forms/builder.ts",'schema["x-order"] = model.fields.map((f) => f.name);','schema["x-order"] = Object.keys(properties).sort();'),
+("switching kind keeps the choices","src/forms/builder.ts","  delete next.enum;\n",""),
+("too many choices pass the builder","src/forms/builder.ts","if (f.enum.length > LIMITS.choices)","if (false)"),
+("impossible bounds pass the builder","src/forms/builder.ts","isNumber(f.maximum) && f.minimum > f.maximum","false"),
+("repeated field IDs pass the builder","src/forms/builder.ts","(names.get(f.name) ?? 0) > 1","false"),
+("an empty form passes the builder","src/forms/builder.ts","if (model.fields.length === 0)","if (false)"),
+("form size counted in characters, not bytes","src/forms/builder.ts","new TextEncoder().encode(JSON.stringify(toSchema(model))).length","JSON.stringify(toSchema(model)).length"),
 ]
+ONLY=sys.argv[1:]  # optional: run only entries whose description contains one of these words
 bad=0
 for d,f,old,new in M:
+    if ONLY and not any(w in d for w in ONLY): continue
     s=open(f).read()
     if old not in s: print("STALE",d); bad+=2; continue
     open(f,'w').write(s.replace(old,new,1))
