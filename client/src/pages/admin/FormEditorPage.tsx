@@ -325,7 +325,7 @@ function Editor({
           </div>
         </div>
 
-        <div className="stack">
+        <div className={`stack ${styles.side}`}>
           <section aria-labelledby="publish-heading" className="card stack">
             <h2 id="publish-heading">Publish</h2>
             <div id="schema-status" role="status" className="stack">
