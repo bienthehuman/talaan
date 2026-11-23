@@ -34,8 +34,8 @@ const KIND_LABEL: Record<string, string> = {
   approved: "Approved",
   returned: "Returned",
   admin_edited: "Edited by an admin",
-  conflict: "Change not applied (conflict)",
-  rejected: "Change refused",
+  conflict: "Change not saved (clashed with another change)",
+  rejected: "Change not accepted",
 };
 
 function describe(event: AdminEvent, titleOf: (name: string) => string): string {
@@ -50,7 +50,7 @@ function describe(event: AdminEvent, titleOf: (name: string) => string): string 
 }
 
 function resultMessage(result: ActionResult): string {
-  return result.detail ?? "The server did not accept this.";
+  return result.detail ?? "This was not accepted.";
 }
 
 export function ReviewDetailPage() {
@@ -136,7 +136,7 @@ export function ReviewDetailPage() {
           <dd>{record.form_version_number}</dd>
         </div>
         <div>
-          <dt>Record version</dt>
+          <dt>Revision</dt>
           <dd>{record.version}</dd>
         </div>
       </dl>
@@ -175,7 +175,7 @@ export function ReviewDetailPage() {
         <div className={`stack ${styles.content}`}>
           <section aria-labelledby="answers" className="card stack">
             <h2 id="answers">Answers</h2>
-            {!form && <p>This form's schema cannot be shown.</p>}
+            {!form && <p>This form can't be displayed.</p>}
             {form && editing && (
               <AnswerEditor
                 form={form}

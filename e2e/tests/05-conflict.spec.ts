@@ -48,7 +48,7 @@ test("the second device gets a conflict and nothing is overwritten", async ({
   const { id, other } = await sameFieldConflict(page, context, browser, baseURL);
   const panel = other.page.getByRole("region", { name: "Needs your decision" });
 
-  await expect(panel.getByText("Before either of you: start")).toBeVisible();
+  await expect(panel.getByText("Before either change: start")).toBeVisible();
   await expect(panel.getByRole("radio", { name: "Keep mine: from B" })).toBeVisible();
   await expect(panel.getByRole("radio", { name: "Use theirs: from A" })).toBeVisible();
   await expect(other.page.getByLabel("Notes")).toHaveValue("from B"); // their own work is still there
@@ -77,7 +77,7 @@ test("keeping mine applies a new version and the other device sees it", async ({
   const stored = (await serverRecords(page)).find((r) => r.id === id);
   expect(stored).toMatchObject({ version: 3, data: { notes: "from B" } });
 
-  await page.getByRole("button", { name: "Sync now" }).click();
+  await page.getByRole("button", { name: "Send now" }).click();
   await expect(page.getByLabel("Notes")).toHaveValue("from B");
   await other.context.close();
 });

@@ -19,8 +19,8 @@ export function InstallPrompt() {
         </>
       }
     >
-      Install Talaan on this device to open it like an app. Your data is also safer from being
-      cleared.
+      Install Talaan to open it from your home screen like any other app. It also helps keep your
+      saved work safe.
     </Banner>
   );
 }

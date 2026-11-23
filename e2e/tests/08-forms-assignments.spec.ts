@@ -47,7 +47,7 @@ test("publish a form, assign it, the worker fills it in, then cancel the assignm
 
   // Text that is not JSON cannot be published, and the page says why.
   await replaceSchema(page, "{ not json");
-  await expect(page.getByText(/Not valid JSON:/)).toBeVisible();
+  await expect(page.getByText(/isn't valid JSON:/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Publish version 1" })).toBeDisabled();
 
   // A schema the server would refuse is explained in the server's words.
@@ -55,12 +55,12 @@ test("publish a form, assign it, the worker fills it in, then cancel the assignm
     page,
     JSON.stringify({ type: "object", properties: { a: { type: "array" } } }),
   );
-  await expect(page.getByText("The server would refuse this schema:")).toBeVisible();
+  await expect(page.getByText("This form can't be published yet:")).toBeVisible();
   await expect(page.getByRole("button", { name: "Publish version 1" })).toBeDisabled();
 
   // A good one: the preview shows what a worker will see.
   await replaceSchema(page, schema(formName));
-  await expect(page.getByText("The server accepts this schema.")).toBeVisible();
+  await expect(page.getByText("This form is ready to publish.")).toBeVisible();
   const preview = page.getByRole("region", { name: "Preview" });
   await expect(preview.getByLabel("Tank level (required)")).toBeVisible();
   await expect(preview.getByLabel("Pressure (bar)")).toBeVisible();

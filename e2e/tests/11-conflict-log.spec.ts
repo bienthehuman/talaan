@@ -48,7 +48,7 @@ test("a conflict shows up in the admin's log, and can be filtered out", async ({
   await expect(link).toBeVisible();
   const row = page.getByRole("row").filter({ has: link });
   await expect(row).toContainText("worker1");
-  await expect(row).toContainText("Conflict: Same field changed on two devices");
+  await expect(row).toContainText("Conflict: Same answer changed on two devices");
   await expect(row).toContainText("notes");
   await expect(row.getByRole("cell").nth(5)).toHaveText("No"); // the worker has not changed it since
 
@@ -57,6 +57,6 @@ test("a conflict shows up in the admin's log, and can be filtered out", async ({
   await page.getByLabel("Kind").selectOption("Conflicts");
   await link.click();
   await expect(page.getByRole("region", { name: "History" })).toContainText(
-    "Change not applied (conflict)",
+    "Change not saved (clashed with another change)",
   );
 });

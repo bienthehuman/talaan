@@ -43,9 +43,9 @@ export async function startInspection(page: Page): Promise<string> {
   return page.url().split("/").pop()!;
 }
 
-/** The number in the header's "N pending" text (the outbox size on this device). */
+/** The number in the header's "N not sent yet" text (the outbox size on this device). */
 export async function pendingCount(page: Page): Promise<number> {
-  const text = await page.getByText(/^\d+ pending · Last sync/).innerText();
+  const text = await page.getByText(/^\d+ not sent yet · Last sent/).innerText();
   return Number(text.split(" ")[0]);
 }
 
@@ -70,11 +70,13 @@ export async function serverRecords(page: Page): Promise<ServerRecord[]> {
 
 /** The header shows a time (not "never") once a sync cycle has completed on this device. */
 export async function waitForFirstSync(page: Page) {
-  await expect(page.getByText(/^\d+ pending · Last sync: \d/)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/^\d+ not sent yet · Last sent: \d/)).toBeVisible({
+    timeout: 20_000,
+  });
 }
 
 export async function waitSynced(page: Page) {
-  await expect(page.getByText("Synced", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Sent", { exact: true })).toBeVisible({ timeout: 30_000 });
 }
 
 /** Open an inspection by its id and wait for its form. The device must already have it. */

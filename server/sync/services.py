@@ -137,7 +137,9 @@ def _run_once(user: User, device_id: uuid.UUID, mutation_id: uuid.UUID, handler)
         if prior.user_id != user.id:
             # Someone else's mutation id. Nothing is stored and nothing about theirs is revealed.
             return r.rejected(
-                mutation_id, r.MUTATION_ID_REUSE, "This mutation id was already used."
+                mutation_id,
+                r.MUTATION_ID_REUSE,
+                "This change was already sent with different content.",
             )
         _count_replay(mutation_id)
         log.info("replay", extra={"event": "replay", "mutation_id": mutation_id})
@@ -233,7 +235,7 @@ def _commit_change(
                 user,
                 mutation_id,
                 r.INVALID,
-                "The data does not match the form.",
+                "Some answers don't fit the form.",
                 sub=sub,
                 errors=errors,
             )
@@ -302,7 +304,7 @@ def _worker_mutation(user: User, m: Mutation) -> dict:
     if permission is None:
         return r.rejected(m.mutation_id, r.INVALID, f"Unknown op '{m.op}'.")
     if user.role != WORKER or not user.can(permission):
-        return r.rejected(m.mutation_id, r.FORBIDDEN, "Your role cannot do this.")
+        return r.rejected(m.mutation_id, r.FORBIDDEN, "Your account isn't allowed to do this.")
 
     if m.op == CREATE:
         return _create(user, m)
@@ -310,14 +312,16 @@ def _worker_mutation(user: User, m: Mutation) -> dict:
     sub = _locked_submission(m.record_id)
     # Unknown and someone else's are indistinguishable on purpose.
     if sub is None or sub.assignment.worker_id != user.id:
-        return r.rejected(m.mutation_id, r.NOT_FOUND, "No such record.")
+        return r.rejected(m.mutation_id, r.NOT_FOUND, "This inspection could not be found.")
     return {UPDATE: _update, SUBMIT: _submit, DELETE: _delete}[m.op](user, m, sub)
 
 
 def _create(user: User, m: Mutation) -> dict:
     # Holding the advisory lock, so nobody can create this id between the check and the insert.
     if Submission.objects.filter(pk=m.record_id).exists():
-        return r.rejected(m.mutation_id, r.ID_TAKEN, "A record with this id already exists.")
+        return r.rejected(
+            m.mutation_id, r.ID_TAKEN, "An inspection with this number already exists."
+        )
 
     assignment = None
     if m.assignment_id is not None:
@@ -328,7 +332,9 @@ def _create(user: User, m: Mutation) -> dict:
         )
     if assignment is None:
         return r.rejected(
-            m.mutation_id, r.UNKNOWN_FORM_VERSION, "No such assignment for this user."
+            m.mutation_id,
+            r.UNKNOWN_FORM_VERSION,
+            "This assignment isn't yours or no longer exists.",
         )
     if assignment.is_cancelled:
         return r.rejected(m.mutation_id, r.INVALID_STATE, "This assignment was cancelled.")
@@ -337,7 +343,7 @@ def _create(user: User, m: Mutation) -> dict:
     errors = validate_data(assignment.form_version.schema, data, complete=False)
     if errors:
         return r.rejected(
-            m.mutation_id, r.INVALID, "The data does not match the form.", errors=errors
+            m.mutation_id, r.INVALID, "Some answers don't fit the form.", errors=errors
         )
 
     now = timezone.now()
@@ -362,7 +368,11 @@ def _create(user: User, m: Mutation) -> dict:
 def _update(user: User, m: Mutation, sub: Submission) -> dict:
     if sub.status in LOCKED_FOR_WORKERS:
         return _reject(
-            user, m.mutation_id, r.LOCKED, f"The record is {sub.status} and locked.", sub=sub
+            user,
+            m.mutation_id,
+            r.LOCKED,
+            f"This inspection is {sub.status} and can no longer be changed.",
+            sub=sub,
         )
     if sub.deleted_at:
         return _conflict(user, m.mutation_id, sub, r.DELETED_REMOTELY, [])
@@ -370,7 +380,7 @@ def _update(user: User, m: Mutation, sub: Submission) -> dict:
         return bad
     if not m.fields:
         return _reject(
-            user, m.mutation_id, r.INVALID, "An update needs at least one field.", sub=sub
+            user, m.mutation_id, r.INVALID, "A change needs at least one answer.", sub=sub
         )
     if clashes := _field_clashes(sub, m.fields, m.base_version):
         return _conflict(user, m.mutation_id, sub, r.FIELD_CONFLICT, clashes)
@@ -379,10 +389,16 @@ def _update(user: User, m: Mutation, sub: Submission) -> dict:
 
 def _submit(user: User, m: Mutation, sub: Submission) -> dict:
     if sub.status == Status.APPROVED:
-        return _reject(user, m.mutation_id, r.LOCKED, "The record is approved and locked.", sub=sub)
+        return _reject(
+            user,
+            m.mutation_id,
+            r.LOCKED,
+            "This inspection is approved and can no longer be changed.",
+            sub=sub,
+        )
     if sub.status == Status.SUBMITTED:
         return _reject(
-            user, m.mutation_id, r.INVALID_STATE, "The record is already submitted.", sub=sub
+            user, m.mutation_id, r.INVALID_STATE, "This inspection was already submitted.", sub=sub
         )
     if sub.deleted_at:
         return _conflict(user, m.mutation_id, sub, r.DELETED_REMOTELY, [])
@@ -406,7 +422,11 @@ def _submit(user: User, m: Mutation, sub: Submission) -> dict:
 def _delete(user: User, m: Mutation, sub: Submission) -> dict:
     if sub.status in LOCKED_FOR_WORKERS:
         return _reject(
-            user, m.mutation_id, r.LOCKED, f"The record is {sub.status} and locked.", sub=sub
+            user,
+            m.mutation_id,
+            r.LOCKED,
+            f"This inspection is {sub.status} and can no longer be changed.",
+            sub=sub,
         )
     if sub.deleted_at:
         return _conflict(user, m.mutation_id, sub, r.DELETED_REMOTELY, [])
@@ -433,33 +453,37 @@ def _admin_action(
     if permission is None:
         return r.rejected(mutation_id, r.INVALID, f"Unknown action '{action}'.")
     if user.role != ADMIN or not user.can(permission):
-        return r.rejected(mutation_id, r.FORBIDDEN, "Your role cannot do this.")
+        return r.rejected(mutation_id, r.FORBIDDEN, "Your account isn't allowed to do this.")
 
     sub = _locked_submission(record_id)
     if sub is None:
-        return r.rejected(mutation_id, r.NOT_FOUND, "No such record.")
+        return r.rejected(mutation_id, r.NOT_FOUND, "This inspection could not be found.")
 
     def refuse(detail: str) -> dict:
         return _reject(user, mutation_id, r.INVALID_STATE, detail, sub=sub)
 
     if action == RESTORE:
         if not sub.deleted_at:
-            return refuse("The record is not deleted.")
+            return refuse("This inspection is not deleted.")
         return _commit_change(user, mutation_id, sub, kind=EventKind.RESTORED, deleted=False)
 
     if sub.deleted_at:
-        return refuse("The record is deleted. Restore it first.")
+        return refuse("This inspection is deleted. Restore it first.")
 
     if action == APPROVE:
         if sub.status != Status.SUBMITTED:
-            return refuse(f"Only a submitted record can be approved (this one is {sub.status}).")
+            return refuse(
+                f"Only a submitted inspection can be approved (this one is {sub.status})."
+            )
         return _commit_change(
             user, mutation_id, sub, kind=EventKind.APPROVED, status=Status.APPROVED
         )
 
     if action == RETURN:
         if sub.status not in LOCKED_FOR_WORKERS:
-            return refuse(f"Only a submitted or approved record can be returned ({sub.status}).")
+            return refuse(
+                f"Only a submitted or approved inspection can be returned ({sub.status})."
+            )
         if not reason.strip():
             return _reject(
                 user,
@@ -485,7 +509,7 @@ def _admin_action(
 
     # EDIT: an admin may correct any live record; a submitted or approved one must stay complete.
     if not fields:
-        return _reject(user, mutation_id, r.INVALID, "An edit needs at least one field.", sub=sub)
+        return _reject(user, mutation_id, r.INVALID, "An edit needs at least one answer.", sub=sub)
     return _commit_change(
         user,
         mutation_id,

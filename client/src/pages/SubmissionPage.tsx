@@ -32,10 +32,10 @@ function lockedReason(row: LocalSubmission): string | null {
     return "Your changes to this inspection are on hold until you decide below.";
   }
   if (row.syncState === "rejected") {
-    return `The server did not accept this change${row.syncDetail ? `: ${row.syncDetail}` : "."} You can discard your changes to see the server's version.`;
+    return `The office didn't accept this change${row.syncDetail ? `: ${row.syncDetail}` : "."} You can discard your changes to see the office's copy.`;
   }
-  if (row.status === "submitted") return "Submitted. It can't be edited here.";
-  if (row.status === "approved") return "Approved and locked.";
+  if (row.status === "submitted") return "Submitted. It can no longer be changed.";
+  if (row.status === "approved") return "Approved. It can no longer be changed.";
   return null;
 }
 
@@ -103,7 +103,7 @@ export function SubmissionPage() {
           title="The form isn't on this device yet"
           action={<Link to="/">Back to assignments</Link>}
         >
-          Connect once so the app can download it, then open this inspection again.
+          Connect to the internet once so the app can download it, then open this inspection again.
         </EmptyState>
       </div>
     );
@@ -291,7 +291,7 @@ export function SubmissionPage() {
       <ConfirmDialog
         open={confirm === "delete"}
         title="Delete this inspection?"
-        message="It is removed from your list. An admin can restore it if it was already synced."
+        message="It is removed from your list. If it was already sent, an admin can bring it back."
         confirmLabel="Delete"
         destructive
         onConfirm={async () => {
@@ -304,7 +304,7 @@ export function SubmissionPage() {
       <ConfirmDialog
         open={confirm === "discard"}
         title="Discard your changes?"
-        message="Your unsent changes to this inspection are deleted from this device and the server's version is shown."
+        message="Your unsent changes to this inspection are removed from this device, and you'll see the office's copy instead."
         confirmLabel="Discard"
         destructive
         onConfirm={async () => {

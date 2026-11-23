@@ -34,7 +34,7 @@ change the same field, the worker chooses, field by field; nothing is overwritte
 
 - Worker app is mobile first and installable (PWA); it works after one online sign-in. Admin app is desktop
   first and online only (`/manage/...`).
-- Sync runs in the background with retries; the header carries pending count, last sync and "Sync now".
+- Sync runs in the background with retries; the header carries the "not sent yet" count, last sent time and "Send now".
 - Records move through draft → submitted → approved, or returned to the worker with a reason; admins can
   delete (soft) and restore.
 - Forms are versioned JSON schemas; a submission stays on the version it started on.
@@ -51,7 +51,7 @@ change the same field, the worker chooses, field by field; nothing is overwritte
 
 ## Brand Commitments
 
-- Name: Talaan (Filipino for "record" or "list"). Tagline: "Offline-first field data sync".
+- Name: Talaan (Filipino for "record" or "list"). Tagline: "Inspections that work without signal" (the README keeps "Offline-first field data sync" for technical readers).
 - Voice: plain words, sentence case, says what happened and what to do; never raw problem codes.
 - Honest state: "Saved on this device" and "Synced" never look the same; state is never conveyed by colour
   alone (icon plus text label).

@@ -36,8 +36,8 @@ describe("signing out with unsent changes", () => {
     await user.click(screen.getByRole("button", { name: /^Account/ }));
     await user.click(screen.getByRole("button", { name: "Sign out" }));
 
-    const dialog = screen.getByRole("dialog", { name: "Sign out with unsent changes?" });
-    expect(dialog).toHaveTextContent("3 changes are saved only on this device");
+    const dialog = screen.getByRole("dialog", { name: "Sign out with unsent work?" });
+    expect(dialog).toHaveTextContent("3 changes haven't reached the office yet");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(getSession()).not.toBeNull();
@@ -64,7 +64,7 @@ describe("signing out with unsent changes", () => {
     await user.click(screen.getByRole("button", { name: /^Account/ }));
     await user.click(screen.getByRole("button", { name: "Sign out" }));
     expect(screen.getByRole("dialog")).toHaveTextContent(
-      "1 change is saved only on this device. Signing out will delete it.",
+      "1 change hasn't reached the office yet. Signing out will delete it from this device.",
     );
   });
 });
@@ -109,9 +109,8 @@ describe("the header", () => {
   it("links the pending count to the sync status page", async () => {
     signIn();
     renderApp("/");
-    expect(await screen.findByRole("link", { name: /^3 pending · Last sync/ })).toHaveAttribute(
-      "href",
-      "/sync",
-    );
+    expect(
+      await screen.findByRole("link", { name: /^3 not sent yet · Last sent/ }),
+    ).toHaveAttribute("href", "/sync");
   });
 });

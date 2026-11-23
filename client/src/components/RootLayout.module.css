@@ -1,5 +1,5 @@
 /* The sign band (docs/DESIGN_SYSTEM.md section 3): the same near-black bar in both schemes. Row 1 is the
-   brand and the account controls; a worker gets row 2 with the pending numeral and Sync now. */
+   brand and the account controls; a worker gets row 2 with the pending numeral and Send now. */
 .band {
   background: var(--band);
   color: var(--band-text);
@@ -42,7 +42,7 @@
   padding-top: var(--space-2);
   border-top: 1px solid var(--band-edge);
 }
-/* One link: "N pending · Last sync: 08:32". The numeral is inline (not flex) so the text keeps its space. */
+/* One link: "N not sent yet · Last sent: 08:32". The numeral is inline (not flex) so the text keeps its space. */
 .status {
   display: inline-block;
   color: var(--band-muted);

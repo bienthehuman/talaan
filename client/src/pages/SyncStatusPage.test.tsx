@@ -46,9 +46,7 @@ describe("the sync status page", () => {
   it("says everything is sent when nothing is waiting", async () => {
     await seedReference();
     const { container } = open({ lastSyncAt: Date.UTC(2026, 10, 18, 8, 0) });
-    expect(
-      await screen.findByText("Everything that can be sent has been sent."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("All your work has been sent.")).toBeInTheDocument();
     // Each section reads the device on its own, so wait for each rather than for the first one only.
     expect(await screen.findByText("Nothing is waiting")).toBeInTheDocument();
     expect(await screen.findByText("Nothing needs a decision")).toBeInTheDocument();
@@ -73,11 +71,9 @@ describe("the sync status page", () => {
       `/submissions/${row.id}`,
     );
     expect(item).toHaveTextContent(
-      "new inspection · tried 3 times · The server could not be reached.",
+      "new inspection · tried 3 times · Couldn't reach the office. Check your signal.",
     );
-    expect(screen.getByRole("status")).toHaveTextContent(
-      /The last attempt failed\. Trying again at/,
-    );
+    expect(screen.getByRole("status")).toHaveTextContent(/Couldn't send\. Trying again at/);
     await waitFor(() =>
       expect(screen.getByText("Changes waiting to be sent").nextSibling).toHaveTextContent("1"),
     );
@@ -117,14 +113,14 @@ describe("the sync status page", () => {
     expect(within(attention).getByRole("link", { name: "North plant" })).toBeInTheDocument();
   });
 
-  it("'Retry now' starts a sync, and is disabled while one is running", async () => {
+  it("'Try again now' starts a sync, and is disabled while one is running", async () => {
     await seedReference();
     const { syncNow, unmount } = open();
-    await userEvent.setup().click(await screen.findByRole("button", { name: "Retry now" }));
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Try again now" }));
     expect(syncNow).toHaveBeenCalledOnce();
     unmount();
     open({ state: "syncing" });
-    expect(await screen.findByRole("button", { name: "Retry now" })).toBeDisabled();
+    expect(await screen.findByRole("button", { name: "Try again now" })).toBeDisabled();
   });
 
   it("reports the storage state in words", async () => {
@@ -134,17 +130,17 @@ describe("the sync status page", () => {
       storage: { persisted: vi.fn().mockResolvedValue(true) },
     });
     open();
-    expect(await screen.findByText(/^Protected\. The browser will not clear/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Kept safe\. Your saved work stays/)).toBeInTheDocument();
   });
 });
 
 describe("describing the engine in words", () => {
   it("has a sentence for every state", () => {
-    expect(describeState("syncing", 2, null)).toBe("Syncing now.");
-    expect(describeState("idle", 2, null)).toBe("Waiting for the next sync.");
-    expect(describeState("paused-auth", 0, null)).toMatch(/Sign in again/);
-    expect(describeState("upgrade-required", 0, null)).toMatch(/too old/);
-    expect(describeState("error", 0, null)).toMatch(/Retry now/);
+    expect(describeState("syncing", 2, null)).toBe("Sending now.");
+    expect(describeState("idle", 2, null)).toBe("Waiting to send.");
+    expect(describeState("paused-auth", 0, null)).toMatch(/Enter your password/);
+    expect(describeState("upgrade-required", 0, null)).toMatch(/out of date/);
+    expect(describeState("error", 0, null)).toMatch(/Try again now/);
     expect(describeState("retrying", 0, null)).toMatch(/soon/);
   });
 
@@ -162,6 +158,6 @@ describe("describing the engine in words", () => {
       expect(describeProblem(code)).not.toContain("_");
     }
     expect(describeProblem(null)).toBe("None");
-    expect(describeProblem("something_new")).toBe("Problem: something_new");
+    expect(describeProblem("something_new")).toBe("Something went wrong while sending.");
   });
 });

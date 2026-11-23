@@ -207,7 +207,7 @@ describe("the form", () => {
     signIn();
     renderApp(`/submissions/${row.id}`);
     await userEvent.setup().click(await screen.findByRole("button", { name: "Submit inspection" }));
-    expect(await screen.findByText("Submitted. It can't be edited here.")).toBeInTheDocument();
+    expect(await screen.findByText("Submitted. It can no longer be changed.")).toBeInTheDocument();
     expect((await outboxOps()).map(([op]) => op)).toEqual(["create", "submit"]);
     expect(screen.getByLabelText("Notes")).toBeDisabled();
     expect(screen.queryByRole("button", { name: "Submit inspection" })).not.toBeInTheDocument();
@@ -230,7 +230,7 @@ describe("the form", () => {
     await db().submissions.update(row.id, { status: "approved", syncState: "synced" });
     signIn();
     renderApp(`/submissions/${row.id}`);
-    expect(await screen.findByText("Approved and locked.")).toBeInTheDocument();
+    expect(await screen.findByText("Approved. It can no longer be changed.")).toBeInTheDocument();
     expect(screen.getByLabelText("Notes")).toBeDisabled();
   });
 
@@ -273,7 +273,7 @@ describe("the form", () => {
     signIn();
     renderApp(`/submissions/${row.id}`);
     expect(
-      await screen.findByText(/did not accept this change: The record is locked\./),
+      await screen.findByText(/didn't accept this change: The record is locked\./),
     ).toBeInTheDocument();
   });
 

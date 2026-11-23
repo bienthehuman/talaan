@@ -58,7 +58,7 @@ test("when an admin restores it, the kept edits are sent again and applied", asy
   const { id } = await deletedWhileEditing(page, context, request);
 
   await adminAction(request, id, "restore");
-  await page.getByRole("button", { name: "Sync now" }).click();
+  await page.getByRole("button", { name: "Send now" }).click();
 
   await waitSynced(page);
   await expect(page.getByRole("region", { name: "Needs your decision" })).toHaveCount(0);

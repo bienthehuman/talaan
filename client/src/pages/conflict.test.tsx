@@ -87,7 +87,7 @@ describe("a field conflict", () => {
 
     const panel = await screen.findByRole("region", { name: "Needs your decision" });
     const group = within(panel).getByRole("group", { name: "Notes" });
-    expect(within(group).getByText("Before either of you: start")).toBeInTheDocument();
+    expect(within(group).getByText("Before either change: start")).toBeInTheDocument();
     expect(within(group).getByRole("radio", { name: "Keep mine: mine" })).not.toBeChecked();
     expect(within(group).getByRole("radio", { name: "Use theirs: theirs" })).not.toBeChecked();
     expect(within(panel).getByText("Hours run: 7")).toBeInTheDocument();

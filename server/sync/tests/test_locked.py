@@ -22,7 +22,7 @@ def test_scenario_10_an_edit_of_an_approved_record_is_rejected_as_locked(worker_
     assert response.status_code == 200  # a verdict, not a failure: the client must not retry
     result = response.json()["results"][0]
     assert (result["status"], result["code"]) == ("rejected", "locked")
-    assert "approved" in result["detail"] and "locked" in result["detail"]
+    assert "approved" in result["detail"] and "can no longer be changed" in result["detail"]
     assert result["record"]["status"] == "approved"  # lets the client show why
     assert (row(approved).version, "notes" in row(approved).data) == (3, False)
 

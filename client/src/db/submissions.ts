@@ -30,11 +30,11 @@ async function load(db: TalaanDb, id: string): Promise<LocalSubmission> {
 }
 
 function assertEditable(row: LocalSubmission): void {
-  if (row.deleted) throw new NotEditableError("This submission was deleted.");
+  if (row.deleted) throw new NotEditableError("This inspection was deleted.");
   if (!EDITABLE_STATUS.has(row.status))
-    throw new NotEditableError(`The submission is ${row.status}.`);
+    throw new NotEditableError(`This inspection is ${row.status} and can no longer be changed.`);
   if (row.syncState === "conflict" || row.syncState === "rejected") {
-    throw new NotEditableError("Resolve or discard the sync problem first.");
+    throw new NotEditableError("Decide what to keep above, or discard your changes, first.");
   }
 }
 

@@ -114,8 +114,8 @@ M = [  # (description, file, old, new)
     (
         "approve from any status",
         "sync/services.py",
-        '        if sub.status != Status.SUBMITTED:\n            return refuse(f"Only a submitted record can be approved',
-        '        if False:\n            return refuse(f"Only a submitted record can be approved',
+        '        if sub.status != Status.SUBMITTED:\n            return refuse(\n                f"Only a submitted inspection can be approved',
+        '        if False:\n            return refuse(\n                f"Only a submitted inspection can be approved',
     ),
     (
         "impossible base_version accepted",
@@ -126,8 +126,8 @@ M = [  # (description, file, old, new)
     (
         "deleted record can still be edited",
         "sync/services.py",
-        'def _update(user: User, m: Mutation, sub: Submission) -> dict:\n    if sub.status in LOCKED_FOR_WORKERS:\n        return _reject(\n            user, m.mutation_id, r.LOCKED, f"The record is {sub.status} and locked.", sub=sub\n        )\n    if sub.deleted_at:',
-        'def _update(user: User, m: Mutation, sub: Submission) -> dict:\n    if sub.status in LOCKED_FOR_WORKERS:\n        return _reject(\n            user, m.mutation_id, r.LOCKED, f"The record is {sub.status} and locked.", sub=sub\n        )\n    if False:',
+        'def _update(user: User, m: Mutation, sub: Submission) -> dict:\n    if sub.status in LOCKED_FOR_WORKERS:\n        return _reject(\n            user,\n            m.mutation_id,\n            r.LOCKED,\n            f"This inspection is {sub.status} and can no longer be changed.",\n            sub=sub,\n        )\n    if sub.deleted_at:',
+        'def _update(user: User, m: Mutation, sub: Submission) -> dict:\n    if sub.status in LOCKED_FOR_WORKERS:\n        return _reject(\n            user,\n            m.mutation_id,\n            r.LOCKED,\n            f"This inspection is {sub.status} and can no longer be changed.",\n            sub=sub,\n        )\n    if False:',
     ),
     (
         "runtime write guard removed from save()",

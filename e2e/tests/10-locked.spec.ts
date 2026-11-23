@@ -33,7 +33,7 @@ test("an edit to an approved submission is refused clearly and not retried", asy
   await openInspection(other.page, id);
 
   await page.getByRole("button", { name: "Submit inspection" }).click();
-  await expect(page.getByText("Submitted. It can't be edited here.")).toBeVisible();
+  await expect(page.getByText("Submitted. It can no longer be changed.")).toBeVisible();
   await waitSynced(page);
   await adminAction(request, id, "approve");
 
@@ -47,7 +47,9 @@ test("an edit to an approved submission is refused clearly and not retried", asy
   await other.context.setOffline(false);
 
   await expect(
-    other.page.getByText(/did not accept this change: The record is approved and locked\./),
+    other.page.getByText(
+      /didn't accept this change: This inspection is approved and can no longer be changed\./,
+    ),
   ).toBeVisible({ timeout: 30_000 });
   await expect(other.page.getByText(/^Not accepted/)).toBeVisible();
   await expect(other.page.getByLabel("Notes")).toBeDisabled();
@@ -55,14 +57,16 @@ test("an edit to an approved submission is refused clearly and not retried", asy
 
   // No retry loop: another sync and a wait send nothing more for that record.
   const sent = pushes.length;
-  await other.page.getByRole("button", { name: "Sync now" }).click();
+  await other.page.getByRole("button", { name: "Send now" }).click();
   await other.page.waitForTimeout(3_000);
   expect(pushes.length).toBe(sent);
 
   // The way out is to discard, which shows the approved version.
   await other.page.getByRole("button", { name: "Discard my changes" }).click();
   await other.page.getByRole("dialog").getByRole("button", { name: "Discard" }).click();
-  await expect(other.page.getByText("Approved and locked.", { exact: true })).toBeVisible();
+  await expect(
+    other.page.getByText("Approved. It can no longer be changed.", { exact: true }),
+  ).toBeVisible();
   expect(await pendingCount(other.page)).toBe(0);
   await other.context.close();
   void context;

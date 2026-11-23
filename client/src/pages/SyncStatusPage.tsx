@@ -11,10 +11,10 @@ import { describeProblem, describeState } from "../sync/describe";
 import { useSyncStatus } from "../sync/status";
 
 const STORAGE_TEXT: Record<StorageState, string> = {
-  protected: "Protected. The browser will not clear this device's data when space runs low.",
+  protected: "Kept safe. Your saved work stays on this device even if it runs low on space.",
   "not-protected":
-    "Not protected. The browser may clear this device's data if space runs low. Installing the app helps.",
-  unsupported: "This browser cannot say whether the data is protected.",
+    "Not guaranteed. If this device runs low on space, it may remove work saved in the app. Installing the app helps.",
+  unsupported: "This device can't tell us whether work saved in the app is kept safe.",
   unknown: "Checking…",
 };
 
@@ -27,7 +27,7 @@ const OP_WORD: Record<string, string> = {
 
 /** What the sync engine is doing and what is waiting, in words a person can act on. */
 export function SyncStatusPage() {
-  useDocumentTitle("Sync status");
+  useDocumentTitle("Sending");
   const db = useLocalDb();
   const status = useSyncStatus();
 
@@ -70,7 +70,7 @@ export function SyncStatusPage() {
 
   return (
     <div className="page stack">
-      <h1>Sync status</h1>
+      <h1>Sending</h1>
 
       <section className="card stack" aria-labelledby="sync-summary">
         <h2 id="sync-summary">Summary</h2>
@@ -82,7 +82,7 @@ export function SyncStatusPage() {
             </dd>
           </div>
           <div>
-            <dt>Last sync</dt>
+            <dt>Last sent</dt>
             <dd>{status.lastSyncAt ? formatWhen(status.lastSyncAt) : "Never"}</dd>
           </div>
           <div>
@@ -97,7 +97,7 @@ export function SyncStatusPage() {
             onClick={status.syncNow}
             disabled={status.state === "syncing"}
           >
-            Retry now
+            Try again now
           </Button>
         </div>
       </section>
@@ -149,7 +149,7 @@ export function SyncStatusPage() {
       </section>
 
       <section className="card stack" aria-labelledby="sync-storage">
-        <h2 id="sync-storage">Storage on this device</h2>
+        <h2 id="sync-storage">Saved work on this device</h2>
         <p>{STORAGE_TEXT[storage.value ?? "unknown"]}</p>
       </section>
     </div>

@@ -296,7 +296,7 @@ export function AssignmentsAdminPage() {
           <ConfirmDialog
             open={cancelling !== null}
             title="Cancel this assignment?"
-            message="The worker can no longer start new inspections for it. Inspections already started stay and still sync."
+            message="The worker can no longer start new inspections for it. Inspections already started stay and can still be sent."
             confirmLabel="Cancel assignment"
             destructive
             onConfirm={() => cancelling && void cancel(cancelling)}

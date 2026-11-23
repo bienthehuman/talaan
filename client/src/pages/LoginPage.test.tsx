@@ -82,7 +82,7 @@ describe("LoginPage", () => {
     });
     renderApp("/login");
     await fillAndSubmit("worker1", "pw");
-    expect(await screen.findByRole("alert")).toHaveTextContent("Can't reach the server.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Can't connect.");
     expect(getSession()).toBeNull();
   });
 
